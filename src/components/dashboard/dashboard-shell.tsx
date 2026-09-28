@@ -103,7 +103,12 @@ function SignOutButton({
         setLoading(true);
         onPending?.();
         try {
-          await signOut({ redirectTo: "/" });
+          // Redirect dari server memakai origin sebagaimana dilihat server
+          // (Host header), sehingga bisa jatuh ke mis. http://0.0.0.0:3001
+          // bila dev server di-bind/buka lewat 0.0.0.0. Navigasi di sisi
+          // browser agar tetap memakai host yang sedang dipakai user.
+          await signOut({ redirect: false });
+          window.location.assign("/");
         } finally {
           setLoading(false);
         }
