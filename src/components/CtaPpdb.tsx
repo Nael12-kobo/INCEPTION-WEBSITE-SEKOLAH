@@ -38,7 +38,7 @@ export function CtaPpdb() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button size="lg" variant="secondary" asChild className="bg-white text-sky-800 hover:bg-sky-50">
-                <Link href="#beranda">
+                <Link href="/auth/login">
                   Daftar Sekarang
                   <ArrowRight />
                 </Link>
