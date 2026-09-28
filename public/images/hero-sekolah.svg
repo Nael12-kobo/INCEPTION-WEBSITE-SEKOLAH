@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e0f2fe"/>
+      <stop offset="0.55" stop-color="#bae6fd"/>
+      <stop offset="1" stop-color="#7dd3fc"/>
+    </linearGradient>
+    <linearGradient id="bld" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e0f2fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" fill="url(#sky)"/>
+  <circle cx="780" cy="130" r="90" fill="#ffffff" opacity="0.5"/>
+  <circle cx="150" cy="600" r="120" fill="#ffffff" opacity="0.35"/>
+  <circle cx="850" cy="560" r="60" fill="#0284c7" opacity="0.12"/>
+  <!-- gedung sekolah -->
+  <g>
+    <rect x="230" y="300" width="500" height="280" rx="16" fill="url(#bld)" stroke="#0284c7" stroke-opacity="0.25" stroke-width="3"/>
+    <rect x="230" y="300" width="500" height="64" rx="16" fill="#0284c7"/>
+    <rect x="230" y="348" width="500" height="16" fill="#0369a1"/>
+    <text x="480" y="342" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#ffffff">SMK TUNAS HARAPAN</text>
+    <!-- jendela -->
+    <g fill="#bae6fd" stroke="#0284c7" stroke-opacity="0.4" stroke-width="2">
+      <rect x="270" y="400" width="90" height="70" rx="8"/>
+      <rect x="385" y="400" width="90" height="70" rx="8"/>
+      <rect x="500" y="400" width="90" height="70" rx="8"/>
+      <rect x="615" y="400" width="90" height="70" rx="8"/>
+      <rect x="270" y="490" width="90" height="60" rx="8"/>
+      <rect x="615" y="490" width="90" height="60" rx="8"/>
+    </g>
+    <!-- pintu -->
+    <rect x="445" y="480" width="110" height="100" rx="10" fill="#0284c7"/>
+    <rect x="455" y="490" width="90" height="90" rx="6" fill="#e0f2fe"/>
+    <!-- menara telekomunikasi -->
+    <g stroke="#0369a1" stroke-width="8" stroke-linecap="round">
+      <line x1="790" y1="580" x2="790" y2="220"/>
+    </g>
+    <g stroke="#0369a1" stroke-width="5" stroke-linecap="round">
+      <line x1="748" y1="300" x2="832" y2="300"/>
+      <line x1="758" y1="360" x2="822" y2="360"/>
+      <line x1="768" y1="420" x2="812" y2="420"/>
+    </g>
+    <circle cx="790" cy="200" r="14" fill="#e11d48"/>
+    <g fill="none" stroke="#0284c7" stroke-width="4" opacity="0.7">
+      <path d="M 760 180 A 50 50 0 0 1 820 180"/>
+      <path d="M 745 162 A 75 75 0 0 1 835 162"/>
+    </g>
+    <!-- tanah -->
+    <rect x="0" y="580" width="960" height="140" fill="#f0f9ff"/>
+    <rect x="0" y="580" width="960" height="10" fill="#7dd3fc"/>
+  </g>
+  <text x="480" y="660" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#0369a1">Gambar placeholder — ganti dengan foto sekolah di file yang sama</text>
+</svg>
