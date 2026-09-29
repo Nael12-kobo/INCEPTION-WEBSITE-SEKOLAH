@@ -8,6 +8,7 @@ import { signOut, useSession } from "next-auth/react";
 import {
   BarChart3,
   CalendarDays,
+  GraduationCap,
   LayoutDashboard,
   Megaphone,
   Menu,
@@ -17,15 +18,14 @@ import {
   Shield,
   ShieldCheck,
   Bell,
-  Search,
   ChevronRight,
   Megaphone as MegaphoneIcon,
   UserCheck,
-  AlertTriangle,
+  ClipboardList,
+  LogIn,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -40,6 +40,13 @@ import {
 } from "@/components/ui/user-dropdown";
 import { cn } from "@/lib/utils";
 import { isAdmin as checkIsAdmin } from "@/lib/roles";
+
+export type DashboardActivityItem = {
+  id: string;
+  action: string;
+  detail: string | null;
+  createdAt: string;
+};
 
 type NavItem = {
   href: string;
@@ -65,6 +72,7 @@ const navSections: NavSection[] = [
   {
     title: "Akademik",
     items: [
+      { href: "/academic", label: "Portal Akademik", icon: GraduationCap },
       { href: "/dashboard#agenda", label: "Agenda", icon: CalendarDays },
       { href: "/dashboard#jurusan", label: "Jurusan", icon: Network },
       { href: "/dashboard#berita", label: "Berita", icon: Newspaper },
@@ -201,9 +209,29 @@ function NavLinkItem({
   );
 }
 
-function NotificationBell() {
+const ACTIVITY_META: Record<string, { icon: React.ComponentType<{ className?: string }>; tone: string }> = {
+  PPDB_REGISTERED: { icon: MegaphoneIcon, tone: "bg-emerald-50 text-emerald-600" },
+  ACCOUNT_REGISTERED: { icon: UserCheck, tone: "bg-sky-50 text-sky-600" },
+  PPDB_STATUS_UPDATED: { icon: ClipboardList, tone: "bg-sky-50 text-sky-600" },
+  LOGIN_SUCCESS: { icon: LogIn, tone: "bg-emerald-50 text-emerald-600" },
+};
+
+function timeAgoLabel(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return "Baru saja";
+  if (minutes < 60) return `${minutes} menit lalu`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} hari lalu`;
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(
+    new Date(iso)
+  );
+}
+
+function NotificationBell({ activities }: { activities: DashboardActivityItem[] }) {
   const [open, setOpen] = React.useState(false);
-  const [unreadCount, setUnreadCount] = React.useState(3);
   const ref = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -217,37 +245,6 @@ function NotificationBell() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  const notifications = [
-    {
-      icon: MegaphoneIcon,
-      iconClass: "bg-sky-50 text-sky-600",
-      title: "Pengumuman UTS dimulai 2 Oktober",
-      time: "2 jam lalu",
-      unread: true,
-      itemClass: "bg-sky-50 ring-1 ring-sky-100",
-    },
-    {
-      icon: UserCheck,
-      iconClass: "bg-emerald-50 text-emerald-600",
-      title: "Pendaftaran PPDB baru: Ahmad Fauzi",
-      time: "5 jam lalu",
-      unread: true,
-      itemClass: "",
-    },
-    {
-      icon: AlertTriangle,
-      iconClass: "bg-amber-50 text-amber-600",
-      title: "Sistem maintenance Minggu 18.00-19.00",
-      time: "1 hari lalu",
-      unread: true,
-      itemClass: "",
-    },
-  ];
-
-  const markAllRead = () => {
-    setUnreadCount(0);
-  };
-
   return (
     <div ref={ref} className="relative">
       <Button
@@ -258,9 +255,9 @@ function NotificationBell() {
         className="relative"
       >
         <Bell className="h-5 w-5 text-slate-600" />
-        {unreadCount > 0 && (
+        {activities.length > 0 && (
           <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
-            {unreadCount}
+            {activities.length > 9 ? "9+" : activities.length}
           </span>
         )}
       </Button>
@@ -268,58 +265,46 @@ function NotificationBell() {
       {open && (
         <div className="animate-fade-in elevation-4 absolute top-full right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200 p-0 overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <div>
-              <h4 className="font-h4 text-slate-900">Notifikasi</h4>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="info">{unreadCount} baru</Badge>
-              <button
-                type="button"
-                onClick={markAllRead}
-                className="text-xs text-sky-600 hover:underline font-medium"
-              >
-                Tandai semua dibaca
-              </button>
-            </div>
+            <h4 className="font-h4 text-slate-900">Aktivitas Terbaru</h4>
           </div>
-          <ul className="max-h-80 overflow-y-auto subtle-scroll">
-            {notifications.map((n, i) => {
-              const Icon = n.icon;
-              return (
-                <li
-                  key={i}
-                  className={cn(
-                    "flex items-start gap-3 px-4 py-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer",
-                    n.itemClass
-                  )}
-                >
-                  {n.unread && (
-                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
-                  )}
-                  {!n.unread && <span className="w-2 shrink-0" />}
-                  <span
-                    className={cn(
-                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
-                      n.iconClass
-                    )}
+          {activities.length === 0 ? (
+            <p className="px-4 py-8 text-center font-caption text-xs text-slate-400">
+              Belum ada aktivitas terbaru.
+            </p>
+          ) : (
+            <ul className="max-h-80 overflow-y-auto subtle-scroll">
+              {activities.map((a) => {
+                const meta = ACTIVITY_META[a.action] ?? {
+                  icon: Bell,
+                  tone: "bg-slate-100 text-slate-500",
+                };
+                const Icon = meta.icon;
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-start gap-3 px-4 py-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
                   >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-800 leading-snug">
-                      {n.title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-400">{n.time}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="border-t border-slate-100 p-2">
-            <Button variant="ghost" size="sm" className="w-full">
-              Lihat semua notifikasi
-            </Button>
-          </div>
+                    <span
+                      className={cn(
+                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+                        meta.tone
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-800 leading-snug">
+                        {a.detail ?? a.action}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        {timeAgoLabel(a.createdAt)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       )}
     </div>
@@ -328,9 +313,11 @@ function NotificationBell() {
 
 export function DashboardShell({
   user,
+  activities = [],
   children,
 }: {
   user: DashboardUser;
+  activities?: DashboardActivityItem[];
   children: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -476,7 +463,7 @@ export function DashboardShell({
                           image: user.image,
                           initials: user.initials,
                           role: user.role,
-                          twoFactorEnabled: false,
+                          statusLabel: { text: user.role, tone: "neutral" as const },
                         }}
                         items={userDropdownItems}
                         onLogout={handleLogout}
@@ -488,26 +475,15 @@ export function DashboardShell({
                 </SheetContent>
               </Sheet>
 
-              <div className="flex items-center gap-1.5 text-sm">
-                <span className="font-semibold text-slate-900">Dashboard</span>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                <span className="font-medium text-slate-500">Ringkasan</span>
-              </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="font-semibold text-slate-900">Dashboard</span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+              <span className="font-medium text-slate-500">Ringkasan</span>
             </div>
+          </div>
 
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari menu, pengumuman, agenda..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-sky-400/40 focus:border-sky-300 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <NotificationBell />
+          <div className="flex items-center gap-2">
+              <NotificationBell activities={activities} />
               <UserDropdown
                 user={{
                   name: user.name,
@@ -515,7 +491,7 @@ export function DashboardShell({
                   image: user.image,
                   initials: user.initials,
                   role: user.role,
-                  twoFactorEnabled: false,
+                  statusLabel: { text: user.role, tone: "neutral" as const },
                 }}
                 items={userDropdownItems}
                 onLogout={handleLogout}

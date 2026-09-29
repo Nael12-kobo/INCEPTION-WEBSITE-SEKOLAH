@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Download, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -49,16 +49,12 @@ export default async function AdminUsersPage() {
             Kelola akun pengguna, peran, dan status verifikasi.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled title="Gunakan tombol Export di tabel">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button size="sm" disabled title="Segera hadir">
+        <Button size="sm" asChild>
+          <a href="#tambah-user">
             <Plus className="h-4 w-4" />
             Tambah User
-          </Button>
-        </div>
+          </a>
+        </Button>
       </div>
 
       <AdminUsersClient

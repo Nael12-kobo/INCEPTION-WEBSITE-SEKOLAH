@@ -14,7 +14,7 @@ import {
   LineChart,
   PieChart,
 } from "lucide-react";
-import { requireAdmin } from "@/lib/role-utils";
+import { requireAdmin, isSuperAdmin } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/admin/stat-card";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -47,6 +47,8 @@ export default async function AdminOverviewPage() {
   if (!session) {
     redirect("/auth/login?callbackUrl=/admin/overview");
   }
+
+  const viewerIsSuperAdmin = isSuperAdmin(session.user.role);
 
   const now = new Date();
   const thirtyDaysAgo = new Date(now);
@@ -292,26 +294,28 @@ export default async function AdminOverviewPage() {
             </Card>
           </Link>
 
-          <Link href="/admin/audit" className="block group">
-            <Card className="h-full hover-lift transition-all group-hover:border-violet-300">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
-                    <Activity className="h-6 w-6 text-violet-600" />
-                  </div>
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-h4 text-slate-900">Audit Aktivitas</h3>
-                      <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-violet-600 transition-colors shrink-0" />
+          {viewerIsSuperAdmin && (
+            <Link href="/admin/audit" className="block group">
+              <Card className="h-full hover-lift transition-all group-hover:border-violet-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
+                      <Activity className="h-6 w-6 text-violet-600" />
                     </div>
-                    <p className="font-caption text-slate-500 leading-relaxed">
-                      Lihat riwayat perubahan dan aktivitas admin di sistem.
-                    </p>
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-h4 text-slate-900">Audit Aktivitas</h3>
+                        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-violet-600 transition-colors shrink-0" />
+                      </div>
+                      <p className="font-caption text-slate-500 leading-relaxed">
+                        Lihat riwayat perubahan dan aktivitas admin di sistem.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
         </div>
       </div>
 

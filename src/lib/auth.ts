@@ -6,6 +6,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import type { Provider } from "next-auth/providers";
 import { prisma } from "@/lib/prisma";
+import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 /**
  * Konfigurasi Auth.js (NextAuth v5) dengan Prisma + PostgreSQL.
@@ -32,10 +33,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!email || !password) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user?.passwordHash) return null;
+        if (!user?.passwordHash) {
+          await logAudit({
+            actorEmail: email,
+            action: AUDIT_ACTIONS.LOGIN_FAILED,
+            targetType: "AUTH",
+            detail: `Percobaan login gagal untuk ${email} (akun tidak ditemukan / tanpa password)`,
+          });
+          return null;
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          await logAudit({
+            actorId: user.id,
+            actorEmail: user.email,
+            action: AUDIT_ACTIONS.LOGIN_FAILED,
+            targetType: "AUTH",
+            detail: `Percobaan login gagal untuk ${email} (password salah)`,
+          });
+          return null;
+        }
+
+        await logAudit({
+          actorId: user.id,
+          actorEmail: user.email,
+          action: AUDIT_ACTIONS.LOGIN_SUCCESS,
+          targetType: "AUTH",
+          targetId: user.id,
+          detail: `Login berhasil via email & kata sandi`,
+        });
 
         return {
           id: user.id,
@@ -51,6 +78,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/login",
   },
   session: { strategy: "jwt" },
+  events: {
+    /** Audit login OAuth (credentials sudah dicatat di authorize). */
+    async signIn({ user }) {
+      if (user?.id && typeof (user as { role?: unknown }).role === "undefined") {
+        await logAudit({
+          actorId: user.id,
+          actorEmail: user.email,
+          action: AUDIT_ACTIONS.LOGIN_SUCCESS,
+          targetType: "AUTH",
+          targetId: user.id,
+          detail: "Login berhasil via OAuth",
+        });
+      }
+    },
+  },
   callbacks: {
     /**
      * Strategy "jwt" hanya menyimpan user id pada token.sub — default session

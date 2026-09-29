@@ -32,6 +32,20 @@ import { useSession } from "next-auth/react";
 import { isAdmin as checkIsAdmin } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
+function timeAgoShort(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}j`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}h`;
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(
+    new Date(iso)
+  );
+}
+
 function greeting(hour: number) {
   if (hour >= 4 && hour < 11) return "Selamat pagi";
   if (hour >= 11 && hour < 15) return "Selamat siang";
@@ -81,38 +95,13 @@ const pengumuman = [
   },
 ];
 
-const adminActivities = [
-  {
-    time: "10:32",
-    actor: "Bu Siti",
-    action: "Menyetujui pendaftaran PPDB",
-    entity: "Ahmad Fauzi (PPDB-2026-0847)",
-  },
-  {
-    time: "09:15",
-    actor: "Pak Rahman",
-    action: "Memperbarui status berita",
-    entity: "Penerimaan Siswa Baru 2026",
-  },
-  {
-    time: "08:45",
-    actor: "Bu Siti",
-    action: "Menambahkan agenda baru",
-    entity: "UTS Semester Ganjil",
-  },
-  {
-    time: "Kemarin",
-    actor: "Admin",
-    action: "Mengubah role pengguna",
-    entity: "Dewi Lestari → ADMIN",
-  },
-  {
-    time: "Kemarin",
-    actor: "Pak Rahman",
-    action: "Menerbitkan pengumuman",
-    entity: "Pendaftaran Magang Gelombang 2",
-  },
-];
+export type AdminActivity = {
+  id: string;
+  actorEmail: string | null;
+  action: string;
+  detail: string | null;
+  createdAt: string;
+};
 
 const PPDB_STATUS_LABELS: Record<string, string> = {
   PENDING: "Menunggu jadwal tes",
@@ -140,6 +129,7 @@ export interface DashboardOverviewProps {
   ppdb7Days: BarChartDatum[];
   ppdbByMajor: DonutSegment[];
   ppdb?: DashboardPpdb;
+  adminActivities?: AdminActivity[];
 }
 
 export function DashboardOverview({
@@ -154,6 +144,7 @@ export function DashboardOverview({
   ppdb7Days,
   ppdbByMajor,
   ppdb,
+  adminActivities = [],
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
@@ -378,30 +369,37 @@ export function DashboardOverview({
             </span>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-0">
-              {adminActivities.map((act, i) => (
-                <li
-                  key={i}
-                  className={cn(
-                    "flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/60 transition-colors",
-                  )}
-                >
-                  <span className="w-16 shrink-0 font-caption text-xs font-medium text-violet-600 tabular-nums">
-                    {act.time}
-                  </span>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-violet-600 ring-1 ring-violet-200">
-                    <UserRound className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-violet-900">
-                      <span className="font-semibold">{act.actor}</span>{" "}
-                      <span className="text-slate-600">{act.action}</span>
-                    </p>
-                    <p className="text-xs text-slate-500 truncate">{act.entity}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {adminActivities.length === 0 ? (
+              <p className="font-caption text-sm text-violet-500 py-6 text-center">
+                Belum ada aktivitas tercatat.
+              </p>
+            ) : (
+              <ul className="space-y-0">
+                {adminActivities.map((act) => (
+                  <li
+                    key={act.id}
+                    className={cn(
+                      "flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/60 transition-colors",
+                    )}
+                  >
+                    <span className="w-16 shrink-0 font-caption text-xs font-medium text-violet-600 tabular-nums">
+                      {timeAgoShort(act.createdAt)}
+                    </span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-violet-600 ring-1 ring-violet-200">
+                      <UserRound className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-violet-900">
+                        <span className="font-semibold">{act.actorEmail ?? "Sistem"}</span>
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {act.detail ?? act.action}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       )}

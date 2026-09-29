@@ -12,6 +12,7 @@ import {
   validatePpdbDraft,
 } from "@/lib/ppdb";
 import { sendWhatsApp } from "@/lib/ppdb-wa";
+import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 /**
  * Endpoint pendaftaran PPDB.
@@ -107,6 +108,14 @@ export async function POST(request: Request) {
         },
       });
       registrationNo = created.registrationNo;
+      await logAudit({
+        actorId: userId,
+        actorEmail: draft.email,
+        action: AUDIT_ACTIONS.PPDB_REGISTERED,
+        targetType: "PPDB",
+        targetId: created.id,
+        detail: `Pendaftaran baru ${created.registrationNo} (${draft.fullName}) — jurusan ${draft.majorFirst}/${draft.majorSecond}`,
+      });
       break;
     } catch (error) {
       const isUniqueViolation =

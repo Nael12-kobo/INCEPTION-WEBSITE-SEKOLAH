@@ -4,8 +4,6 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ShieldCheck,
-  ShieldX,
   LogOut,
   ChevronDown,
 } from "lucide-react";
@@ -18,7 +16,8 @@ export interface UserDropdownUser {
   image?: string | null;
   initials?: string;
   role?: string;
-  twoFactorEnabled?: boolean;
+  /** Chip status opsional (mis. "Email terverifikasi"). Tanpa chip bila tidak diisi. */
+  statusLabel?: { text: string; tone: "positive" | "neutral" };
 }
 
 export interface UserDropdownItem {
@@ -183,26 +182,18 @@ export function UserDropdown({
                   {user.role}
                 </span>
               )}
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-caption text-[10px] font-semibold",
-                  user.twoFactorEnabled
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-amber-50 text-amber-700"
-                )}
-              >
-                {user.twoFactorEnabled ? (
-                  <>
-                    <ShieldCheck className="h-3 w-3" strokeWidth={2.25} />
-                    2FA Aktif
-                  </>
-                ) : (
-                  <>
-                    <ShieldX className="h-3 w-3" strokeWidth={2.25} />
-                    2FA Belum
-                  </>
-                )}
-              </span>
+              {user.statusLabel && (
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-caption text-[10px] font-semibold",
+                    user.statusLabel.tone === "positive"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-slate-100 text-slate-600"
+                  )}
+                >
+                  {user.statusLabel.text}
+                </span>
+              )}
             </div>
           </div>
 

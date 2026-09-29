@@ -22,6 +22,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   ppdbRegistration PpdbRegistration?
+  auditLogs     AuditLog[]
 }
 
 model Account {
@@ -62,6 +63,27 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Audit trail: setiap aksi penting (login, ubah role, ubah status PPDB,
+// dsb) dicatat di sini oleh helper `logAudit` di src/lib/audit.ts.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String? // null = aksi anonim (mis. login gagal)
+  actorEmail String? // snapshot email agar tetap terbaca bila akun dihapus
+  action     String // kode aksi, mis. USER_LOGIN, USER_ROLE_CHANGE
+  targetType String? // jenis objek yang disentuh: USER, PPDB, AUTH
+  targetId   String?
+  detail     String? // keterangan singkat manusiawi
+  meta       Json? // data tambahan terstruktur (old/new, provider, dsb)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([actorId])
+  @@map("audit_logs")
 }
 
 // Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;

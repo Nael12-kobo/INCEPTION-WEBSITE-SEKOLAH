@@ -15,6 +15,9 @@ import {
   Bell,
   Menu,
   ChevronRight,
+  UserPlus,
+  ClipboardList,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -117,19 +120,139 @@ function SidebarAvatar({ user }: { user: AdminCurrentUser }) {
   );
 }
 
-function NotificationBell() {
+export type AdminActivityItem = {
+  id: string;
+  action: string;
+  detail: string | null;
+  actorEmail: string | null;
+  createdAt: string;
+};
+
+const ACTIVITY_META: Record<string, { icon: LucideIcon; tone: string }> = {
+  PPDB_REGISTERED: { icon: FileSpreadsheet, tone: "bg-emerald-50 text-emerald-600" },
+  USER_CREATED: { icon: UserPlus, tone: "bg-sky-50 text-sky-600" },
+  USER_ROLE_CHANGED: { icon: Shield, tone: "bg-violet-50 text-violet-600" },
+  PASSWORD_CHANGED: { icon: KeyRound, tone: "bg-amber-50 text-amber-600" },
+  ACCOUNT_REGISTERED: { icon: UserPlus, tone: "bg-sky-50 text-sky-600" },
+  PPDB_STATUS_UPDATED: { icon: ClipboardList, tone: "bg-sky-50 text-sky-600" },
+};
+
+function timeAgoLabel(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return "Baru saja";
+  if (minutes < 60) return `${minutes} menit lalu`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} hari lalu`;
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(
+    new Date(iso)
+  );
+}
+
+function NotificationBell({
+  activities,
+  isSuperAdmin,
+}: {
+  activities: AdminActivityItem[];
+  isSuperAdmin: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      aria-label="Notifikasi"
-      className="relative"
-    >
-      <Bell className="h-4 w-4 text-slate-600" aria-hidden />
-      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-        3
-      </span>
-    </Button>
+    <div ref={ref} className="relative">
+      <Button
+        variant="outline"
+        size="icon-sm"
+        aria-label={`Notifikasi (${activities.length} aktivitas terbaru)`}
+        className="relative"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Bell className="h-4 w-4 text-slate-600" aria-hidden />
+        {activities.length > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+            {activities.length > 9 ? "9+" : activities.length}
+          </span>
+        )}
+      </Button>
+
+      {open && (
+        <div className="animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <h4 className="font-h4 text-sm text-slate-900">Aktivitas Terbaru</h4>
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/admin/audit");
+                }}
+                className="text-xs font-medium text-sky-600 hover:underline"
+              >
+                Lihat semua
+              </button>
+            )}
+          </div>
+          {activities.length === 0 ? (
+            <p className="px-4 py-8 text-center font-caption text-xs text-slate-400">
+              Belum ada aktivitas terbaru.
+            </p>
+          ) : (
+            <ul className="max-h-80 overflow-y-auto subtle-scroll">
+              {activities.map((a) => {
+                const meta = ACTIVITY_META[a.action] ?? {
+                  icon: Bell,
+                  tone: "bg-slate-100 text-slate-500",
+                };
+                const Icon = meta.icon;
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-start gap-3 border-b border-slate-100 px-4 py-3 last:border-0 transition-colors hover:bg-slate-50"
+                  >
+                    <span
+                      className={cn(
+                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+                        meta.tone
+                      )}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium leading-snug text-slate-800">
+                        {a.detail ?? a.action}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        {timeAgoLabel(a.createdAt)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -251,11 +374,14 @@ function SidebarContent({
 
 function AdminShellInner({
   currentUser,
+  activities,
   children,
 }: {
   currentUser: AdminCurrentUser;
+  activities: AdminActivityItem[];
   children: React.ReactNode;
 }) {
+  const viewerIsSuperAdmin = checkIsSuperAdmin(currentUser.role);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -272,7 +398,7 @@ function AdminShellInner({
     image: null,
     initials: getInitials(currentUser.name, currentUser.email),
     role: currentUser.role,
-    twoFactorEnabled: false,
+    statusLabel: { text: "Akun Admin", tone: "positive" as const },
   };
 
   const handleLogout = async () => {
@@ -345,7 +471,7 @@ function AdminShellInner({
                 <span className="hidden sm:inline">Dashboard User</span>
               </Link>
             </Button>
-            <NotificationBell />
+            <NotificationBell activities={activities} isSuperAdmin={viewerIsSuperAdmin} />
             <UserDropdown
               user={dropdownUser}
               onLogout={handleLogout}
@@ -389,14 +515,16 @@ function AdminShellInner({
 
 export function AdminShellClient({
   currentUser,
+  activities = [],
   children,
 }: {
   currentUser: AdminCurrentUser;
+  activities?: AdminActivityItem[];
   children: React.ReactNode;
 }) {
   return (
     <ToastProvider>
-      <AdminShellInner currentUser={currentUser}>
+      <AdminShellInner currentUser={currentUser} activities={activities}>
         {children}
       </AdminShellInner>
     </ToastProvider>

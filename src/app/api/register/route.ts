@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/lib/role-utils";
+import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 /**
  * Endpoint pendaftaran akun — tersambung ke PostgreSQL via Prisma.
@@ -37,13 +38,21 @@ export async function POST(request: Request) {
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.create({
+    const created = await prisma.user.create({
       data: {
         name: trimmedName,
         email: trimmedEmail,
         passwordHash,
         role: UserRole.USER, // Default role for new registrations
       },
+    });
+    await logAudit({
+      actorId: created.id,
+      actorEmail: created.email,
+      action: AUDIT_ACTIONS.ACCOUNT_REGISTERED,
+      targetType: "USER",
+      targetId: created.id,
+      detail: `Akun baru mendaftar mandiri: ${created.email}`,
     });
   } catch (error) {
     if (

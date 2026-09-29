@@ -8,6 +8,7 @@ import {
   UserRole,
 } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
+import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 /** PATCH — edit data user (nama/email/role sesuai permission). */
 export async function PATCH(
@@ -49,7 +50,8 @@ export async function PATCH(
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
 
-    if (role !== undefined && role !== targetUser.role) {
+    const roleChanged = role !== undefined && role !== targetUser.role;
+    if (roleChanged) {
       if (!isUserRole(role) || !canChangeRole(session.user.role, targetUser.role, role)) {
         return NextResponse.json(
           { error: "Forbidden: Only Super Admin can change roles" },
@@ -70,6 +72,18 @@ export async function PATCH(
         emailVerified: true,
         createdAt: true,
       },
+    });
+
+    await logAudit({
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      action: roleChanged ? AUDIT_ACTIONS.USER_ROLE_CHANGED : AUDIT_ACTIONS.USER_UPDATED,
+      targetType: "USER",
+      targetId: userId,
+      detail: roleChanged
+        ? `Role ${updatedUser.email ?? userId}: ${targetUser.role} → ${role}`
+        : `Mengubah data user ${updatedUser.email ?? userId}`,
+      meta: roleChanged ? { oldRole: targetUser.role, newRole: role } : { name, email },
     });
 
     return NextResponse.json({ user: updatedUser });
@@ -115,6 +129,15 @@ export async function DELETE(
 
     await prisma.user.delete({
       where: { id: userId },
+    });
+
+    await logAudit({
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      action: AUDIT_ACTIONS.USER_DELETED,
+      targetType: "USER",
+      targetId: userId,
+      detail: `Menghapus user ${targetUser.role === "ADMIN" ? "ADMIN" : "USER"} ${userId}`,
     });
 
     return NextResponse.json({ message: "User deleted successfully" });

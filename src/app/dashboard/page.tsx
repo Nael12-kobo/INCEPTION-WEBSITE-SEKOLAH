@@ -4,12 +4,13 @@ import { prisma } from "@/lib/prisma";
 import {
   DashboardShell,
   type DashboardUser,
+  type DashboardActivityItem,
 } from "@/components/dashboard/dashboard-shell";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { AccountSection } from "@/components/dashboard/account-section";
 import { ProgramsSection } from "@/components/dashboard/programs-section";
 import { SessionProvider } from "next-auth/react";
-import { UserRole } from "@/lib/roles";
+import { UserRole, isAdmin as checkIsAdminRole } from "@/lib/roles";
 import type { BarChartDatum } from "@/components/ui/bar-chart";
 import type { DonutSegment } from "@/components/ui/donut-chart";
 
@@ -86,6 +87,7 @@ export default async function DashboardPage() {
     totalAdmins,
     ppdb7DaysRaw,
     ppdbByMajorRaw,
+    recentActivityRaw,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -125,6 +127,14 @@ export default async function DashboardPage() {
       by: ["majorFirst"],
       _count: { _all: true },
     }),
+    // Aktivitas terbaru untuk notifikasi bell — nyata dari audit log.
+    prisma.auditLog
+      ? prisma.auditLog.findMany({
+          orderBy: { createdAt: "desc" },
+          take: 8,
+          select: { id: true, action: true, detail: true, createdAt: true },
+        })
+      : Promise.resolve([]),
   ]);
 
   if (!user) redirect("/auth/login?callbackUrl=/dashboard");
@@ -203,9 +213,16 @@ export default async function DashboardPage() {
     })
   );
 
+  const activities: DashboardActivityItem[] = recentActivityRaw.map((log) => ({
+    id: log.id,
+    action: log.action,
+    detail: log.detail,
+    createdAt: log.createdAt.toISOString(),
+  }));
+
   return (
     <SessionProvider session={session}>
-      <DashboardShell user={dashboardUser}>
+      <DashboardShell user={dashboardUser} activities={activities}>
         <DashboardOverview
           userName={dashboardUser.name}
           todayLabel={nowInWib}
@@ -217,6 +234,17 @@ export default async function DashboardPage() {
           totalAdmins={totalAdmins}
           ppdb7Days={ppdb7Days}
           ppdbByMajor={ppdbByMajor}
+          adminActivities={
+            checkIsAdminRole(dashboardUser.role)
+              ? activities.map((a) => ({
+                  id: a.id,
+                  actorEmail: null,
+                  action: a.action,
+                  detail: a.detail,
+                  createdAt: a.createdAt,
+                }))
+              : []
+          }
           ppdb={
             ppdb
               ? {

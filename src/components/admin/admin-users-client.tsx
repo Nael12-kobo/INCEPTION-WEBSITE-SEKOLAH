@@ -9,12 +9,13 @@ import {
   getAccessibleRoles,
 } from "@/lib/roles";
 import { UserEditDialog } from "@/components/admin/user-edit-dialog";
+import { UserCreateDialog } from "@/components/admin/user-create-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { ExportButton } from "@/components/ui/export-button";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 
 export type AdminUserRow = {
   id: string;
@@ -55,6 +56,21 @@ export function AdminUsersClient({
   const [query, setQuery] = React.useState("");
   const [editOpen, setEditOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<AdminUserRow | null>(null);
+  const [createOpen, setCreateOpen] = React.useState(false);
+
+  // Buka dialog tambah saat URL ber-hash #tambah-user (dipicu tombol header).
+  React.useEffect(() => {
+    const sync = () => setCreateOpen(window.location.hash === "#tambah-user");
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  React.useEffect(() => {
+    if (!createOpen && window.location.hash === "#tambah-user") {
+      history.replaceState(null, "", window.location.pathname);
+    }
+  }, [createOpen]);
 
   const accessibleRoles = getAccessibleRoles(currentUserRole);
 
@@ -119,6 +135,17 @@ export function AdminUsersClient({
     await refresh();
   };
 
+  const handleCreate = (user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    role: string;
+    emailVerified: string | null;
+    createdAt: string;
+  }) => {
+    setUsers((prev) => [user, ...prev]);
+  };
+
   const handleDelete = async (userId: string) => {
     if (!confirm("Hapus user ini? Tindakan tidak bisa dibatalkan.")) return;
     const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
@@ -145,9 +172,6 @@ export function AdminUsersClient({
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-              <Button variant="outline" size="icon-sm" type="button" aria-label="Filter">
-                <Filter className="h-4 w-4" />
-              </Button>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <Badge variant="secondary">{users.length} user</Badge>
@@ -307,6 +331,13 @@ export function AdminUsersClient({
         currentUserRole={currentUserRole}
         accessibleRoles={accessibleRoles}
         onSave={handleSave}
+      />
+
+      <UserCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        currentUserRole={currentUserRole}
+        onCreated={handleCreate}
       />
     </>
   );

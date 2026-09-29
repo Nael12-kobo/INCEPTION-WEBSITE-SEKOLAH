@@ -50,6 +50,7 @@ export type Permission =
   | "admin.access"
   | "admin.overview"
   | "admin.users.view"
+  | "admin.users.create"
   | "admin.users.edit"
   | "admin.users.change_role"
   | "admin.users.delete"
@@ -68,6 +69,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   "admin.access": "Masuk panel admin",
   "admin.overview": "Lihat overview & statistik admin",
   "admin.users.view": "Lihat daftar semua pengguna",
+  "admin.users.create": "Tambah akun pengguna baru",
   "admin.users.edit": "Edit data pengguna (nama/email)",
   "admin.users.change_role": "Ubah role pengguna",
   "admin.users.delete": "Hapus pengguna",
@@ -95,6 +97,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "admin.access",
     "admin.overview",
     "admin.users.view",
+    "admin.users.create",
     "admin.users.edit",
     "admin.ppdb.view",
     "admin.ppdb.update_status",
@@ -109,6 +112,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "admin.access",
     "admin.overview",
     "admin.users.view",
+    "admin.users.create",
     "admin.users.edit",
     "admin.users.change_role",
     "admin.users.delete",
@@ -216,6 +220,17 @@ export const ROLE_ACCESS_MATRIX: AccessMatrixRow[] = [
     category: "Manajemen User",
     action: "Lihat daftar user",
     detail: "Semua akun di sistem",
+    access: {
+      [UserRole.USER]: "no",
+      [UserRole.ADMIN]: "yes",
+      [UserRole.SUPER_ADMIN]: "yes",
+    },
+  },
+  {
+    id: "users-create",
+    category: "Manajemen User",
+    action: "Tambah user baru",
+    detail: "Buat akun dengan nama, email, dan password awal",
     access: {
       [UserRole.USER]: "no",
       [UserRole.ADMIN]: "yes",

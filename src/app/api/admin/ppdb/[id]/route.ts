@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, canManagePpdb } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
+import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 const VALID_STATUSES = ["PENDING", "CONTACTED", "REGISTERED", "REJECTED"] as const;
 
@@ -30,7 +31,7 @@ export async function PATCH(
 
     const registration = await prisma.ppdbRegistration.findUnique({
       where: { id: registrationId },
-      select: { id: true },
+      select: { id: true, status: true, registrationNo: true, fullName: true },
     });
 
     if (!registration) {
@@ -46,6 +47,16 @@ export async function PATCH(
         fullName: true,
         status: true,
       },
+    });
+
+    await logAudit({
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      action: AUDIT_ACTIONS.PPDB_STATUS_UPDATED,
+      targetType: "PPDB",
+      targetId: registrationId,
+      detail: `Status ${registration.registrationNo} (${registration.fullName}): ${registration.status} → ${status}`,
+      meta: { oldStatus: registration.status, newStatus: status },
     });
 
     return NextResponse.json({ registration: updatedRegistration });
@@ -71,7 +82,7 @@ export async function DELETE(
 
     const registration = await prisma.ppdbRegistration.findUnique({
       where: { id: registrationId },
-      select: { id: true },
+      select: { id: true, registrationNo: true, fullName: true },
     });
 
     if (!registration) {
@@ -80,6 +91,15 @@ export async function DELETE(
 
     await prisma.ppdbRegistration.delete({
       where: { id: registrationId },
+    });
+
+    await logAudit({
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      action: AUDIT_ACTIONS.PPDB_DELETED,
+      targetType: "PPDB",
+      targetId: registrationId,
+      detail: `Menghapus pendaftaran ${registration.registrationNo} (${registration.fullName})`,
     });
 
     return NextResponse.json({ message: "Registration deleted successfully" });

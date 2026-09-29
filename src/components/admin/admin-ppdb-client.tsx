@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   FileSpreadsheet,
   Search,
-  Filter,
   Phone,
   Trash2,
 } from "lucide-react";
@@ -160,9 +159,6 @@ export function AdminPpdbClient({
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-              <Button variant="outline" size="icon-sm" type="button" aria-label="Filter">
-                <Filter className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </CardHeader>
