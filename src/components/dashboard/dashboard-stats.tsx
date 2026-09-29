@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import {
+  ArrowRight,
   Award,
   Building2,
   CalendarCheck,
@@ -11,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -38,7 +41,21 @@ function StatValue({ value, suffix }: { value: number; suffix: string }) {
   return <span ref={ref}>0{suffix}</span>;
 }
 
-export function DashboardStats() {
+export type DashboardPpdb = {
+  registrationNo: string;
+  status: string;
+  majorFirst: string;
+  majorSecond: string;
+} | null;
+
+const PPDB_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Menunggu jadwal tes",
+  CONTACTED: "Sekretariat sudah menghubungi",
+  REGISTERED: "Daftar ulang selesai",
+  REJECTED: "Tidak lolos",
+};
+
+export function DashboardStats({ ppdb }: { ppdb?: DashboardPpdb }) {
   const ref = useAnimeReveal<HTMLElement>();
   return (
     <section id="statistik" ref={ref} className="mt-10 scroll-mt-24">
@@ -66,36 +83,46 @@ export function DashboardStats() {
         <Card data-reveal-item className="bg-white lg:col-span-3">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
-              <CardTitle className="text-base">Aktivitas akun Anda</CardTitle>
+              <CardTitle className="text-base">Status pendaftaran Anda</CardTitle>
               <CardDescription className="mt-1">
-                Ringkasan status login dari sistem.
+                Data diambil langsung dari formulir PPDB.
               </CardDescription>
             </div>
-            <Badge variant="secondary">Akun</Badge>
+            <Badge variant="secondary">PPDB</Badge>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-              <div>
-                <p className="text-sm font-semibold text-emerald-800">
-                  Akun aktif & terverifikasi
-                </p>
-                <p className="text-xs text-emerald-700/80">
-                  Sesi login Anda aman melalui JWT berdurasi 30 hari.
-                </p>
+            {ppdb ? (
+              <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-emerald-800">
+                    Terdaftar — {ppdb.registrationNo}
+                  </p>
+                  <p className="text-xs text-emerald-700/80">
+                    {PPDB_STATUS_LABELS[ppdb.status] ?? "Proses berjalan"}. Jurusan {ppdb.majorFirst}
+                    {ppdb.majorSecond ? ` / ${ppdb.majorSecond}` : ""}. Detail dikirim via WhatsApp.
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 p-3.5">
-              <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
-              <div>
-                <p className="text-sm font-semibold text-amber-800">
-                  Lengkapi profil siswa
-                </p>
-                <p className="text-xs text-amber-700/80">
-                  Data kelas dan jurusan belum diisi — hubungi admin akademik.
-                </p>
+            ) : (
+              <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 p-3.5">
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-amber-800">
+                    Belum mendaftar
+                  </p>
+                  <p className="text-xs text-amber-700/80">
+                    Isi formulir PPDB untuk mendapatkan nomor pendaftaran dan jadwal tes.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <Link href="/ppdb">
+                {ppdb ? "Lihat formulir" : "Isi formulir sekarang"}
+                <ArrowRight aria-hidden />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 

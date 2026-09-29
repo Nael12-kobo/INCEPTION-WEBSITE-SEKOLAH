@@ -72,8 +72,60 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- ============================================================
+-- PPDB 2026/2027
+-- ============================================================
+
+-- CreateEnum
+CREATE TYPE "PpdbJurusan" AS ENUM ('DKV', 'PPLG', 'TJKT', 'TKR');
+
+-- CreateEnum
+CREATE TYPE "PpdbStatus" AS ENUM ('PENDING', 'CONTACTED', 'REGISTERED', 'REJECTED');
+
+-- CreateTable
+CREATE TABLE "ppdb_registrations" (
+    "id" TEXT NOT NULL,
+    "registrationNo" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "gender" TEXT NOT NULL,
+    "birthPlace" TEXT NOT NULL,
+    "birthDate" TIMESTAMP(3) NOT NULL,
+    "previousSchool" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "majorFirst" "PpdbJurusan" NOT NULL,
+    "majorSecond" "PpdbJurusan" NOT NULL,
+    "parentName" TEXT NOT NULL,
+    "parentPhone" TEXT NOT NULL,
+    "notes" TEXT,
+    "status" "PpdbStatus" NOT NULL DEFAULT 'PENDING',
+    "waSentAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ppdb_registrations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ppdb_registrations_registrationNo_key" ON "ppdb_registrations"("registrationNo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ppdb_registrations_userId_key" ON "ppdb_registrations"("userId");
+
+-- CreateIndex
+CREATE INDEX "ppdb_registrations_status_idx" ON "ppdb_registrations"("status");
+
+-- CreateIndex
+CREATE INDEX "ppdb_registrations_createdAt_idx" ON "ppdb_registrations"("createdAt");
+
+-- AddForeignKey
+ALTER TABLE "ppdb_registrations" ADD CONSTRAINT "ppdb_registrations_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- Kunci akses via Supabase Data API (Prisma tetap bisa akses penuh)
 ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Account" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Session" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "VerificationToken" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ppdb_registrations" ENABLE ROW LEVEL SECURITY;

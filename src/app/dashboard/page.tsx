@@ -1,11 +1,17 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { DashboardShell, type DashboardUser } from "@/components/dashboard/dashboard-shell";
-import { WelcomeSection } from "@/components/dashboard/welcome-section";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import {
+  DashboardShell,
+  type DashboardUser,
+} from "@/components/dashboard/dashboard-shell";
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { AccountSection } from "@/components/dashboard/account-section";
 import { ProgramsSection } from "@/components/dashboard/programs-section";
+import { SessionProvider } from "next-auth/react";
+import { UserRole } from "@/lib/roles";
+import type { BarChartDatum } from "@/components/ui/bar-chart";
+import type { DonutSegment } from "@/components/ui/donut-chart";
 
 export const metadata = {
   title: "Dashboard — SMK Telekomunikasi Tunas Harapan",
@@ -14,8 +20,18 @@ export const metadata = {
 
 const WIB_TZ = "Asia/Jakarta";
 
-/** Fallback apabila user tidak memiliki nama (mis. OAuth tanpa nama). */
-function initialsFrom(name: string, email: string) {
+const DAY_LABELS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+const MAJOR_COLORS: Record<string, string> = {
+  DKV: "#0ea5e9",
+  PPLG: "#10b981",
+  TJKT: "#8b5cf6",
+  TKR: "#f59e0b",
+};
+
+const DEFAULT_MAJORS = ["DKV", "PPLG", "TJKT", "TKR"];
+
+function initialsFrom(name: string, email: string): string {
   const source = name.trim() || email.split("@")[0] || "?";
   const parts = source.split(/[\s._-]+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "?";
@@ -23,17 +39,54 @@ function initialsFrom(name: string, email: string) {
   return (first + second).toUpperCase();
 }
 
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function startOfDayWib(date: Date): Date {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: WIB_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const y = Number(parts.find((p) => p.type === "year")?.value ?? 0);
+  const m = Number(parts.find((p) => p.type === "month")?.value ?? 1) - 1;
+  const d = Number(parts.find((p) => p.type === "day")?.value ?? 1);
+  return new Date(y, m, d, 0, 0, 0, 0);
+}
+
+function getDayLabelWib(date: Date): string {
+  const dayShort = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: WIB_TZ,
+  }).format(date);
+  const idx = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(dayShort);
+  return DAY_LABELS[idx >= 0 ? idx : 0];
+}
+
 export default async function DashboardPage() {
-  // Guard: semua route dashboard hanya untuk user yang sudah login.
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login?callbackUrl=/dashboard");
 
   const userId = session.user.id;
 
-  // Ambil data akun terbaru langsung dari database (session bisa basi).
-  // "Bergabung sejak" memakai Account.createdAt paling lama — model User
-  // tidak memiliki timestamp pendaftaran (lihat catatan di bawah halaman ini).
-  const [user, accounts] = await Promise.all([
+  const now = new Date();
+  const sevenDaysAgo = addDays(startOfDayWib(now), -6);
+
+  const [
+    user,
+    accounts,
+    ppdb,
+    totalUsers,
+    totalPpdb,
+    pendingPpdb,
+    totalAdmins,
+    ppdb7DaysRaw,
+    ppdbByMajorRaw,
+  ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -41,6 +94,7 @@ export default async function DashboardPage() {
         email: true,
         image: true,
         emailVerified: true,
+        role: true,
       },
     }),
     prisma.account.findMany({
@@ -48,9 +102,31 @@ export default async function DashboardPage() {
       select: { provider: true, createdAt: true },
       distinct: ["provider"],
     }),
+    prisma.ppdbRegistration.findUnique({
+      where: { userId },
+      select: {
+        registrationNo: true,
+        status: true,
+        majorFirst: true,
+        majorSecond: true,
+      },
+    }),
+    prisma.user.count(),
+    prisma.ppdbRegistration.count(),
+    prisma.ppdbRegistration.count({ where: { status: "PENDING" } }),
+    prisma.user.count({
+      where: { role: { in: [UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
+    }),
+    prisma.ppdbRegistration.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true },
+    }),
+    prisma.ppdbRegistration.groupBy({
+      by: ["majorFirst"],
+      _count: { _all: true },
+    }),
   ]);
 
-  // User bisa saja terhapus setelah session dibuat.
   if (!user) redirect("/auth/login?callbackUrl=/dashboard");
 
   const providerLabels: Record<string, string> = {
@@ -82,10 +158,9 @@ export default async function DashboardPage() {
           timeZone: WIB_TZ,
         }).format(earliestAccount)
       : "Tidak tercatat",
+    role: user.role,
   };
 
-  // Tanggal & jam "sekarang" dibuat di server (WIB) agar render server ==
-  // render client hydration tidak salah sapa.
   const nowInWib = new Intl.DateTimeFormat("id-ID", {
     weekday: "long",
     day: "numeric",
@@ -101,12 +176,61 @@ export default async function DashboardPage() {
     }).format(new Date())
   );
 
+  const ppdb7Days: BarChartDatum[] = Array.from({ length: 7 }, (_, i) => {
+    const dayDate = addDays(sevenDaysAgo, i);
+    const nextDay = addDays(dayDate, 1);
+    const count = ppdb7DaysRaw.filter(
+      (r) => r.createdAt >= dayDate && r.createdAt < nextDay
+    ).length;
+    return {
+      label: getDayLabelWib(dayDate),
+      value: count,
+    };
+  });
+
+  const majorCountMap = new Map<string, number>();
+  for (const m of DEFAULT_MAJORS) majorCountMap.set(m, 0);
+  for (const row of ppdbByMajorRaw) {
+    const key = row.majorFirst ?? "Lainnya";
+    majorCountMap.set(key, (majorCountMap.get(key) ?? 0) + row._count._all);
+  }
+
+  const ppdbByMajor: DonutSegment[] = Array.from(majorCountMap.entries()).map(
+    ([label, value]) => ({
+      label,
+      value,
+      color: MAJOR_COLORS[label] ?? "#94a3b8",
+    })
+  );
+
   return (
-    <DashboardShell user={dashboardUser}>
-      <WelcomeSection userName={dashboardUser.name} todayLabel={nowInWib} hour={hour} />
-      <DashboardStats />
-      <AccountSection user={dashboardUser} />
-      <ProgramsSection />
-    </DashboardShell>
+    <SessionProvider session={session}>
+      <DashboardShell user={dashboardUser}>
+        <DashboardOverview
+          userName={dashboardUser.name}
+          todayLabel={nowInWib}
+          hour={hour}
+          role={dashboardUser.role}
+          totalUsers={totalUsers}
+          totalPpdb={totalPpdb}
+          pendingPpdb={pendingPpdb}
+          totalAdmins={totalAdmins}
+          ppdb7Days={ppdb7Days}
+          ppdbByMajor={ppdbByMajor}
+          ppdb={
+            ppdb
+              ? {
+                  registrationNo: ppdb.registrationNo,
+                  status: ppdb.status,
+                  majorFirst: ppdb.majorFirst,
+                  majorSecond: ppdb.majorSecond,
+                }
+              : null
+          }
+        />
+        <AccountSection user={dashboardUser} />
+        <ProgramsSection />
+      </DashboardShell>
+    </SessionProvider>
   );
 }

@@ -8,7 +8,7 @@ import { ArrowRight, Award, PlayCircle, Signal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-const TITLE_TOP = "SMK Telekomunikasi".split("");
+const TITLE_TOP = "SMK Telekomunikasi ".split("");
 const TITLE_BOTTOM = "Tunas Harapan".split("");
 
 export function Hero() {
@@ -33,7 +33,7 @@ export function Hero() {
         duration: 700,
         delay: stagger(28),
         ease: "outExpo",
-      })
+      }),
     );
     animations.push(
       animate(fades, {
@@ -42,7 +42,7 @@ export function Hero() {
         duration: 800,
         delay: stagger(130, { start: 350 }),
         ease: "outCubic",
-      })
+      }),
     );
     if (image) {
       animations.push(
@@ -53,7 +53,7 @@ export function Hero() {
           duration: 1000,
           delay: 300,
           ease: "outExpo",
-        })
+        }),
       );
     }
     if (blobs.length > 0) {
@@ -65,7 +65,7 @@ export function Hero() {
           ease: "inOutSine",
           alternate: true,
           loop: true,
-        })
+        }),
       );
     }
     return () => {
@@ -74,7 +74,11 @@ export function Hero() {
   }, []);
 
   return (
-    <section id="beranda" ref={rootRef} className="relative overflow-hidden bg-sky-50">
+    <section
+      id="beranda"
+      ref={rootRef}
+      className="relative overflow-hidden bg-sky-50"
+    >
       {/* dekorasi */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-grid-sky [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,black,transparent)]" />
@@ -95,12 +99,16 @@ export function Hero() {
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
         {/* Kolom teks */}
         <div>
-          <Badge data-hero-fade variant="outline" className="mb-5 bg-white/70 backdrop-blur">
+          <Badge
+            data-hero-fade
+            variant="outline"
+            className="mb-5 bg-white/70 backdrop-blur"
+          >
             <Signal className="h-3.5 w-3.5 text-sky-600" />
             PPDB Tahun Ajaran 2026/2027 Telah Dibuka
           </Badge>
 
-          <h1 className="text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-4xl font-extrabold min-w-400 leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
             <span className="block" aria-label="SMK Telekomunikasi">
               {TITLE_TOP.map((ch, i) => (
                 <span
@@ -118,7 +126,7 @@ export function Hero() {
             >
               {TITLE_BOTTOM.map((ch, i) => (
                 <span
-                  key={`bottom-${i}`}
+                  key={`-${i}`}
                   data-hero-letter
                   className="inline-block will-change-transform"
                 >
@@ -132,11 +140,15 @@ export function Hero() {
             data-hero-fade
             className="mt-5 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg"
           >
-            Sekolah vokasi modern di bidang telekomunikasi, jaringan komputer, dan teknologi
-            digital — mencetak lulusan siap kerja, siap kuliah, dan siap berwirausaha.
+            Sekolah vokasi modern di bidang telekomunikasi, jaringan komputer,
+            dan teknologi digital — mencetak lulusan siap kerja, siap kuliah,
+            dan siap berwirausaha.
           </p>
 
-          <div data-hero-fade className="mt-8 flex flex-wrap items-center gap-3">
+          <div
+            data-hero-fade
+            className="mt-8 flex flex-wrap items-center gap-3"
+          >
             <Button size="lg" asChild>
               <Link href="#ppdb">
                 Daftar PPDB
@@ -169,7 +181,10 @@ export function Hero() {
 
         {/* Kolom gambar */}
         <div data-hero-image className="relative">
-          <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-200/60 via-transparent to-cyan-100/60 blur-xl" aria-hidden />
+          <div
+            className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-200/60 via-transparent to-cyan-100/60 blur-xl"
+            aria-hidden
+          />
           <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white shadow-2xl shadow-sky-200/60">
             <Image
               src="/images/hero-sekolah.svg"
@@ -183,7 +198,9 @@ export function Hero() {
               <p className="text-sm font-semibold text-white">
                 Kampus modern dengan lab fiber optik & jaringan
               </p>
-              <p className="text-xs text-sky-100">Jl. Telekomunikasi No. 1 — Tunas Harapan</p>
+              <p className="text-xs text-sky-100">
+                Jl. Telekomunikasi No. 1 — Tunas Harapan
+              </p>
             </div>
           </div>
 
@@ -193,12 +210,17 @@ export function Hero() {
           </div>
           <div className="absolute -right-3 bottom-16 rounded-2xl border border-sky-100 bg-white/95 px-4 py-3 shadow-lg shadow-sky-100 backdrop-blur sm:-right-6">
             <p className="text-2xl font-extrabold text-sky-700">96%</p>
-            <p className="text-xs font-medium text-slate-500">Lulusan terserap</p>
+            <p className="text-xs font-medium text-slate-500">
+              Lulusan terserap
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="relative h-10 bg-white [clip-path:ellipse(75%_100%_at_50%_100%)]" aria-hidden />
+      <div
+        className="relative h-10 bg-white [clip-path:ellipse(75%_100%_at_50%_100%)]"
+        aria-hidden
+      />
     </section>
   );
 }

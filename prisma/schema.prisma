@@ -17,8 +17,11 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String? // bcrypt hash — hanya terisi untuk akun credentials
+  role          UserRole @default(USER)
+  createdAt     DateTime  @default(now())
   accounts      Account[]
   sessions      Session[]
+  ppdbRegistration PpdbRegistration?
 }
 
 model Account {
@@ -59,4 +62,56 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;
+// nomor pendaftaran dibuat server dan dipakai sebagai rujukan di WhatsApp.
+
+enum PpdbJurusan {
+  DKV
+  PPLG
+  TJKT
+  TKR
+}
+
+enum PpdbStatus {
+  PENDING
+  CONTACTED
+  REGISTERED
+  REJECTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+model PpdbRegistration {
+  id            String  @id @default(cuid())
+  registrationNo String @unique
+  userId        String @unique
+  fullName      String
+  email         String
+  gender        String
+  birthPlace    String
+  birthDate     DateTime
+  previousSchool String
+  address       String
+  phone         String
+  majorFirst    PpdbJurusan
+  majorSecond   PpdbJurusan
+  parentName    String
+  parentPhone   String
+  notes         String?
+  status        PpdbStatus @default(PENDING)
+  waSentAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("ppdb_registrations")
 }

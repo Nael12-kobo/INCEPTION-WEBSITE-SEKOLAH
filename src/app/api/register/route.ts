@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@/lib/role-utils";
 
 /**
  * Endpoint pendaftaran akun — tersambung ke PostgreSQL via Prisma.
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
         name: trimmedName,
         email: trimmedEmail,
         passwordHash,
+        role: UserRole.USER, // Default role for new registrations
       },
     });
   } catch (error) {

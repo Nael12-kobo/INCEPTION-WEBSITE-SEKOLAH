@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Code2, Megaphone, Network, RadioTower } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -109,10 +109,10 @@ export function ProgramsSection() {
             </h2>
           </div>
           <Button variant="ghost" size="sm" asChild className="text-sky-700">
-            <a href="/#berita">
+            <Link href="/#berita">
               Lihat di beranda
               <ArrowUpRight aria-hidden />
-            </a>
+            </Link>
           </Button>
         </div>
         <div className="mt-5 grid gap-5 md:grid-cols-3">
@@ -163,7 +163,7 @@ export function ProgramsSection() {
               </p>
             </div>
             <Button size="lg" asChild className="bg-white text-sky-700 shadow-sm hover:bg-sky-50">
-              <a href="/#ppdb">Buka halaman PPDB</a>
+              <Link href="/ppdb">Buka formulir PPDB</Link>
             </Button>
           </div>
         </div>

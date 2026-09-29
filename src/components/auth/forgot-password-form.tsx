@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { CircleCheck, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthInput } from "@/components/auth/form-controls";
@@ -17,7 +16,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  */
 export function ForgotPasswordForm() {
   const { t } = useAuthLanguage();
-  const router = useRouter();
 
   const [email, setEmail] = React.useState("");
   const [fieldError, setFieldError] = React.useState<string | null>(null);

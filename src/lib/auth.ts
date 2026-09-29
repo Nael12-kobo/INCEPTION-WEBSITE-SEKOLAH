@@ -42,6 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
         };
       },
     }),
@@ -50,4 +51,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/login",
   },
   session: { strategy: "jwt" },
+  callbacks: {
+    /**
+     * Strategy "jwt" hanya menyimpan user id pada token.sub — default session
+     * callback Auth.js tidak menyalinnya ke session.user.id. Tanpa ini
+     * session.user.id selalu undefined, sehingga guard /dashboard memantulkan
+     * user balik ke halaman login (loop).
+     *
+     * Role selalu di-sync dari DB agar perubahan role (admin panel) langsung
+     * berlaku tanpa menunggu login ulang, dan OAuth ikut mendapat role default.
+     */
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+        if (typeof user.role === "string") {
+          token.role = user.role;
+        }
+        // Paksa refresh role segera setelah login.
+        token.roleSyncedAt = 0;
+      }
+
+      const ROLE_SYNC_MS = 30_000;
+      const lastSync = typeof token.roleSyncedAt === "number" ? token.roleSyncedAt : 0;
+      const needsSync = !token.role || Date.now() - lastSync > ROLE_SYNC_MS;
+
+      if (token.sub && needsSync) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { role: true },
+          });
+          token.role = dbUser?.role ?? token.role ?? "USER";
+          token.roleSyncedAt = Date.now();
+        } catch {
+          token.role = token.role ?? "USER";
+        }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.role = (token.role as string) || "USER";
+      }
+      return session;
+    },
+  },
 });

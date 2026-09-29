@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BellRing, CalendarDays, Megaphone, Sparkles } from "lucide-react";
+import { ArrowRight, BellRing, CalendarDays, Megaphone, Sparkles, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAnimeReveal } from "@/hooks/useAnimeReveal";
+import { useSession } from "next-auth/react";
+import { isAdmin as checkIsAdmin } from "@/lib/roles";
 
 /** Sapaan sesuai jam WIB server/client (aman hydration: format fix, tanpa Date.now di render). */
 function greeting(hour: number) {
@@ -66,14 +68,20 @@ export function WelcomeSection({
   userName,
   todayLabel,
   hour,
+  role,
 }: {
   userName: string;
   todayLabel: string;
   /** Jam lokal saat render server — dipakai untuk sapaan agar aman hydration. */
   hour: number;
+  /** Role dari DB (server) — sumber kebenaran untuk tampilan admin card. */
+  role?: string;
 }) {
   const ref = useAnimeReveal<HTMLElement>();
-  const firstName = userName.trim().split(/\s+/)[0] || "Sahabat";
+  const { data: session } = useSession();
+  const [firstName, lastName] = userName.trim().split(/\s+/) || ["Sahabat"];
+  const fullName = `${firstName} ${lastName}`;
+  const isAdmin = checkIsAdmin(role) || checkIsAdmin(session?.user?.role);
 
   return (
     <section id="ringkasan" ref={ref} className="scroll-mt-24">
@@ -93,7 +101,7 @@ export function WelcomeSection({
               Portal Siswa
             </Badge>
             <h1 className="mt-4 text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
-              {greeting(hour)}, {firstName}!
+              {greeting(hour)}, {fullName}!
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-sky-50/90 sm:text-base">
               Semua kebutuhan sekolah Anda dalam satu tempat — jadwal, pengumuman, hingga
@@ -136,7 +144,11 @@ export function WelcomeSection({
       {/* Grid bawah: agenda + pengumuman */}
       <div className="mt-6 grid gap-5 lg:grid-cols-5">
         {/* Agenda */}
-        <Card data-reveal-item className="bg-white lg:col-span-3">
+        <Card
+          id="agenda"
+          data-reveal-item
+          className="scroll-mt-24 bg-white lg:col-span-3"
+        >
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Agenda terdekat</CardTitle>
@@ -202,6 +214,34 @@ export function WelcomeSection({
           </CardContent>
         </Card>
       </div>
+
+      {/* Admin Access Card - Only shown to admins */}
+      {isAdmin && (
+        <Card data-reveal-item className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+          <CardHeader className="flex-row items-start justify-between space-y-0">
+            <div>
+              <CardTitle className="text-base text-purple-900">Akses Admin</CardTitle>
+              <CardDescription className="mt-1 text-purple-700">
+                Kelola pengguna dan pendaftaran PPDB
+              </CardDescription>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-600 ring-1 ring-purple-200">
+              <Shield className="h-4 w-4" aria-hidden />
+            </span>
+          </CardHeader>
+          <CardContent>
+            <Button
+              asChild
+              className="bg-purple-600 text-white hover:bg-purple-700"
+            >
+              <a href="/admin">
+                <Shield className="h-4 w-4 mr-2" aria-hidden />
+                Buka Panel Admin
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </section>
   );
 }
