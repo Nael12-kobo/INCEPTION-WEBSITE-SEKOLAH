@@ -78,7 +78,6 @@ const navItems: NavItem[] = [
     label: "Role & Izin",
     icon: Shield,
     section: "sistem",
-    superAdminOnly: true,
     breadcrumbLabel: "Role & Izin",
   },
   {

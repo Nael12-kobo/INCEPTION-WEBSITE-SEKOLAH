@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@/lib/role-utils";
+import { canRegisterPpdb } from "@/lib/role-utils";
 import {
   WA_ADMIN,
   buildAdminWaMessage,
@@ -34,8 +34,8 @@ export async function POST(request: Request) {
     );
   }
   
-  // Only USER role can register for PPDB
-  if (session.user.role !== UserRole.USER) {
+  // Hanya role dengan permission ppdb.register (USER)
+  if (!canRegisterPpdb(session.user.role)) {
     return NextResponse.json(
       { message: "Hanya peran USER yang dapat mendaftar PPDB." },
       { status: 403 }

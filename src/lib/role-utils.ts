@@ -10,7 +10,15 @@ import {
   canDeleteUser,
   getAccessibleRoles,
   canManagePpdb,
+  canRegisterPpdb,
+  canViewAudit,
+  canViewRolesPage,
+  hasPermission,
   isUserRole,
+  ROLE_PERMISSIONS,
+  ROLE_ACCESS_MATRIX,
+  ROLE_META,
+  PERMISSION_LABELS,
 } from "@/lib/roles";
 
 export {
@@ -24,8 +32,18 @@ export {
   canDeleteUser,
   getAccessibleRoles,
   canManagePpdb,
+  canRegisterPpdb,
+  canViewAudit,
+  canViewRolesPage,
+  hasPermission,
   isUserRole,
+  ROLE_PERMISSIONS,
+  ROLE_ACCESS_MATRIX,
+  ROLE_META,
+  PERMISSION_LABELS,
 };
+
+export type { Permission, AccessLevel, AccessMatrixRow } from "@/lib/roles";
 
 /** Session saat ini (tanpa cek role). */
 export async function getCurrentSession() {

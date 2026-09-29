@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAdmin, isSuperAdmin } from "@/lib/role-utils";
+import { requireAdmin, canViewAudit } from "@/lib/role-utils";
 import { ForbiddenPage } from "@/components/admin/forbidden-page";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollText } from "lucide-react";
@@ -15,7 +15,7 @@ export default async function AdminAuditPage() {
     redirect("/auth/login?callbackUrl=/admin/audit");
   }
 
-  if (!isSuperAdmin(session.user.role)) {
+  if (!canViewAudit(session.user.role)) {
     return <ForbiddenPage />;
   }
 

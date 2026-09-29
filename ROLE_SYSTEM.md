@@ -1,82 +1,60 @@
-# Role-Based Access Control (RBAC) System
+# Role-Based Access Control (RBAC)
 
-## Overview
-Sistem ini mengimplementasikan hak akses berbasis peran dengan tiga level: Super Admin, Admin, dan User biasa.
+Sumber kebenaran di kode: `src/lib/roles.ts`  
+(`ROLE_PERMISSIONS`, `ROLE_ACCESS_MATRIX`, helper `hasPermission` / `can*`).
 
-## Role Hierarchy
-1. **SUPER_ADMIN** - Akses penuh ke semua fitur
-   - Bisa mengubah role user (ADMIN / USER)
-   - Bisa menghapus user (ADMIN / USER)
-   - Bisa mengedit data ADMIN & USER
-   - Bisa mengelola PPDB
-   - Akses ke panel admin
+## Hierarki
+`SUPER_ADMIN` > `ADMIN` > `USER`
 
-2. **ADMIN** - Akses terbatas
-   - Bisa mengelola PPDB (semua pendaftaran)
-   - Bisa melihat daftar semua user
-   - Bisa mengedit data USER (nama/email), tanpa ubah role
-   - Akses ke panel admin
-   - Tidak bisa mengubah role user lain
-   - Tidak bisa menghapus user
+| | USER | ADMIN | SUPER_ADMIN |
+|---|:---:|:---:|:---:|
+| Dashboard personal | ✓ | ✓ | ✓ |
+| Daftar PPDB | ✓ | ✗ | ✗ |
+| Panel admin | ✗ | ✓ | ✓ |
+| Lihat semua user | ✗ | ✓ | ✓ |
+| Edit nama/email user | ✗ | USER saja | ADMIN + USER |
+| Ubah role | ✗ | ✗ | ✓* |
+| Hapus user | ✗ | ✗ | ✓* |
+| Kelola PPDB (status/hapus) | ✗ | ✓ | ✓ |
+| Role & Izin | ✗ | ✓ | ✓ |
+| Audit Log | ✗ | ✗ | ✓ |
 
-3. **USER** - Akses dasar
-   - Hanya akses dashboard personal
-   - Bisa mendaftar PPDB
-   - Tidak ada akses admin
+\* Tidak boleh menyentuh akun sendiri atau SUPER_ADMIN lain.
 
-## Setup Awal
-Akun admin sudah dibuat secara otomatis:
+## Ringkasan peran
 
-### Super Admin
-- Email: `superadmin@example.com`
-- Password: `superadmin123`
-- Role: SUPER_ADMIN
+### USER
+- Login, dashboard, profil sendiri
+- Mendaftar PPDB (1x) + lihat status sendiri
+- Tidak masuk `/admin`
 
-### Admin
-- Email: `admin@example.com`
-- Password: `admin123`
-- Role: ADMIN
+### ADMIN
+- Semua akses portal kecuali daftar PPDB
+- Overview admin, lihat user, edit data **USER** saja
+- Kelola semua pendaftaran PPDB (status + hapus)
+- Lihat matrix Role & Izin + pengaturan
+- **Tidak** ubah role, hapus user, atau buka Audit Log
 
-⚠️ **PENTING**: Silakan ganti password setelah login pertama!
+### SUPER_ADMIN
+- Semua yang ADMIN bisa
+- Edit ADMIN & USER; ubah role; hapus ADMIN & USER
+- Audit Log
+- Tidak edit/hapus/ubah role SUPER_ADMIN lain atau diri sendiri
 
-## Perubahan Database
-Schema Prisma telah diperbarui dengan field `role` pada model User:
+## Setup akun awal
+| Email | Password | Role |
+|---|---|---|
+| `superadmin@example.com` | `superadmin123` | SUPER_ADMIN |
+| `admin@example.com` | `admin123` | ADMIN |
 
-```prisma
-enum UserRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
+Ganti password setelah login pertama.
 
-model User {
-  // ... existing fields
-  role UserRole @default(USER)
-}
-```
+## API
+- `GET/PUT /api/admin/users` — list (admin+); ubah role (super only)
+- `PATCH/DELETE /api/admin/users/[id]` — edit/hapus sesuai permission
+- `GET /api/admin/ppdb` — list (admin+)
+- `PATCH/DELETE /api/admin/ppdb/[id]` — status/hapus (admin+)
+- `POST /api/ppdb` — daftar (USER only via `canRegisterPpdb`)
 
-## Auth & Helpers
-1. **JWT Session** — Role di-sync dari database pada setiap refresh token
-2. **Type Definitions** — `src/types/next-auth.d.ts`
-3. **Pure helpers** — `src/lib/roles.ts` (aman untuk client & server)
-4. **Server guards** — `src/lib/role-utils.ts` (`requireAdmin`, `requireSuperAdmin`)
-
-## API Endpoints
-
-### User Management
-- `GET /api/admin/users` — List semua users (Admin & Super Admin)
-- `PUT /api/admin/users` — Update role user (Super Admin only)
-- `PATCH /api/admin/users/[id]` — Edit data user (sesuai permission)
-- `DELETE /api/admin/users/[id]` — Hapus user (Super Admin only)
-
-### PPDB Management
-- `GET /api/admin/ppdb` — List pendaftaran (Admin & Super Admin)
-- `PATCH /api/admin/ppdb/[id]` — Update status PPDB (Admin & Super Admin)
-- `DELETE /api/admin/ppdb/[id]` — Hapus pendaftaran (Admin & Super Admin)
-
-## Security Notes
-1. Semua API endpoint dilindungi dengan role checking
-2. Super Admin tidak bisa mengubah / menghapus akun sendiri
-3. Super Admin tidak bisa mengedit / menghapus Super Admin lain
-4. Role di JWT selalu di-sync dari DB
-5. Pendaftaran PPDB hanya untuk role USER
+## UI
+Matrix lengkap: `/admin/roles` (ADMIN & SUPER_ADMIN).
