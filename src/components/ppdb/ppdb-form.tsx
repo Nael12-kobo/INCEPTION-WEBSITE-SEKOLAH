@@ -68,7 +68,7 @@ const INITIAL: PpdbValues = {
 type SubmitState =
   | { status: "idle" }
   | { status: "submitting" }
-  | { status: "done"; registrationNo: string; waUrl: string; alreadyRegistered: boolean; whatsappDelivered: boolean }
+  | { status: "done"; registrationNo: string; waUrl: string; alreadyRegistered: boolean; whatsappDelivered: boolean; emailDelivered: boolean }
   | { status: "error"; message: string; errors: Record<string, string> };
 
 export function PpdbForm({ defaultEmail }: { defaultEmail: string }) {
@@ -167,6 +167,7 @@ export function PpdbForm({ defaultEmail }: { defaultEmail: string }) {
         waUrl: data.waUrl,
         alreadyRegistered: Boolean(data.alreadyRegistered),
         whatsappDelivered: Boolean(data.whatsappDelivered),
+        emailDelivered: Boolean(data.emailDelivered),
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -555,6 +556,11 @@ function SuccessCard({
           {state.whatsappDelivered
             ? "Detail pendaftaran sudah kami kirim ke nomor WhatsApp Anda. Mohon balas konfirmasi agar proses lebih cepat."
             : "Konfirmasi WhatsApp belum terkirim otomatis. Silakan kirim pesan berikut ke nomor sekolah agar data Anda tercatat lebih cepat."}
+        </p>
+        <p className="text-sm leading-relaxed text-slate-600">
+          {state.emailDelivered
+            ? "Bukti pendaftaran juga sudah dikirim ke alamat email yang Anda daftarkan."
+            : "Email konfirmasi belum terkirim otomatis. Pendaftaran Anda tetap tersimpan; silakan simpan nomor pendaftaran di atas."}
         </p>
 
         <div className="flex flex-wrap gap-3">

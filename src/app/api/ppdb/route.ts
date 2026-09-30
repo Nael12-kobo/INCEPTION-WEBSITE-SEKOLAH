@@ -12,6 +12,7 @@ import {
   validatePpdbDraft,
 } from "@/lib/ppdb";
 import { sendWhatsApp } from "@/lib/ppdb-wa";
+import { sendPpdbConfirmationEmail } from "@/lib/ppdb-email";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
 /**
@@ -64,11 +65,24 @@ export async function POST(request: Request) {
 
   const existing = await prisma.ppdbRegistration.findUnique({ where: { userId } });
   if (existing) {
+    const emailSent = await sendPpdbConfirmationEmail({
+      to: existing.email,
+      fullName: existing.fullName,
+      registrationNo: existing.registrationNo,
+      majorFirst: existing.majorFirst,
+      majorSecond: existing.majorSecond,
+    });
+    if (!emailSent) {
+      console.warn(
+        `[ppdb] ${existing.registrationNo} sudah terdaftar, email konfirmasi ulang belum terkirim.`
+      );
+    }
     return NextResponse.json(
       {
         registrationNo: existing.registrationNo,
         status: existing.status,
         alreadyRegistered: true,
+        emailDelivered: emailSent,
       },
       { status: 200 }
     );
@@ -150,9 +164,16 @@ export async function POST(request: Request) {
     parentName: draft.parentName,
   });
 
-  const [toStudent, toAdmin] = await Promise.all([
+  const [toStudent, toAdmin, emailSent] = await Promise.all([
     sendWhatsApp(draft.phone, studentMessage),
     sendWhatsApp(WA_ADMIN, adminMessage),
+    sendPpdbConfirmationEmail({
+      to: draft.email,
+      fullName: draft.fullName,
+      registrationNo,
+      majorFirst: draft.majorFirst,
+      majorSecond: draft.majorSecond,
+    }),
   ]);
 
   if (toStudent.sent) {
@@ -168,13 +189,23 @@ export async function POST(request: Request) {
         `(${toStudent.reason ?? toAdmin.reason}). Ringkasan:\n${adminMessage}`
     );
   }
+  if (!emailSent) {
+    console.warn(
+      `[ppdb] ${registrationNo} tersimpan, email konfirmasi ke ${draft.email} belum terkirim.`
+    );
+  }
 
   // Fallback tanpa API: pengguna bisa mengirim pesan ke sekretariat sendiri
   // dengan satu klik, memakai pesan yang sudah terisi.
   const waUrl = `https://wa.me/?text=${encodeURIComponent(studentMessage)}`;
 
   return NextResponse.json(
-    { registrationNo, waUrl, whatsappDelivered: toStudent.sent },
+    {
+      registrationNo,
+      waUrl,
+      whatsappDelivered: toStudent.sent,
+      emailDelivered: emailSent,
+    },
     { status: 201 }
   );
 }
