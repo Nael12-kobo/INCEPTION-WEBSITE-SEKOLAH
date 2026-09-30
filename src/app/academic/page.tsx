@@ -6,6 +6,7 @@ import {
   type DashboardUser,
 } from "@/components/dashboard/dashboard-shell";
 import { AcademicClient } from "@/components/academic/academic-client";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata = {
   title: "Portal Akademik & Kurikulum — SMK Tunas Harapan",
@@ -61,8 +62,10 @@ export default async function AcademicPage() {
   }));
 
   return (
-    <DashboardShell user={dashboardUser} activities={activities}>
-      <AcademicClient userName={dashboardUser.name} />
-    </DashboardShell>
+    <SessionProvider session={session}>
+      <DashboardShell user={dashboardUser} activities={activities}>
+        <AcademicClient userName={dashboardUser.name} />
+      </DashboardShell>
+    </SessionProvider>
   );
 }
