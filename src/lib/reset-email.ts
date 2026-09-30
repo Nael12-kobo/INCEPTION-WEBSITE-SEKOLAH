@@ -10,7 +10,7 @@ export async function sendPasswordResetEmail(
 ): Promise<boolean> {
   const sender =
     process.env.RESEND_FROM ??
-    "SMK Telekomunikasi Tunas Harapan <onboarding@resend.dev>";
+    "SMK Telekomunikasi Tunas Harapan <noreplay@kitacobalagi.nerucloud.biz.id>";
 
   const html = `<!doctype html>
 <html lang="id">
