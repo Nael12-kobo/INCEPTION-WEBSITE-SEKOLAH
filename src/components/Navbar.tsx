@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { GraduationCap, Menu, RadioTower } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,17 +42,17 @@ const mobileLinks = [
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-sky-100/80 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="#beranda" className="flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 text-white shadow-sm shadow-sky-200">
-            <RadioTower className="h-5 w-5" />
-          </span>
+          
+            <Image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={40} height={40} className=" drop-shadow-lg" />
+          
           <span className="leading-tight">
             <span className="block text-sm font-bold tracking-tight text-slate-900">
               SMK Telekomunikasi
             </span>
-            <span className="block text-xs font-medium text-sky-600">Tunas Harapan</span>
+            <span className="block text-xs font-medium text-blue-600">Tunas Harapan</span>
           </span>
         </Link>
 
@@ -66,7 +67,7 @@ export function Navbar() {
                       <NavigationMenuLink asChild>
                         <Link
                           href={l.href}
-                          className="block rounded-xl p-3 transition-colors hover:bg-sky-50"
+                          className="block rounded-xl p-3 transition-colors hover:bg-blue-50"
                         >
                           <span className="block text-sm font-semibold text-slate-900">
                             {l.title}
@@ -88,7 +89,7 @@ export function Navbar() {
                       <NavigationMenuLink asChild>
                         <Link
                           href={l.href}
-                          className="block rounded-xl p-3 transition-colors hover:bg-sky-50"
+                          className="block rounded-xl p-3 transition-colors hover:bg-blue-50"
                         >
                           <span className="block text-sm font-semibold text-slate-900">
                             {l.title}
@@ -105,7 +106,7 @@ export function Navbar() {
               <NavigationMenuLink asChild>
                 <Link
                   href="#fasilitas"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-sky-100 hover:text-sky-900"
+                  className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-blue-100 hover:text-blue-900"
                 >
                   Fasilitas
                 </Link>
@@ -115,7 +116,7 @@ export function Navbar() {
               <NavigationMenuLink asChild>
                 <Link
                   href="#berita"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-sky-100 hover:text-sky-900"
+                  className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-blue-100 hover:text-blue-900"
                 >
                   Berita
                 </Link>
@@ -145,7 +146,7 @@ export function Navbar() {
           <SheetContent side="right">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white">
                   <RadioTower className="h-4 w-4" />
                 </span>
                 Tunas Harapan
@@ -156,7 +157,7 @@ export function Navbar() {
                 <Link
                   key={l.href + l.label}
                   href={l.href}
-                  className="rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-900"
+                  className="rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
                 >
                   {l.label}
                 </Link>
