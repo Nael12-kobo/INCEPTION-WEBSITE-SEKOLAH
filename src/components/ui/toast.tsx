@@ -224,8 +224,8 @@ function ToastViewport({
       aria-live="polite"
       aria-atomic="true"
       className={cn(
-        "pointer-events-none fixed z-[100] flex flex-col",
-        "left-1/2 -translate-x-1/2 bottom-4 w-[calc(100%-1.5rem)] max-w-sm gap-3 sm:bottom-6 sm:right-6 sm:left-auto sm:translate-x-0 sm:w-96 sm:items-end"
+        "pointer-events-none fixed gap-3 right-3 top-10 z-100 max-w-sm -space-y-3.5",
+        "sm:right-6 sm:top-10 sm:w-96 sm:items-end"
       )}
     >
       {toasts.map((toast) => (

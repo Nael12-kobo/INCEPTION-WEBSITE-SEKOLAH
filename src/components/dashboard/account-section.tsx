@@ -8,6 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardAvatar, type DashboardUser } from "@/components/dashboard/dashboard-shell";
 
@@ -102,7 +103,21 @@ export function AccountSection({ user }: { user: DashboardUser }) {
             ))}
           </dl>
 
-          <p className="mt-6 border-t border-sky-100 pt-4 text-xs leading-relaxed text-slate-400">
+          <div className="mt-6 flex items-center gap-3 border-t border-sky-100 pt-4">
+            <Button size="sm" asChild>
+              <a href="/profile">
+                Lihat Profil Lengkap
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <a href="/settings">
+                Pengaturan Akun
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-slate-400">
             Butuh perubahan data (nama, kelas, jurusan)? Hubungi admin akademik di{" "}
             <a
               href="mailto:admin@smktunasharapan.sch.id"

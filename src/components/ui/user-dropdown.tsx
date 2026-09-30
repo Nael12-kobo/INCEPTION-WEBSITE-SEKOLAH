@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRoleLabel } from "@/lib/roles";
 
 export interface UserDropdownUser {
   name: string;
@@ -141,7 +142,7 @@ export function UserDropdown({
           </span>
           {user.role && (
             <span className="truncate text-[10px] font-medium text-sky-600 max-w-[8rem]">
-              {user.role}
+              {formatRoleLabel(user.role)}
             </span>
           )}
         </div>
@@ -179,7 +180,7 @@ export function UserDropdown({
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               {user.role && (
                 <span className="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 font-caption text-[10px] font-semibold text-sky-700">
-                  {user.role}
+                  {formatRoleLabel(user.role)}
                 </span>
               )}
               {user.statusLabel && (

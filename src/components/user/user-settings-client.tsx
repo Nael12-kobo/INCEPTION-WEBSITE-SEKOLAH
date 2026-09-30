@@ -311,7 +311,7 @@ function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
   );
 }
 
-export function AdminSettingsClient({
+export function UserSettingsClient({
   initialName,
   initialEmail,
   role,
@@ -342,12 +342,8 @@ export function AdminSettingsClient({
               {formatRoleLabel(role)}
             </Badge>
           </div>
-          <p>
-            Lihat rincian izin di halaman{" "}
-            <a href="/admin/roles" className="font-semibold text-sky-600 hover:underline">
-              Role &amp; Izin
-            </a>
-            .
+          <p className="text-slate-500">
+            Hubungi admin jika Anda ingin mengubah role atau hak akses.
           </p>
         </CardContent>
       </Card> */}

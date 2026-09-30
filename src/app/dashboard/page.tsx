@@ -130,10 +130,10 @@ export default async function DashboardPage() {
     // Aktivitas terbaru untuk notifikasi bell — nyata dari audit log.
     prisma.auditLog
       ? prisma.auditLog.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 8,
-          select: { id: true, action: true, detail: true, createdAt: true },
-        })
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: { id: true, action: true, detail: true, createdAt: true },
+      })
       : Promise.resolve([]),
   ]);
 
@@ -162,11 +162,11 @@ export default async function DashboardPage() {
     emailVerified: user.emailVerified !== null,
     joinedLabel: earliestAccount
       ? new Intl.DateTimeFormat("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          timeZone: WIB_TZ,
-        }).format(earliestAccount)
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: WIB_TZ,
+      }).format(earliestAccount)
       : "Tidak tercatat",
     role: user.role,
   };
@@ -237,22 +237,22 @@ export default async function DashboardPage() {
           adminActivities={
             checkIsAdminRole(dashboardUser.role)
               ? activities.map((a) => ({
-                  id: a.id,
-                  actorEmail: null,
-                  action: a.action,
-                  detail: a.detail,
-                  createdAt: a.createdAt,
-                }))
+                id: a.id,
+                actorEmail: null,
+                action: a.action,
+                detail: a.detail,
+                createdAt: a.createdAt,
+              }))
               : []
           }
           ppdb={
             ppdb
               ? {
-                  registrationNo: ppdb.registrationNo,
-                  status: ppdb.status,
-                  majorFirst: ppdb.majorFirst,
-                  majorSecond: ppdb.majorSecond,
-                }
+                registrationNo: ppdb.registrationNo,
+                status: ppdb.status,
+                majorFirst: ppdb.majorFirst,
+                majorSecond: ppdb.majorSecond,
+              }
               : null
           }
         />

@@ -39,7 +39,7 @@ import {
   type UserDropdownItem,
 } from "@/components/ui/user-dropdown";
 import { cn } from "@/lib/utils";
-import { isAdmin as checkIsAdmin } from "@/lib/roles";
+import { isAdmin as checkIsAdmin, formatRoleLabel } from "@/lib/roles";
 
 export type DashboardActivityItem = {
   id: string;
@@ -82,8 +82,8 @@ const navSections: NavSection[] = [
   {
     title: "Akun",
     items: [
-      { href: "/dashboard#akun", label: "Akun Saya", icon: UserRound },
-      { href: "/dashboard#keamanan", label: "Keamanan", icon: ShieldCheck },
+      { href: "/profile", label: "Profil Saya", icon: UserRound },
+      { href: "/settings", label: "Pengaturan", icon: ShieldCheck },
     ],
   },
   {
@@ -352,13 +352,13 @@ export function DashboardShell({
         key: "profile",
         label: "Lihat Profil",
         icon: UserRound,
-        href: "/dashboard#akun",
+        href: "/profile",
       },
       {
-        key: "security",
-        label: "Pengaturan Keamanan",
+        key: "settings",
+        label: "Pengaturan",
         icon: ShieldCheck,
-        href: "/dashboard#keamanan",
+        href: "/settings",
       },
     ];
     if (isAdmin) {
@@ -403,7 +403,7 @@ export function DashboardShell({
           {user.name}
         </p>
         <p className="truncate text-xs text-slate-500">{user.email}</p>
-        <p className="truncate text-xs font-medium text-sky-600">{user.role}</p>
+        <p className="truncate text-xs font-medium text-sky-600">{formatRoleLabel(user.role)}</p>
       </div>
     </div>
   );
@@ -463,7 +463,7 @@ export function DashboardShell({
                           image: user.image,
                           initials: user.initials,
                           role: user.role,
-                          statusLabel: { text: user.role, tone: "neutral" as const },
+                          statusLabel: { text: formatRoleLabel(user.role), tone: "neutral" as const },
                         }}
                         items={userDropdownItems}
                         onLogout={handleLogout}
@@ -476,9 +476,39 @@ export function DashboardShell({
               </Sheet>
 
             <div className="flex items-center gap-1.5 text-sm">
-              <span className="font-semibold text-slate-900">Dashboard</span>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-              <span className="font-medium text-slate-500">Ringkasan</span>
+              {pathname === "/dashboard" ? (
+                <>
+                  <span className="font-semibold text-slate-900">Dashboard</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="font-medium text-slate-500">Ringkasan</span>
+                </>
+              ) : pathname === "/profile" ? (
+                <>
+                  <span className="font-semibold text-slate-900">Akun</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="font-medium text-slate-500">Profil</span>
+                </>
+              ) : pathname === "/settings" ? (
+                <>
+                  <span className="font-semibold text-slate-900">Akun</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="font-medium text-slate-500">Pengaturan</span>
+                </>
+              ) : pathname === "/admin" ? (
+                <>
+                  <span className="font-semibold text-slate-900">Admin</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="font-medium text-slate-500">Panel</span>
+                </>
+              ) : (
+                <span className="font-semibold text-slate-900">
+                  {(() => {
+                    const segment = pathname.split("/").pop();
+                    if (!segment) return "Portal";
+                    return segment.charAt(0).toUpperCase() + segment.slice(1);
+                  })()}
+                </span>
+              )}
             </div>
           </div>
 
@@ -491,7 +521,7 @@ export function DashboardShell({
                   image: user.image,
                   initials: user.initials,
                   role: user.role,
-                  statusLabel: { text: user.role, tone: "neutral" as const },
+                  statusLabel: { text: formatRoleLabel(user.role), tone: "neutral" as const },
                 }}
                 items={userDropdownItems}
                 onLogout={handleLogout}

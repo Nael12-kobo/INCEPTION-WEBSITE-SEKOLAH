@@ -459,3 +459,11 @@ export function canViewAudit(userRole: string | null | undefined): boolean {
 export function canViewRolesPage(userRole: string | null | undefined): boolean {
   return hasPermission(userRole, "admin.roles.view");
 }
+
+/**
+ * Mengubah role string (USER, ADMIN, SUPER_ADMIN) menjadi label yang readable (User, Admin, Super Admin)
+ */
+export function formatRoleLabel(role: string | null | undefined): string {
+  if (!role) return "—";
+  return ROLE_META[role as UserRole]?.label || role.replace(/_/g, " ");
+}

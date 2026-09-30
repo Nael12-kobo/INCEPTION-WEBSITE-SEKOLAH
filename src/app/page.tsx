@@ -8,7 +8,6 @@ import { Berita } from "@/components/Berita";
 import { CtaPpdb } from "@/components/CtaPpdb";
 import { Footer } from "@/components/Footer";
 
-
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-sky-50 font-sans text-slate-900">

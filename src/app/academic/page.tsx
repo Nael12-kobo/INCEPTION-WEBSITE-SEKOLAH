@@ -12,8 +12,6 @@ export const metadata = {
   description: "Jadwal pelajaran mingguan, kalender ujian, rekap nilai siswa, dan materi pembelajaran digital.",
 };
 
-const WIB_TZ = "Asia/Jakarta";
-
 function initialsFrom(name: string, email: string): string {
   const source = name.trim() || email.split("@")[0] || "?";
   const parts = source.split(/[\s._-]+/).filter(Boolean);
@@ -64,7 +62,7 @@ export default async function AcademicPage() {
 
   return (
     <DashboardShell user={dashboardUser} activities={activities}>
-      <AcademicClient userName={dashboardUser.name} role={dashboardUser.role} />
+      <AcademicClient userName={dashboardUser.name} />
     </DashboardShell>
   );
 }

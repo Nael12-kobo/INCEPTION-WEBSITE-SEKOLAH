@@ -12,8 +12,6 @@ import {
   Trophy,
   Users,
   Search,
-  CheckCircle,
-  AlertCircle,
   FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -65,7 +63,7 @@ const MODULES = [
   { title: "Dataset Log Analisis Ancaman Keamanan IDS/IPS Snort", size: "45.1 MB", format: "CSV", author: "Lab Cyber Security", downloads: 189 },
 ];
 
-export function AcademicClient({ userName }: { userName: string; role: string }) {
+export function AcademicClient({ userName }: { userName: string }) {
   const [selectedDay, setSelectedDay] = React.useState<string>("Semua");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [activeTab, setActiveTab] = React.useState<"jadwal" | "nilai" | "materi" | "ujian">("jadwal");

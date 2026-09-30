@@ -30,9 +30,9 @@ const roleBadge: Record<
   string,
   { variant: "default" | "secondary" | "outline" | "violet" | "info"; label: string }
 > = {
-  SUPER_ADMIN: { variant: "violet", label: "SUPER ADMIN" },
-  ADMIN: { variant: "info", label: "ADMIN" },
-  USER: { variant: "secondary", label: "USER" },
+  SUPER_ADMIN: { variant: "violet", label: "Super Admin" },
+  ADMIN: { variant: "info", label: "Admin" },
+  USER: { variant: "secondary", label: "User" },
 };
 
 function initialsFrom(name: string | null, email: string | null) {
