@@ -1,7 +1,9 @@
 "use client";
 
 import { Award, Building2, GraduationCap, Users } from "lucide-react";
-import { useAnimeCounter, useAnimeReveal } from "@/hooks/useAnimeReveal";
+import { useAnimeCounter } from "@/hooks/useAnimeReveal";
+import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
+import { useTiltHover } from "@/hooks/useTiltHover";
 
 const stats = [
   { icon: Users, value: 850, suffix: "+", label: "Siswa Aktif" },
@@ -11,18 +13,25 @@ const stats = [
 ];
 
 export function Stats() {
-  const ref = useAnimeReveal<HTMLElement>();
+  const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 160 });
+  useTiltHover(ref, { maxTilt: 10, scale: 1.04 });
   return (
-    <section id="statistik" ref={ref} className="relative bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <section id="statistik" ref={ref} className="relative bg-transparent">
+      <div className="tilt-scene mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (
             <div
               key={s.label}
-              data-reveal-item
-              className="rounded-3xl border border-sky-100 bg-sky-50/60 p-6 text-center transition-shadow hover:shadow-lg hover:shadow-sky-100"
+              data-scrub-item
+              data-scrub-dir="left"
+              className="glass glass-hover glass-glare rounded-3xl p-6 text-center"
             >
-              <s.icon className="mx-auto h-6 w-6 text-sky-600" />
+              <span
+                data-magnetic
+                className="glass-chip mx-auto flex h-12 w-12 items-center justify-center rounded-2xl"
+              >
+                <s.icon className="h-6 w-6 text-sky-600" />
+              </span>
               <dd className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
                 <StatValue value={s.value} suffix={s.suffix} />
               </dd>

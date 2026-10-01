@@ -7,12 +7,16 @@ import { animate, stagger } from "animejs";
 import { ArrowRight, Award, PlayCircle, Signal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
+import { useTiltHover } from "@/hooks/useTiltHover";
 
 const TITLE_TOP = "SMK Telekomunikasi ".split("");
 const TITLE_BOTTOM = "Tunas Harapan".split("");
 
 export function Hero() {
   const rootRef = useRef<HTMLElement | null>(null);
+  const contentRef = useAnimeFlowReveal<HTMLDivElement>({ direction: "alternate", distance: 180 });
+  useTiltHover(contentRef, { maxTilt: 7, scale: 1.02 });
 
   useEffect(() => {
     const root = rootRef.current;
@@ -77,7 +81,7 @@ export function Hero() {
     <section
       id="beranda"
       ref={rootRef}
-      className="relative overflow-hidden bg-sky-50"
+      className="relative overflow-hidden bg-transparent"
     >
       {/* dekorasi */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -96,13 +100,13 @@ export function Hero() {
         />
       </div>
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
+      <div ref={contentRef} className="tilt-scene relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
         {/* Kolom teks */}
-        <div>
+        <div data-scrub-item data-scrub-dir="left">
           <Badge
             data-hero-fade
             variant="outline"
-            className="mb-5 bg-white/70 backdrop-blur"
+            className="glass-chip mb-5"
           >
             <Signal className="h-3.5 w-3.5 text-sky-600" />
             PPDB Tahun Ajaran 2026/2027 Telah Dibuka
@@ -121,7 +125,7 @@ export function Hero() {
               ))}
             </span>
             <span
-              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text text-transparent"
+              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text"
               aria-label="Tunas Harapan"
             >
               {TITLE_BOTTOM.map((ch, i) => (
@@ -149,18 +153,22 @@ export function Hero() {
             data-hero-fade
             className="mt-8 flex flex-wrap items-center gap-3"
           >
-            <Button size="lg" asChild>
-              <Link href="#ppdb">
-                Daftar PPDB
-                <ArrowRight />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="#jurusan">
-                <PlayCircle />
-                Jelajahi Jurusan
-              </Link>
-            </Button>
+            <span data-magnetic className="inline-flex">
+              <Button size="lg" asChild className="shadow-lg shadow-sky-300/50">
+                <Link href="#ppdb">
+                  Daftar PPDB
+                  <ArrowRight />
+                </Link>
+              </Button>
+            </span>
+            <span data-magnetic className="inline-flex">
+              <Button size="lg" variant="outline" asChild className="glass-chip">
+                <Link href="#jurusan">
+                  <PlayCircle />
+                  Jelajahi Jurusan
+                </Link>
+              </Button>
+            </span>
           </div>
 
           <div data-hero-fade className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
@@ -169,8 +177,8 @@ export function Hero() {
               ["12+", "Mitra Industri"],
               ["100%", "Praktik & Magang"],
             ].map(([v, l]) => (
-              <div key={l} className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sm font-extrabold text-sky-700 shadow-sm shadow-sky-100 ring-1 ring-sky-100">
+              <div key={l} data-magnetic className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50">
                   {v === "100%" ? <Award className="h-4 w-4" /> : v}
                 </span>
                 <span className="text-sm font-medium text-slate-600">{l}</span>
@@ -180,12 +188,12 @@ export function Hero() {
         </div>
 
         {/* Kolom gambar */}
-        <div data-hero-image className="relative">
+        <div data-scrub-item data-scrub-dir="right" data-tilt className="glass relative rounded-[2rem] overflow-visible p-3 translate-x-50">
           <div
             className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-200/60 via-transparent to-cyan-100/60 blur-xl"
             aria-hidden
           />
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white shadow-2xl shadow-sky-200/60">
+          <div data-hero-image className="relative glass-glare overflow-hidden rounded-[1.6rem] border border-white/60 bg-white shadow-2xl shadow-sky-200/60">
             <Image
               src="/images/hero-sekolah.svg"
               alt="Gedung dan kegiatan SMK Telekomunikasi Tunas Harapan"
@@ -204,11 +212,11 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="absolute -left-4 top-6 rounded-2xl border border-sky-100 bg-white/95 px-4 py-3 shadow-lg shadow-sky-100 backdrop-blur sm:-left-8">
+          <div data-magnetic className="glass-strong absolute -left-4 top-6 rounded-2xl px-4 py-3 sm:-left-8">
             <p className="text-2xl font-extrabold text-sky-700">850+</p>
             <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
           </div>
-          <div className="absolute -right-3 bottom-16 rounded-2xl border border-sky-100 bg-white/95 px-4 py-3 shadow-lg shadow-sky-100 backdrop-blur sm:-right-6">
+          <div data-magnetic className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:-right-6">
             <p className="text-2xl font-extrabold text-sky-700">96%</p>
             <p className="text-xs font-medium text-slate-500">
               Lulusan terserap
@@ -217,10 +225,6 @@ export function Hero() {
         </div>
       </div>
 
-      <div
-        className="relative h-10 bg-white [clip-path:ellipse(75%_100%_at_50%_100%)]"
-        aria-hidden
-      />
     </section>
   );
 }
