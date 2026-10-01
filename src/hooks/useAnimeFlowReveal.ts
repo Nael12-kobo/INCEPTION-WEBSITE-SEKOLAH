@@ -51,7 +51,7 @@ export function useAnimeFlowReveal<T extends HTMLElement = HTMLElement>(
     direction = "alternate",
     distance = 140,
     staggerMs = 70,
-    duration = 600,
+    duration = 1000,
   } = options;
 
   useEffect(() => {
