@@ -15,7 +15,7 @@ import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
  * - Credentials: lookup user di database + verifikasi bcrypt hash.
  */
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({`r`n  trustHost: true,
   adapter: PrismaAdapter(prisma),
   providers: [
     Google,
