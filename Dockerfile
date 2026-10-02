@@ -1,3 +1,5 @@
+//MENYESUAIKAN DENGAN DOCKER HOSTING
+
 FROM node:22.20-bookworm-slim AS base
 WORKDIR /app
 COPY package*.json ./
