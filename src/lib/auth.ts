@@ -16,6 +16,7 @@ import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
  */
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   providers: [
     Google,
