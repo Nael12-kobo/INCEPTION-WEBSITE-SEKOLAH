@@ -213,7 +213,7 @@ export function Hero() {
           </div>
 
           <div data-magnetic className="glass-strong absolute -left-4 top-6 rounded-2xl px-4 py-3 sm:-left-8">
-            <p className="text-2xl font-extrabold text-sky-700">850+</p>
+            <p className="text-2xl font-extrabold text-sky-700">911+</p>
             <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
           </div>
           <div data-magnetic className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:-right-6">

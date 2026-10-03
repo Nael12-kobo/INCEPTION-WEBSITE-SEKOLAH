@@ -66,16 +66,19 @@ export function Profil() {
               <Quote className="h-6 w-6 text-sky-500" />
             </span>
             <blockquote className="mt-3 text-lg font-medium leading-relaxed text-slate-800">
-              “Kami tidak hanya mengajarkan teknologi, tetapi membentuk sikap profesional —
-              disiplin, jujur, dan pantang menyerah menghadapi tantangan industri.”
+              “ Di SMK Telekomunikasi Tunas Harapan saya dibimbing menjadi yang terbaik di bidang Komputer Jaringan,
+              dengan Guru yang berintegrasi tinggi dan sudah bersertifikasi Cisco saya dapat dengan mudah memahami apa yang di sampaikan,
+              serta fasilitasnya pun mendukung selama pembelajaran. Oleh karena itu membuat saya siap dan percaya diri untuk bersaing dengan Lulusan SMK lain.
+              Saat saya lulus saya langsung diterima di Perusahaan Hosting Terbesar di Jakarta.
+              Dan saat ini saya bekerja sebagai IT Senior Network & Infrastruktur di Transcosmos Indonesia site Semarang ”
             </blockquote>
             <div className="mt-6 flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-lg font-bold text-white shadow-lg shadow-sky-300/50">
                 H
               </span>
               <div>
-                <p className="text-sm font-bold text-slate-900">H. Tunas Harapan, M.Pd.</p>
-                <p className="text-xs text-slate-500">Kepala SMK Telekomunikasi Tunas Harapan</p>
+                <p className="text-sm font-bold text-slate-900">Visentius Agiola Stanlay</p>
+                <p className="text-xs text-slate-500">IT Senior Network & Infrastruktur</p>
               </div>
             </div>
           </CardContent>

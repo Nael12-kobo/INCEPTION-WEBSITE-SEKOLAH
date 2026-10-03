@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Code2, Network, RadioTower,Camera } from "lucide-react";
+import { ArrowUpRight, Code2, Network, RadioTower,Camera, Engine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
@@ -28,6 +28,13 @@ const jurusan = [
     singkatan: "DKV",
     desc: "Teori warna, tipografi, penggunaan perangkat lunak desain, ilustrasi digital, fotografi, dan videografi.",
     skills: ["Fotografi", "Videografi", "Broadcasting", "Illustrasi Digital"],
+  },
+    {
+    icon: Engine,
+    nama: "Teknik Kendaraan Ringan Otomotif",
+    singkatan: "TKRO",
+    desc: "Perawatan dan perbaikan kendaraan bermotor, sistem elektrik, dan mekanik.",
+    skills: ["Perawatan", "Perbaikan", "Sistem Elektrik"],
   },
 
 ];

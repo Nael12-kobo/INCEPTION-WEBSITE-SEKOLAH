@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone, RadioTower } from "lucide-react";
 
-const jurusanLinks = ["Teknik Jaringan Komputer", "Teknik Telekomunikasi", "Rekayasa Perangkat Lunak"];
+const jurusanLinks = ["Pengembangan Perangkat Lunak", "Teknik Jaringan Komputer Dan Telekomunikasi", "Desain Komunikasi Visual", "Teknik Kendaraan Ringan Otomotif"];
 const infoLinks = [
   { label: "Profil Sekolah", href: "#profil" },
   { label: "Fasilitas", href: "#fasilitas" },

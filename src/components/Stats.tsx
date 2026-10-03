@@ -6,10 +6,10 @@ import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
 
 const stats = [
-  { icon: Users, value: 850, suffix: "+", label: "Siswa Aktif" },
-  { icon: GraduationCap, value: 64, suffix: "", label: "Guru & Tendik" },
+  { icon: Users, value: 911, suffix: "+", label: "Siswa Aktif" },
+  { icon: GraduationCap, value: 67, suffix: "", label: "Guru & Tendik" },
   { icon: Building2, value: 12, suffix: "+", label: "Mitra Industri" },
-  { icon: Award, value: 120, suffix: "+", label: "Prestasi & Penghargaan" },
+  { icon: Award, value: 4530, suffix: "+", label: "Alumni" },
 ];
 
 export function Stats() {
