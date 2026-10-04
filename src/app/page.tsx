@@ -23,7 +23,6 @@ export default function Home() {
         <CtaPpdb />
       </main>
       <Footer />
-      
     </div>
   );
 }
