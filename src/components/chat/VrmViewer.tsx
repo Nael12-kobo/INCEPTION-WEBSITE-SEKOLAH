@@ -21,10 +21,27 @@ export interface VrmFraming {
   zoomOffset?: number;
 }
 
+/**
+ * Offset global model — ditulis ke wrapper Group (parent vrm.scene)
+ * sehingga TIDAK PERNAH tercampur prosedural/clip yang menulis vrm.scene.
+ * Semua live via ref (tanpa reload model). Default 0 = tanpa perubahan.
+ */
+export interface VrmGlobalOffset {
+  /** Geser model sumbu X (satuan dunia). Default 0. */
+  offsetX?: number;
+  /** Geser model sumbu Y (satuan dunia). Default 0. */
+  offsetY?: number;
+  /** Putar model sumbu Y (derajat). Default 0. */
+  rotationYOffset?: number;
+  /** Jarak kamera aditif; mengalahkan framing.zoomOffset bila diisi. Default 0. */
+  zoomOffset?: number;
+}
+
 interface VrmViewerProps {
   src?: string;
   speaking?: boolean;
   framing?: VrmFraming;
+  globalOffset?: VrmGlobalOffset;
   className?: string;
 }
 
@@ -35,13 +52,17 @@ interface VrmViewerProps {
  *   tampilkan progress unduhan % + MB, tanpa timeout agresif.
  * - Cache di-bust via query `?v=` (lihat cacheVersion di bawah).
  * - Auto-frame bounding box agar karakter selalu masuk frame.
+ * - Offset global (prop globalOffset: offsetX/offsetY/rotationYOffset/
+ *   zoomOffset) ditulis ke wrapper Group parent — tak tercampur prosedural.
+ * - Entrance .vrma opsional sekali-putar + frustumCulled=false anti-culling.
  * - Error asli ditampilkan (bukan pesan generik) agar mudah diagnosis.
  * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden.
  */
-export function VrmViewer({ src, speaking = false, framing, className }: VrmViewerProps) {
+export function VrmViewer({ src, speaking = false, framing, globalOffset, className }: VrmViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const speakingRef = useRef(speaking);
   const framingRef = useRef<VrmFraming | undefined>(framing);
+  const globalOffsetRef = useRef<VrmGlobalOffset | undefined>(globalOffset);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -65,6 +86,11 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     framingRef.current = framing;
   }, [framing]);
 
+  // globalOffset live (bisa diubah kapan saja tanpa reload model).
+  useEffect(() => {
+    globalOffsetRef.current = globalOffset;
+  }, [globalOffset]);
+
   /**
    * Versi cache model. Ganti angka ini (atau set NEXT_PUBLIC_VRM_VERSION)
    * setiap file .vrm diganti — menambah query `?v=` membuat browser
@@ -85,6 +111,8 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     let onResize: (() => void) | null = null;
     let ro: ResizeObserver | null = null;
     let manager: import("three").LoadingManager | null = null;
+    let mixer: import("three").AnimationMixer | null = null;
+    let mixerRoot: import("three").Object3D | null = null;
 
     const createAudioContext = () => {
       if (typeof window === "undefined") return null;
@@ -265,7 +293,18 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
         // Sumbu Z dibiarkan 0 agar karakter tidak terbalik.
         vrm.scene.rotation.y = Math.PI;
         vrm.scene.rotation.z = 0;
-        scene.add(vrm.scene);
+        // Rig global (parent vrm.scene): satu-satunya tempat offset global
+        // ditulis. Prosedural + clip hanya menyentuh vrm.scene (anak).
+        const rig = new THREE.Group();
+        rig.add(vrm.scene);
+        scene.add(rig);
+        // Anti-culling: bounds mesh dihitung dari bind pose; clip yang
+        // menggerakkan tulang membuat mesh ter-cull (elemen hilang).
+        vrm.scene.traverse((obj: import("three").Object3D) => {
+          if ((obj as import("three").Mesh).isMesh) {
+            (obj as import("three").Mesh).frustumCulled = false;
+          }
+        });
 
         // ---- Auto-frame: karakter selalu masuk frame apapun skala/offsetnya ----
         // base* = hasil auto-frame MURNI (tanpa offset pengguna). Offset
@@ -298,7 +337,8 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
             baseCam.y = fitHeight * 0.62;
             baseCam.z = baseFit;
             lookTarget.set(0, fitHeight * targetFactor, 0);
-            const zoom = framingNow?.zoomOffset ?? 0;
+            const zoom =
+              globalOffsetRef.current?.zoomOffset ?? framingNow?.zoomOffset ?? 0;
             camera.position.set(baseCam.x, baseCam.y, Math.max(0.3, baseCam.z + zoom));
             camera.lookAt(lookTarget);
           }
@@ -312,6 +352,55 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
         if (!isCancelled()) {
           setProgress(100);
           setStatus("ready");
+        }
+
+        // ---- Entrance .vrma (opsional, sekali-putar) ----
+        // File tak ada/invalid → warn + lanjut prosedural seperti biasa.
+        if (!isCancelled()) {
+          try {
+            const { VRMAnimationLoaderPlugin, createVRMAnimationClip } = await import(
+              "@pixiv/three-vrm-animation"
+            );
+            if (!isCancelled()) {
+              const animLoader = new GLTFLoader(manager);
+              animLoader.register(
+                (parser: unknown) => new VRMAnimationLoaderPlugin(parser as never)
+              );
+              const animGltf = await animLoader.loadAsync(
+                "/models/animation/entrance.vrma"
+              );
+              if (!isCancelled()) {
+                const anims = (
+                  animGltf.userData as {
+                    vrmAnimations?: import("@pixiv/three-vrm-animation").VRMAnimation[];
+                  }
+                ).vrmAnimations;
+                const first = anims?.[0];
+                if (first) {
+                  const clip = createVRMAnimationClip(first, vrm);
+                  mixer = new THREE.AnimationMixer(vrm.scene);
+                  mixerRoot = vrm.scene;
+                  const action = mixer.clipAction(clip);
+                  action.setLoop(THREE.LoopOnce, 1);
+                  action.clampWhenFinished = true;
+                  action.play();
+                } else {
+                  console.warn(
+                    "[VrmViewer] entrance dilewati (bukan .vrma valid)."
+                  );
+                }
+              }
+            }
+          } catch (animError) {
+            if (!isCancelled()) {
+              console.warn("[VrmViewer] entrance dilewati:", animError);
+            }
+          }
+        }
+        if (isCancelled()) {
+          mixer?.stopAllAction();
+          mixer = null;
+          return;
         }
 
         const clock = new THREE.Clock();
@@ -350,11 +439,16 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
           const offX = framingNow?.offsetX ?? 0;
           const offY = framingNow?.offsetY ?? 0;
           // Zoom aditif live: geser kamera di sumbu Z dari posisi dasar.
-          const zoom = framingNow?.zoomOffset ?? 0;
+          const zoom =
+            globalOffsetRef.current?.zoomOffset ?? framingNow?.zoomOffset ?? 0;
           if (zoom !== 0) {
             camera.position.set(baseCam.x, baseCam.y, Math.max(0.3, baseCam.z + zoom));
             camera.lookAt(lookTarget);
           }
+          // Global offset (rig parent) — tak tersentuh prosedural/clip.
+          const g = globalOffsetRef.current;
+          rig.position.set(g?.offsetX ?? 0, g?.offsetY ?? 0, 0);
+          rig.rotation.y = MathUtils.degToRad(g?.rotationYOffset ?? 0);
           vrm.scene.position.y = baseY + offY + Math.sin(t * 1.4) * 0.02;
           vrm.scene.position.x = baseX + offX + Math.sin(t * 0.4) * 0.008;
           vrm.scene.position.z = baseZ;
@@ -438,6 +532,7 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
               vrm.expressionManager.setValue("aa", 0);
             }
           }
+          mixer?.update(dt);
           vrm.update(dt);
           renderer?.render(scene, camera);
         };
@@ -471,6 +566,12 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      if (mixer) {
+        mixer.stopAllAction();
+        if (mixerRoot) mixer.uncacheRoot(mixerRoot);
+        mixer = null;
+        mixerRoot = null;
+      }
       if (onVisibility) document.removeEventListener("visibilitychange", onVisibility);
       if (onResize) window.removeEventListener("resize", onResize);
       window.removeEventListener("nara:unlock-audio", onUnlockAudio);
