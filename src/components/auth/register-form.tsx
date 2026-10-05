@@ -197,14 +197,14 @@ export function RegisterForm() {
           <>
             {t("register.terms")}{" "}
             <Link
-              href="/"
+              href="/terms-of-service"
               className="font-medium text-sky-600 underline-offset-4 hover:text-sky-700 hover:underline"
             >
               {t("register.termsLink")}
             </Link>{" "}
             {t("register.termsAnd")}{" "}
             <Link
-              href="/"
+              href="/privacy-policy"
               className="font-medium text-sky-600 underline-offset-4 hover:text-sky-700 hover:underline"
             >
               {t("register.privacyLink")}

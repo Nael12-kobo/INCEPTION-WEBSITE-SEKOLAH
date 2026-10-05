@@ -88,7 +88,21 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:px-6">
           <p>© 2026 SMK Telekomunikasi Tunas Harapan. Seluruh hak cipta dilindungi.</p>
-          <p>Akreditasi A — NPSN 20109999</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link
+              href="/privacy-policy"
+              className="transition-colors hover:text-sky-300"
+            >
+              Kebijakan Privasi
+            </Link>
+            <Link
+              href="/terms-of-service"
+              className="transition-colors hover:text-sky-300"
+            >
+              Syarat &amp; Ketentuan
+            </Link>
+            <span>Akreditasi A — NPSN 20109999</span>
+          </div>
         </div>
       </div>
     </footer>
