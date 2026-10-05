@@ -21,30 +21,31 @@ import {
 } from "@/components/ui/sheet";
 
 const profilLinks = [
-  { href: "#profil", title: "Profil Sekolah", desc: "Sambutan, visi-misi, dan sejarah singkat." },
-  { href: "#statistik", title: "Data & Statistik", desc: "Jumlah siswa, guru, dan prestasi." },
-  { href: "#fasilitas", title: "Fasilitas", desc: "Lab, perpustakaan, dan sarana praktik." },
+  { href: "/#profil", title: "Profil Sekolah", desc: "Sambutan, visi-misi, dan sejarah singkat." },
+  { href: "/#statistik", title: "Data & Statistik", desc: "Jumlah siswa, guru, dan prestasi." },
+  { href: "/#fasilitas", title: "Fasilitas", desc: "Lab, perpustakaan, dan sarana praktik." },
 ];
 
 const programLinks = [
-  { href: "#jurusan", title: "Teknik Jaringan Komputer", desc: "Jaringan, server, dan keamanan siber." },
-  { href: "#jurusan", title: "Teknik Telekomunikasi", desc: "Fiber optik, 5G, dan sistem komunikasi." },
-  { href: "#jurusan", title: "Rekayasa Perangkat Lunak", desc: "Web, mobile, dan cloud." },
+  { href: "/jurusan/PPLG", title: "Pengembangan Perangkat Lunak Dan Gim", desc: "Web, mobile, dan cloud." },
+  { href: "/jurusan/TJKT", title: "Teknik Jaringan Komputer Dan Telekomunikasi", desc: "Jaringan, Fiber optik, 5G, dan sistem komunikasi." },
+  { href: "/jurusan/DKV", title: "Desain Komunikasi Visual", desc: "Fotografi, Videografi, " },
+  { href: "/jurusan/TKRO", title: "Teknik Kendaraan Ringan Otomotif", desc: "Fotografi, Videografi, " },
 ];
 
 const mobileLinks = [
-  { href: "#profil", label: "Profil" },
-  { href: "#jurusan", label: "Jurusan" },
-  { href: "#fasilitas", label: "Fasilitas" },
-  { href: "#berita", label: "Berita" },
-  { href: "#ppdb", label: "PPDB" },
+  { href: "/#profil", label: "Profil" },
+  { href: "/#jurusan", label: "Jurusan" },
+  { href: "/#fasilitas", label: "Fasilitas" },
+  { href: "/#berita", label: "Berita" },
+  { href: "/#ppdb", label: "PPDB" },
 ];
 
 export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="#beranda" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           
             <Image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={40} height={40} className=" drop-shadow-lg" />
           

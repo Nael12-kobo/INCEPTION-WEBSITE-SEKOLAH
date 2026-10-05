@@ -4,6 +4,9 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { ChatBubble } from "@/components/ChatBubble";
 import { ChatProvider } from "@/components/chat/chat-store";
+import { Router } from "lucide-react";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
