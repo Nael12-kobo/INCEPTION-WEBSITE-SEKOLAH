@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { animate, stagger } from "animejs";
@@ -10,8 +10,42 @@ import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
 
-const TITLE_TOP = "SMK Telekomunikasi ".split("");
-const TITLE_BOTTOM = "Tunas Harapan".split("");
+const TITLE_TOP = "SMK Telekomunikasi ";
+const TITLE_BOTTOM = "Tunas Harapan";
+
+/**
+ * Huruf per-karakter untuk animasi `data-hero-letter`.
+ *
+ * Spasi sengaja dirender sebagai text node biasa, BUKAN NBSP ("\u00A0").
+ * NBSP membuat "SMK Telekomunikasi" jadi satu token yang tidak bisa dipecah
+ * → di layar 360–412px judul meluber keluar frame (section-nya
+ * `overflow-hidden`). Spasi biasa tetap menyediakan peluang wrap antar kata.
+ */
+function AnimatedTitle({
+  text,
+  prefix,
+}: {
+  text: string;
+  prefix: string;
+}) {
+  return (
+    <>
+      {text.split("").map((ch, i) =>
+        ch === " " ? (
+          <Fragment key={`${prefix}-${i}`}>{" "}</Fragment>
+        ) : (
+          <span
+            key={`${prefix}-${i}`}
+            data-hero-letter
+            className="inline-block will-change-transform"
+          >
+            {ch}
+          </span>
+        )
+      )}
+    </>
+  );
+}
 
 export function Hero() {
   const rootRef = useRef<HTMLElement | null>(null);
@@ -112,31 +146,15 @@ export function Hero() {
             PPDB Tahun Ajaran 2026/2027 Telah Dibuka
           </Badge>
 
-          <h1 className="text-balance text-4xl font-extrabold min-w-400 leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
             <span className="block" aria-label="SMK Telekomunikasi">
-              {TITLE_TOP.map((ch, i) => (
-                <span
-                  key={`top-${i}`}
-                  data-hero-letter
-                  className="inline-block will-change-transform"
-                >
-                  {ch === " " ? "\u00A0" : ch}
-                </span>
-              ))}
+              <AnimatedTitle text={TITLE_TOP} prefix="top" />
             </span>
             <span
               className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text"
               aria-label="Tunas Harapan"
             >
-              {TITLE_BOTTOM.map((ch, i) => (
-                <span
-                  key={`-${i}`}
-                  data-hero-letter
-                  className="inline-block will-change-transform"
-                >
-                  {ch === " " ? "\u00A0" : ch}
-                </span>
-              ))}
+              <AnimatedTitle text={TITLE_BOTTOM} prefix="bottom" />
             </span>
           </h1>
 
@@ -188,7 +206,9 @@ export function Hero() {
         </div>
 
         {/* Kolom gambar */}
-        <div data-scrub-item data-scrub-dir="right" data-tilt className="glass relative rounded-[2rem] overflow-visible p-3 translate-x-50">
+        {/* Kolom gambar. Jangan pakai `translate-x-50`: di Tailwind v4 itu
+            = 200px (spacing × 50), bukan 50% — gambar keluar frame di HP. */}
+        <div data-scrub-item data-scrub-dir="right" data-tilt className="glass relative rounded-[2rem] overflow-visible p-3">
           <div
             className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-200/60 via-transparent to-cyan-100/60 blur-xl"
             aria-hidden

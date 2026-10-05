@@ -177,13 +177,18 @@ export function ChatPageClient() {
           </div>
         </div>
 
-        {/* Panel chat bawah — 30% default, expand → 88% */}
+        {/* Panel chat bawah — 45% default, expand → 88%.
+            Dulu 30%: di layar 640px tingginya cuma ~192px, dan setelah
+            dikurangi handle + ChatInput tersisa ~80px untuk pesan
+            (kurang dari satu balasan). */}
         <section
           className={cn(
             "absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t border-white/60",
             "bg-gradient-to-t from-white via-white/90 to-white/40 backdrop-blur-2xl",
             "shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] transition-[height] duration-300",
-            expanded ? "h-[88%]" : "h-[30%]"
+            // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
+            "pb-[env(safe-area-inset-bottom)]",
+            expanded ? "h-[88%]" : "h-[45%]"
           )}
         >
           {/* Handle + tombol expand */}
@@ -200,7 +205,7 @@ export function ChatPageClient() {
             />
             <span className="h-1 w-12 rounded-full bg-slate-300" />
             <span className="mt-0.5 text-[10px] font-medium text-slate-500">
-              {expanded ? "Geser ke bawah / ketuk untuk mengecilkan" : "Ketuk untuk fullscreen chat"}
+              {expanded ? "Ketuk untuk mengecilkan" : "Ketuk untuk memperbesar"}
             </span>
           </button>
 

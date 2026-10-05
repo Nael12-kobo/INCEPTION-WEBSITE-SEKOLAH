@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   ArrowLeft,
@@ -124,12 +125,21 @@ export default function TKROPage() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <img
-                  src="/jurusan/TKRO.png"
-                  alt="TKRO Icon"
-                  className="absolute hidden top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 left-240 top-80 w-64 h-64 md:hidden lg:block lg:w-150 lg:h-150 object-contain"
-                  draggable={false}
-                />
+              {/* Dulu `absolute left-240 top-80` (960px/320px) menimpa
+                  `left-1/2 top-1/2` → ikon keluar frame; ditambah
+                  `hidden md:hidden lg:block` sehingga di HP/tabelt ikon
+                  sama sekali tidak muncul. Sekarang selalu tampil ikut
+                  alur layout. */}
+              <Image
+                src="/jurusan/TKRO.png"
+                alt="TKRO Icon"
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 224px"
+                className="w-56 h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                draggable={false}
+              />
             </div>
           </div>
         </div>

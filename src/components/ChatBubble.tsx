@@ -40,7 +40,9 @@ function ChatBubbleInner() {
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full",
+          // bottom dihitung dari env(safe-area-inset-bottom) supaya tombol
+          // tidak tertimpa home indicator iPhone (viewportFit=cover aktif)
+          "fixed bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full",
           "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-2xl",
           "transition-all duration-300 ease-out hover:scale-110 hover:shadow-blue-500/50",
           "animate-bounce-slow",
@@ -107,8 +109,10 @@ function ChatBubbleInner() {
             </div>
           </div>
 
-          {/* Area pesan */}
-          <div className="flex h-[350px] flex-col bg-gradient-to-b from-slate-50 to-white">
+          {/* Area pesan — dulu `h-[350px]` tetap: di HP landscape
+              (tinggi ~375px) total dialog melebihi viewport dan
+              terpotong. Dibatasi 50dvh supaya selalu muat. */}
+          <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-white">
             <ChatMessages compact />
           </div>
 

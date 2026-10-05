@@ -15,6 +15,35 @@ function toTitle(firstUserText: string): string {
 }
 
 /**
+ * Berapa banyak pesan di awal `thread` yang sudah identik (role + isi)
+ * dengan pesan di akhir `existing`.
+ *
+ * Client sengaja mengirim ulang window percakapan tiap giliran
+ * (chat-store: `messages: history.slice(-20)`), jadi `fullThread` selalu
+ * berisi sebagian percakapan yang SUDAH tersimpan. Tanpa fungsi ini,
+ * `merged = [...prev, ...fullThread]` menduplikasi ±20 pesan setiap kali
+ * user mengirim chat → riwayat tampil 2–4 kali lipat dan payload JSON
+ * membengkak kuadratik sampai terpotong `slice(-100)`.
+ */
+function countTrailingOverlap(
+  existing: { role: string; content: string }[],
+  thread: { role: string; content: string }[]
+): number {
+  const max = Math.min(existing.length, thread.length);
+  // Cari k terbesar: ekor `existing` sepanjang k == kepala `thread` sepanjang k.
+  // Descending karena irisan tidak harus mulai dari k=1 (mis. ekor thread
+  // lama sudah kepotong window slice(-20) di client).
+  for (let k = max; k >= 1; k--) {
+    const tail = existing.slice(existing.length - k);
+    const identical = tail.every(
+      (p, i) => p.role === thread[i].role && p.content === thread[i].content
+    );
+    if (identical) return k;
+  }
+  return 0;
+}
+
+/**
  * POST /api/chat
  * Body: { messages: [{role, content}], conversationId?: string }
  * - Guest (belum login): tidak disimpan ke DB, hanya balasan Gemini.
@@ -80,7 +109,8 @@ export async function POST(request: Request) {
         const prev = Array.isArray(existing.messages)
           ? (existing.messages as { role: string; content: string; createdAt?: string }[])
           : [];
-        const merged = [...prev, ...fullThread].slice(-100);
+        const overlap = countTrailingOverlap(prev, fullThread);
+        const merged = [...prev, ...fullThread.slice(overlap)].slice(-100);
         const updated = await prisma.chatConversation.update({
           where: { id: existing.id },
           data: { messages: merged, updatedAt: new Date() },

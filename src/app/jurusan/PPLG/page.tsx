@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   ArrowLeft,
@@ -89,16 +90,23 @@ const keunggulan = [
 ];
 
 // Mitra industri / DUDI (Dunia Usaha Dunia Industri) tempat sekolah bekerjasama
+// `w`/`h` = dimensi asli gambar — dipakai next/image agar tidak ada layout
+// shift (CLS) saat logo dimuat. SVG otomatis di-`unoptimized` oleh next/image.
 const mitra = [
-  { nama: "Sinarmas", gambar: "/sponsor/sinarmas.png" },
-  { nama: "iForte", gambar: "/sponsor/iforte.png" },
-  { nama: "Wings", gambar: "/sponsor/wings.svg" },
-  { nama: "Garudafood", gambar: "/sponsor/garudafood.png" },
-  { nama: "Indofood", gambar: "/sponsor/indofood.svg" },
-  { nama: "Bakti Barito", gambar: "/sponsor/bakti-barito.png" },
-  { nama: "Triputra Agro Persada", gambar: "/sponsor/triputra-agro.png" },
-  { nama: "Agung Sedayu Group", gambar: "/sponsor/agung-sedayu.png" },
-  { nama: "PT Ciliandra Perkasa", gambar: "/sponsor/ciliandra-perkasa.png" },
+  { nama: "Sinarmas", gambar: "/sponsor/sinarmas.png", w: 1280, h: 287 },
+  { nama: "iForte", gambar: "/sponsor/iforte.png", w: 1510, h: 516 },
+  { nama: "Wings", gambar: "/sponsor/wings.svg", w: 1499, h: 881 },
+  { nama: "Garudafood", gambar: "/sponsor/garudafood.png", w: 207, h: 50 },
+  { nama: "Indofood", gambar: "/sponsor/indofood.svg", w: 265, h: 87 },
+  { nama: "Bakti Barito", gambar: "/sponsor/bakti-barito.png", w: 634, h: 247 },
+  {
+    nama: "Triputra Agro Persada",
+    gambar: "/sponsor/triputra-agro.png",
+    w: 5116,
+    h: 1777,
+  },
+  { nama: "Agung Sedayu Group", gambar: "/sponsor/agung-sedayu.png", w: 232, h: 160 },
+  { nama: "PT Ciliandra Perkasa", gambar: "/sponsor/ciliandra-perkasa.png", w: 282, h: 500 },
 ];
 
 export default function PPLGPage() {
@@ -138,12 +146,18 @@ export default function PPLGPage() {
               </p>
             </div>
             <div className="flex-shrink-0 select-none drag-none">
-                <img
-                  src="/jurusan/PPLG.png"
-                  alt="PPLG Icon"
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 left-240 top-80 w-64 h-64 md:w-128 md:h-128 object-contain"
-                  draggable={false}
-                />
+              {/* Dulu `absolute left-240 top-80` (960px/320px) menimpa
+                  `left-1/2 top-1/2` → ikon ter-clip `overflow-hidden`. */}
+              <Image
+                src="/jurusan/PPLG.png"
+                alt="PPLG Icon"
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 224px"
+                className="w-56 h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                draggable={false}
+              />
             </div>
           </div>
         </div>
@@ -324,10 +338,12 @@ export default function PPLGPage() {
                 title={m.nama}
               >
                 {m.gambar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={m.gambar}
                     alt={`Logo ${m.nama}`}
+                    width={m.w}
+                    height={m.h}
+                    loading="lazy"
                     className="max-h-16 max-w-full object-contain hover:grayscale-0 transition-all duration-300"
                   />
                 ) : (

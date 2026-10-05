@@ -39,6 +39,9 @@ const mobileLinks = [
   { href: "/#fasilitas", label: "Fasilitas" },
   { href: "/#berita", label: "Berita" },
   { href: "/#ppdb", label: "PPDB" },
+  // Tanpa link ini, pengunjung HP tidak punya jalan menuju login —
+  // satu-satunya akses sebelumnya lewat redirect dari /ppdb.
+  { href: "/auth/login", label: "Masuk" },
 ];
 
 export function Navbar() {
@@ -132,6 +135,9 @@ export function Navbar() {
               <GraduationCap />
               Tentang
             </Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/auth/login">Masuk</Link>
           </Button>
           <Button asChild>
             <Link href="#ppdb">PPDB 2026</Link>

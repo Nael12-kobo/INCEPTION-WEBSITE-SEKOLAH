@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { ChatBubble } from "@/components/ChatBubble";
+import { SiteChrome } from "@/components/SiteChrome";
 import { ChatProvider } from "@/components/chat/chat-store";
-import { Router } from "lucide-react";
-
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +20,18 @@ export const metadata: Metadata = {
     "SMK Telekomunikasi Tunas Harapan — sekolah vokasi modern bidang telekomunikasi, jaringan, dan teknologi digital.",
 };
 
+/**
+ * viewportFit "cover" supaya `env(safe-area-inset-*)` punya nilai nyata di
+ * iPhone (notch / home indicator). Tanpa ini, tombol mengambang dan panel
+ * chat di bawah layar bisa tertimpa baris gesture iOS.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f8fafc",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -31,10 +39,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
         <ChatProvider>
-          {children}
-          <ChatBubble />
+          <SiteChrome>{children}</SiteChrome>
         </ChatProvider>
       </body>
     </html>

@@ -47,7 +47,11 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
           <div className="flex min-w-0 flex-col gap-1">
             <div
               className={cn(
-                "rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                // break-words + pre-wrap: balasan Gemini sering berisi URL/
+                // token panjang & baris baru tanpa ini memaksa overflow-x
+                // di area pesan (yang cuma overflow-y-auto → scrollbar
+                // horizontal muncul di HP).
+                "break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
                 message.role === "user"
                   ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white"
                   : "rounded-bl-md border border-slate-200 bg-white text-slate-800"

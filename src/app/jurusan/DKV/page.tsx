@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   ArrowLeft,
@@ -122,12 +123,18 @@ export default function DKVPage() {
               </p>
             </div>
             <div className="flex-shrink-0 select-none drag-none">
-                  <img
-                  src="/jurusan/DKV.png"
-                  alt="DKV Icon"
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 left-240 top-80 w-64 h-64 md:w-130 md:h-130 object-contain"
-                  draggable={false}
-                />
+              {/* Dulu `absolute left-240 top-80` (960px/320px) menimpa
+                  `left-1/2 top-1/2` → ikon ter-clip `overflow-hidden`. */}
+              <Image
+                src="/jurusan/DKV.png"
+                alt="DKV Icon"
+                width={1254}
+                height={1254}
+                priority
+                sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 224px"
+                className="w-56 h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                draggable={false}
+              />
             </div>
           </div>
         </div>

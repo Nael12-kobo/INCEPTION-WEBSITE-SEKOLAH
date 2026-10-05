@@ -412,7 +412,13 @@ export function DashboardShell({
     <ToastProvider>
       <div className="flex min-h-dvh bg-sky-50/60">
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex">
-          <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-200 px-5">
+          {/* Brand = tautan ke situs publik. Wajib karena Navbar global
+              tidak dirender di /dashboard (lihat SiteChrome), jadi tanpa
+              link ini pengguna tidak punya jalan kembali ke beranda. */}
+          <Link
+            href="/"
+            className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-200 px-5 transition-colors hover:bg-sky-50"
+          >
             <AuthLogo width={36} height={36} />
             <span className="leading-tight">
               <span className="block text-sm font-bold text-slate-900">
@@ -422,7 +428,7 @@ export function DashboardShell({
                 Tunas Harapan
               </span>
             </span>
-          </div>
+          </Link>
 
           <nav className="flex-1 space-y-6 overflow-y-auto subtle-scroll px-3 py-4">
             {renderNavLinks()}
@@ -446,8 +452,12 @@ export function DashboardShell({
                 <SheetContent side="left" className="flex flex-col">
                   <SheetHeader>
                     <SheetTitle className="flex items-center gap-2.5">
-                      <AuthLogo width={32} height={32} />
-                      Portal Sekolah
+                      {/* Tautan balik ke beranda (Navbar global tidak
+                          dirender di /dashboard) */}
+                      <Link href="/" className="flex items-center gap-2.5">
+                        <AuthLogo width={32} height={32} />
+                        Portal Sekolah
+                      </Link>
                     </SheetTitle>
                   </SheetHeader>
                   <nav className="mt-4 flex flex-col space-y-0 overflow-y-auto subtle-scroll flex-1">

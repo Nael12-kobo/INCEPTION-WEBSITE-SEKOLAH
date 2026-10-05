@@ -458,3 +458,15 @@
   .hover-lift:hover { transform: none !important; }
 }
 
+
+/* ---- Anti "zoom otomatis" iOS Safari ----------------------------------
+   iOS Safari melakukan auto-zoom saat fokus ke input berfont-size < 16px,
+   sehingga halaman terasa "melompat"/geser — keluhan mobile paling umum.
+   Dipaksa 16px hanya di layar kecil; desktop tetap mengikuti text-sm. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
