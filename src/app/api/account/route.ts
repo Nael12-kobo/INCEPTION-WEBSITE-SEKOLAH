@@ -33,7 +33,7 @@ async function requireSession() {
 export async function PATCH(request: NextRequest) {
   const user = await requireSession();
   if (!user) {
-    return NextResponse.json({ message: "Silakan masuk terlebih dahulu." }, { status: 401 });
+    return NextResponse.json({ message: "Silakan masuk terlebih dahulu." },{ status: 401 });
   }
 
   let body: { name?: unknown; email?: unknown; currentPassword?: unknown };

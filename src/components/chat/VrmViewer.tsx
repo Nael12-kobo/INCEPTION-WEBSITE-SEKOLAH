@@ -42,6 +42,11 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
   const mountRef = useRef<HTMLDivElement>(null);
   const speakingRef = useRef(speaking);
   const framingRef = useRef<VrmFraming | undefined>(framing);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const analyserDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const audioSpeakingRef = useRef(false);
   const [status, setStatus] = useState<"loading" | "ready" | "fallback">(
     "loading"
   );
@@ -80,6 +85,72 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     let onResize: (() => void) | null = null;
     let ro: ResizeObserver | null = null;
     let manager: import("three").LoadingManager | null = null;
+
+    const createAudioContext = () => {
+      if (typeof window === "undefined") return null;
+      if (!audioContextRef.current) {
+        const AudioContextCtor =
+          window.AudioContext ||
+          (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+            .webkitAudioContext;
+        if (AudioContextCtor) {
+          audioContextRef.current = new AudioContextCtor();
+        }
+      }
+      return audioContextRef.current;
+    };
+
+    const onUnlockAudio = () => {
+      const ctx = createAudioContext();
+      if (ctx?.state === "suspended") {
+        void ctx.resume().catch(() => undefined);
+      }
+    };
+
+    const onAudio = async (event: Event) => {
+      const buffer = (event as CustomEvent<{ buffer?: ArrayBuffer }>).detail?.buffer;
+      if (!buffer) return;
+
+      try {
+        const ctx = createAudioContext();
+        if (!ctx) return;
+        await ctx.resume().catch(() => undefined);
+
+        const audioBuffer = await ctx.decodeAudioData(buffer.slice(0));
+        audioSourceRef.current?.stop();
+        audioSourceRef.current?.disconnect();
+
+        const source = ctx.createBufferSource();
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.7;
+        const data = new Uint8Array(analyser.fftSize);
+
+        source.buffer = audioBuffer;
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+        source.onended = () => {
+          if (audioSourceRef.current === source) {
+            audioSourceRef.current = null;
+            audioSpeakingRef.current = false;
+            analyserRef.current = null;
+            analyserDataRef.current = null;
+          }
+        };
+
+        audioSourceRef.current = source;
+        analyserRef.current = analyser;
+        analyserDataRef.current = data;
+        audioSpeakingRef.current = true;
+        source.start(0);
+      } catch (error) {
+        audioSpeakingRef.current = false;
+        console.warn("[VrmViewer] audio TTS gagal diputar", error);
+      }
+    };
+
+    window.addEventListener("nara:unlock-audio", onUnlockAudio);
+    window.addEventListener("nara:audio", onAudio);
     // Node mount dicapture di awal effect agar cleanup tidak membaca
     // mountRef.current yang bisa sudah berubah (StrictMode remount).
     const effectMount = mountRef.current;
@@ -288,12 +359,16 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
           vrm.scene.position.x = baseX + offX + Math.sin(t * 0.4) * 0.008;
           vrm.scene.position.z = baseZ;
           vrm.scene.rotation.y = MathUtils.degToRad(0);
+          const isSpeakingNow = speakingRef.current || audioSpeakingRef.current;
+
           if (vrm.humanoid) {
             const chest = vrm.humanoid.getNormalizedBoneNode("chest");
-            if (chest) chest.rotation.x = Math.sin(t * 1.4) * 0.03;
+            if (chest) chest.rotation.x = isSpeakingNow
+              ? Math.sin(t * 1.8) * 0.035
+              : Math.sin(t * 1.4) * 0.03;
             const head = vrm.humanoid.getNormalizedBoneNode("head");
             if (head) {
-              head.rotation.x = speakingRef.current
+              head.rotation.x = isSpeakingNow
                 ? Math.sin(t * 6) * 0.06
                 : Math.sin(t * 0.8) * 0.03;
               head.rotation.y = Math.sin(t * 0.5) * 0.08;
@@ -338,10 +413,26 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
             if (blinkValue !== null) {
               vrm.expressionManager.setValue("blink", blinkValue);
             }
-            if (speakingRef.current) {
+            let mouthOpen = 0;
+            if (audioSpeakingRef.current && analyserRef.current && analyserDataRef.current) {
+              const analyser = analyserRef.current;
+              const data = analyserDataRef.current;
+              analyser.getByteTimeDomainData(data);
+              let sum = 0;
+              for (let i = 0; i < data.length; i += 1) {
+                const sample = (data[i] - 128) / 128;
+                sum += sample * sample;
+              }
+              const rms = Math.sqrt(sum / data.length);
+              mouthOpen = Math.min(1, rms * 6);
+            }
+
+            if (isSpeakingNow) {
+              const fallback =
+                0.08 + Math.abs(Math.sin(t * 7)) * 0.12;
               vrm.expressionManager.setValue(
                 "aa",
-                0.35 + Math.abs(Math.sin(t * 7)) * 0.4
+                Math.max(mouthOpen, fallback)
               );
             } else {
               vrm.expressionManager.setValue("aa", 0);
@@ -382,6 +473,20 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
       cancelAnimationFrame(raf);
       if (onVisibility) document.removeEventListener("visibilitychange", onVisibility);
       if (onResize) window.removeEventListener("resize", onResize);
+      window.removeEventListener("nara:unlock-audio", onUnlockAudio);
+      window.removeEventListener("nara:audio", onAudio);
+      try {
+        audioSourceRef.current?.stop();
+      } catch {
+        /* audio mungkin sudah selesai */
+      }
+      audioSourceRef.current?.disconnect();
+      audioSourceRef.current = null;
+      analyserRef.current = null;
+      analyserDataRef.current = null;
+      audioSpeakingRef.current = false;
+      void audioContextRef.current?.close().catch(() => undefined);
+      audioContextRef.current = null;
       ro?.disconnect();
       // Batalkan unduhan model besar yang masih berjalan (satu-satunya
       // cara resmi: LoadingManager.abort → FileLoader memakai signal-nya).
