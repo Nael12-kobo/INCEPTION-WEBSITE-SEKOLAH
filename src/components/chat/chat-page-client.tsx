@@ -89,7 +89,7 @@ export function ChatPageClient() {
             Dibaca VrmViewer via ref — ganti breakpoint tanpa reload model. */}
         <VrmViewer
           speaking={isTyping}
-          framing={{ offsetY: isDesktop ? -0.4 : 0.05 , zoomOffset: -3}}
+          framing={{ offsetY: isDesktop ? -0.4 : -0.45 , zoomOffset: -3}}
         />
       </div>
 

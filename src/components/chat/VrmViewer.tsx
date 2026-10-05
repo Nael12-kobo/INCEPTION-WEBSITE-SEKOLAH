@@ -358,9 +358,10 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden", className)}>
-      <div ref={mountRef} className="absolute inset-0" />
       {/* Latar dekoratif */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,rgb(186_230_253/0.5),transparent_70%),radial-gradient(50%_40%_at_70%_80%,rgb(199_210_254/0.45),transparent_70%)]" />
+      <div ref={mountRef} className="absolute inset-0" />
+      
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center">
           <div className="flex h-24 w-24 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-700 text-white shadow-2xl">
