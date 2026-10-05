@@ -244,7 +244,7 @@ function DesktopHeader({
         <div>
           <p className="text-sm font-semibold text-slate-900">Asisten Sekolah</p>
           <p className="text-xs text-slate-500">
-            Online • Gemini 2.5 Flash-Lite
+            Online • Gemini 3.5 Flash-Lite
           </p>
         </div>
       </div>
