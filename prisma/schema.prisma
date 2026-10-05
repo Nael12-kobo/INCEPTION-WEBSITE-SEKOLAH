@@ -23,6 +23,7 @@ model User {
   sessions      Session[]
   ppdbRegistration PpdbRegistration?
   auditLogs     AuditLog[]
+  chatConversations ChatConversation[]
 }
 
 model Account {
@@ -84,6 +85,23 @@ model AuditLog {
   @@index([action])
   @@index([actorId])
   @@map("audit_logs")
+}
+
+// Histori chat AI. Satu baris = satu conversation milik user login;
+// messages disimpan sebagai JSON [{role, content, createdAt}].
+// Akun guest tidak disimpan (hanya localStorage di client).
+model ChatConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("Percakapan baru")
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@map("chat_conversations")
 }
 
 // Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;

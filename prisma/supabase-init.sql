@@ -129,3 +129,24 @@ ALTER TABLE "Account" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Session" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "VerificationToken" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "ppdb_registrations" ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Histori chat AI (satu baris = satu conversation, messages = JSON)
+-- Guest tidak disimpan; hanya user login.
+-- ============================================================
+CREATE TABLE "chat_conversations" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "title" TEXT NOT NULL DEFAULT 'Percakapan baru',
+    "messages" JSONB NOT NULL DEFAULT '[]',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "chat_conversations_pkey" PRIMARY KEY ("id")
+);
+
+CREATE INDEX "chat_conversations_userId_updatedAt_idx" ON "chat_conversations"("userId", "updatedAt");
+
+ALTER TABLE "chat_conversations" ADD CONSTRAINT "chat_conversations_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "chat_conversations" ENABLE ROW LEVEL SECURITY;

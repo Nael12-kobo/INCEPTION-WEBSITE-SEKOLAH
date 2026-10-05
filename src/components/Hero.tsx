@@ -222,6 +222,7 @@ export function Hero() {
               Lulusan terserap
             </p>
           </div>
+          \
         </div>
       </div>
 
