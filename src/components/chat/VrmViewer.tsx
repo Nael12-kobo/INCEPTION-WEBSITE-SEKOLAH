@@ -59,7 +59,16 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     framingRef.current = framing;
   }, [framing]);
 
-  const url = src || process.env.NEXT_PUBLIC_VRM_URL || "/models/character.vrm";
+  /**
+   * Versi cache model. Ganti angka ini (atau set NEXT_PUBLIC_VRM_VERSION)
+   * setiap file .vrm diganti — menambah query `?v=` membuat browser
+   * mengabaikan cache lama (header immutable 1 tahun di next.config.ts).
+   */
+  const cacheVersion = process.env.NEXT_PUBLIC_VRM_VERSION || "2";
+  const baseUrl =
+    src || process.env.NEXT_PUBLIC_VRM_URL || "/models/character.vrm";
+  const url =
+    baseUrl + (baseUrl.includes("?") ? "&" : "?") + `v=${cacheVersion}`;
 
   useEffect(() => {
     let cancelled = false;
