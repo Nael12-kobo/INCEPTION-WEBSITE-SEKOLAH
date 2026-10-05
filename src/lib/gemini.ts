@@ -1,3 +1,5 @@
+import { GoogleGenAI } from "@google/genai";
+
 export interface GeminiContent {
   role: "user" | "model";
   parts: { text: string }[];
@@ -22,38 +24,30 @@ export async function askGemini(
   messages: { role: "user" | "assistant"; content: string }[]
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY belum diisi di .env");
   }
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: buildGeminiContents(messages.slice(-20)),
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 512,
-        },
-      }),
-    }
-  );
+  const ai = new GoogleGenAI({ apiKey });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Gemini error ${res.status}: ${text.slice(0, 300)}`);
+  let reply: string;
+  try {
+    const res = await ai.models.generateContent({
+      model,
+      contents: buildGeminiContents(messages.slice(-20)),
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0.7,
+        maxOutputTokens: 512,
+      },
+    });
+    reply = (res.text ?? "").trim();
+  } catch (e) {
+    const status = (e as { status?: number })?.status;
+    const msg = e instanceof Error ? e.message : "unknown error";
+    throw new Error(`Gemini error${status ? ` ${status}` : ""}: ${msg.slice(0, 300)}`);
   }
-
-  const data = await res.json();
-  const reply: string | undefined =
-    data?.candidates?.[0]?.content?.parts
-      ?.map((p: { text?: string }) => p?.text ?? "")
-      .join("")
-      .trim();
   if (!reply) throw new Error("Gemini mengembalikan respons kosong.");
   return reply;
 }

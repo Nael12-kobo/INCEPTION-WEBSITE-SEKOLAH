@@ -66,7 +66,6 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     const isCancelled = () => cancelled;
     let renderer: import("three").WebGLRenderer | null = null;
     let raf = 0;
-    let blinkTimeout = 0;
     let onVisibility: (() => void) | null = null;
     let onResize: (() => void) | null = null;
     let ro: ResizeObserver | null = null;
@@ -235,7 +234,19 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
         }
 
         const clock = new THREE.Clock();
-        const blink = { t: 0, next: 2 + Math.random() * 3 };
+        // Kedip dengan tweening: idle → closing → hold → opening.
+        // Durasi fase (detik): tutup cepat, tahan singkat, buka natural.
+        const BLINK_CLOSE = 0.09;
+        const BLINK_HOLD = 0.05;
+        const BLINK_OPEN = 0.16;
+        const easeInQuad = (x: number) => x * x;
+        const easeOutQuad = (x: number) => 1 - (1 - x) * (1 - x);
+        const blink = {
+          t: 0,
+          next: 2 + Math.random() * 3,
+          phase: "idle" as "idle" | "closing" | "hold" | "opening",
+          phaseT: 0,
+        };
         let paused = document.hidden;
 
         onVisibility = () => {
@@ -278,18 +289,44 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
               head.rotation.y = Math.sin(t * 0.5) * 0.08;
             }
           }
-          // Blink
-          blink.t += dt;
+          // Blink dengan tweening — nilai 0→1→0 dihaluskan per-frame
+          // (tanpa setTimeout), sinkron dengan render loop.
           if (vrm.expressionManager) {
-            if (blink.t > blink.next) {
-              blink.t = 0;
-              blink.next = 2 + Math.random() * 3.5;
-              vrm.expressionManager.setValue("blink", 1);
-              window.clearTimeout(blinkTimeout);
-              blinkTimeout = window.setTimeout(
-                () => vrm.expressionManager?.setValue("blink", 0),
-                140
-              );
+            let blinkValue: number | null = null;
+            if (blink.phase === "idle") {
+              blink.t += dt;
+              if (blink.t > blink.next) {
+                blink.t = 0;
+                blink.next = 2 + Math.random() * 3.5;
+                blink.phase = "closing";
+                blink.phaseT = 0;
+              }
+            } else {
+              blink.phaseT += dt;
+              if (blink.phase === "closing") {
+                const p = Math.min(blink.phaseT / BLINK_CLOSE, 1);
+                blinkValue = easeInQuad(p);
+                if (p >= 1) {
+                  blink.phase = "hold";
+                  blink.phaseT = 0;
+                }
+              } else if (blink.phase === "hold") {
+                blinkValue = 1;
+                if (blink.phaseT >= BLINK_HOLD) {
+                  blink.phase = "opening";
+                  blink.phaseT = 0;
+                }
+              } else {
+                const p = Math.min(blink.phaseT / BLINK_OPEN, 1);
+                blinkValue = 1 - easeOutQuad(p);
+                if (p >= 1) {
+                  blink.phase = "idle";
+                  blinkValue = 0;
+                }
+              }
+            }
+            if (blinkValue !== null) {
+              vrm.expressionManager.setValue("blink", blinkValue);
             }
             if (speakingRef.current) {
               vrm.expressionManager.setValue(
@@ -333,7 +370,6 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
-      window.clearTimeout(blinkTimeout);
       if (onVisibility) document.removeEventListener("visibilitychange", onVisibility);
       if (onResize) window.removeEventListener("resize", onResize);
       ro?.disconnect();

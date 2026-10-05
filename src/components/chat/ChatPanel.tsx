@@ -129,7 +129,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
         </Button>
       </div>
       <p className="mt-2 text-center text-[10px] text-slate-500">
-        Powered by Gemini 2.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
+        Powered by Gemini 3.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
       </p>
     </div>
   );

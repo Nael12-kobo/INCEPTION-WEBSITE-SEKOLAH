@@ -112,7 +112,7 @@ export function ChatPageClient() {
           </p>
           <p className="mt-1 text-xs leading-relaxed text-slate-600">
             Tanya soal jurusan, fasilitas, atau PPDB — jawaban memakai Gemini
-            2.5 Flash-Lite. Riwayat tersimpan otomatis bila kamu login.
+            3.5 Flash-Lite. Riwayat tersimpan otomatis bila kamu login.
           </p>
         </div>
 
@@ -244,7 +244,7 @@ function DesktopHeader({
         <div>
           <p className="text-sm font-semibold text-slate-900">Asisten Sekolah</p>
           <p className="text-xs text-slate-500">
-            Online • Gemini 2.5 Flash-Lite
+            Online • Gemini 3.5 Flash-Lite
           </p>
         </div>
       </div>

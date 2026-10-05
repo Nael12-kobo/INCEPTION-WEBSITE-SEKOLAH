@@ -78,7 +78,7 @@ function ChatBubbleInner() {
                     Asisten Sekolah
                   </DialogTitle>
                   <p className="text-xs text-blue-100">
-                    Online • AI Gemini 2.5 Flash-Lite
+                    Online • AI Gemini 3.5 Flash-Lite
                   </p>
                 </div>
               </div>
