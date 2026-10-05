@@ -6,8 +6,25 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Model VRM besar (100MB+) — cache immutable agar kunjungan
-        // berikutnya instan dari cache browser, tanpa mengubah file.
+        // Model VRM — cache immutable agar kunjungan berikutnya instan
+        // dari cache browser, tanpa mengubah file.
+        //
+        // Content-Type wajib model/gltf-binary: kalau dibiarkan
+        // application/octet-stream, Chrome di HP menawarkan file ini
+        // untuk DIUNDUH (bukan ditampilkan) saat URL-nya dibuka.
+        source: "/models/:path*.vrm",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "model/gltf-binary",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/models/:path*",
         headers: [
           {

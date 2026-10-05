@@ -31,8 +31,9 @@ interface VrmViewerProps {
 /**
  * Viewer karakter VRM (three + @pixiv/three-vrm), VRM 1.0.
  * - src default dari NEXT_PUBLIC_VRM_URL (/models/character.vrm).
- * - File besar (mis. ~150MB): tampilkan progress unduhan % + MB,
- *   tanpa timeout agresif. File TIDAK diubah/dikompres.
+ * - File ±17.5MB (aslinya 149MB, dipangkas oleh scripts/optimize-vrm.mjs):
+ *   tampilkan progress unduhan % + MB, tanpa timeout agresif.
+ * - Cache di-bust via query `?v=` (lihat cacheVersion di bawah).
  * - Auto-frame bounding box agar karakter selalu masuk frame.
  * - Error asli ditampilkan (bukan pesan generik) agar mudah diagnosis.
  * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden.
@@ -64,7 +65,7 @@ export function VrmViewer({ src, speaking = false, framing, className }: VrmView
    * setiap file .vrm diganti — menambah query `?v=` membuat browser
    * mengabaikan cache lama (header immutable 1 tahun di next.config.ts).
    */
-  const cacheVersion = process.env.NEXT_PUBLIC_VRM_VERSION || "2";
+  const cacheVersion = process.env.NEXT_PUBLIC_VRM_VERSION || "3";
   const baseUrl =
     src || process.env.NEXT_PUBLIC_VRM_URL || "/models/character.vrm";
   const url =
