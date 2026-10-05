@@ -40,6 +40,10 @@ export async function askGemini(
         systemInstruction: SYSTEM_PROMPT,
         temperature: 0.7,
         maxOutputTokens: 512,
+        // Tanpa timeout, request yang menggantung membuat `isTyping` di
+        // client terkunci (tombol kirim & input disabled) sampai user
+        // reload halaman.
+        httpOptions: { timeout: 30_000 },
       },
     });
     reply = (res.text ?? "").trim();

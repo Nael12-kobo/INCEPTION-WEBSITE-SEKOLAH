@@ -29,7 +29,19 @@ export function useTiltHover(
     if (window.matchMedia("(hover: none)").matches) return;
 
     const cleanups: Array<() => void> = [];
-    const live: Array<ReturnType<typeof animate>> = [];
+    /**
+     * Satu animasi TERAKHIR per elemen.
+     *
+     * Versi lama menumpuk setiap hasil `animate()` ke array — padahal
+     * `mousemove` bisa 60fps, jadi ratusan ribu objek animasi terbawa
+     * sampai unmount (bocor memori + bikin GC sering jalan). `composition:
+     * "replace"` membuat tween lama otomatis dibatalkan tween baru, jadi
+     * menyimpan yang terakhir saja sudah cukup untuk di-revert saat cleanup.
+     */
+    const live = new Map<HTMLElement, ReturnType<typeof animate>>();
+    const track = (el: HTMLElement, config: Parameters<typeof animate>[1]) => {
+      live.set(el, animate(el, config));
+    };
 
     // Isolasi CSS transition (.glass-hover: transform 250ms) selama hover.
     // Tanpa ini tiap frame anime.js di-transition browser -> lag + snap,
@@ -57,31 +69,27 @@ export function useTiltHover(
         const py = (e.clientY - r.top) / Math.max(1, r.height) - 0.5;
         el.style.setProperty("--mx", `${((px + 0.5) * 100).toFixed(1)}%`);
         el.style.setProperty("--my", `${((py + 0.5) * 100).toFixed(1)}%`);
-        live.push(
-          animate(el, {
-            rotateY: px * maxTilt * 2,
-            rotateX: -py * maxTilt * 2,
-            scale,
-            duration: 400,
-            ease: "outCubic",
-            composition: "replace",
-          }),
-        );
+        track(el, {
+          rotateY: px * maxTilt * 2,
+          rotateX: -py * maxTilt * 2,
+          scale,
+          duration: 400,
+          ease: "outCubic",
+          composition: "replace",
+        });
       };
       const onLeave = () => {
         if (isRevealing(el)) return;
         isolate(el);
-        live.push(
-          animate(el, {
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            duration: 800,
-            ease: "outElastic(1, 0.55)",
-            composition: "replace",
-            onComplete: () => release(el),
-          }),
-        );
+        track(el, {
+          rotateX: 0,
+          rotateY: 0,
+          scale: 1,
+          duration: 800,
+          ease: "outElastic(1, 0.55)",
+          composition: "replace",
+          onComplete: () => release(el),
+        });
       };
       el.addEventListener("mousemove", onMove);
       el.addEventListener("mouseleave", onLeave);
@@ -101,31 +109,27 @@ export function useTiltHover(
         const r = el.getBoundingClientRect();
         const dx = e.clientX - (r.left + r.width / 2);
         const dy = e.clientY - (r.top + r.height / 2);
-        live.push(
-          animate(el, {
-            translateX: (dx / Math.max(1, r.width)) * magneticStrength * 2,
-            translateY: (dy / Math.max(1, r.height)) * magneticStrength * 2,
-            scale: 1.05,
-            duration: 500,
-            ease: "outCubic",
-            composition: "replace",
-          }),
-        );
+        track(el, {
+          translateX: (dx / Math.max(1, r.width)) * magneticStrength * 2,
+          translateY: (dy / Math.max(1, r.height)) * magneticStrength * 2,
+          scale: 1.05,
+          duration: 500,
+          ease: "outCubic",
+          composition: "replace",
+        });
       };
       const onLeave = () => {
         if (isRevealing(el)) return;
         isolate(el);
-        live.push(
-          animate(el, {
-            translateX: 0,
-            translateY: 0,
-            scale: 1,
-            duration: 700,
-            ease: "outElastic(1, 0.5)",
-            composition: "replace",
-            onComplete: () => release(el),
-          }),
-        );
+        track(el, {
+          translateX: 0,
+          translateY: 0,
+          scale: 1,
+          duration: 700,
+          ease: "outElastic(1, 0.5)",
+          composition: "replace",
+          onComplete: () => release(el),
+        });
       };
       el.addEventListener("mousemove", onMove);
       el.addEventListener("mouseleave", onLeave);
@@ -137,12 +141,18 @@ export function useTiltHover(
 
     return () => {
       cleanups.forEach((fn) => fn());
+      live.forEach((animation, el) => {
+        animation.revert();
+        // Pastikan tidak ada transform inline yang tertinggal di elemen
+        // yang mungkin masih terpasang (mis. re-mount / StrictMode).
+        el.style.removeProperty("transform");
+      });
+      live.clear();
       for (const el of root.querySelectorAll<HTMLElement>(
         "[data-tilt], [data-magnetic]",
       )) {
         release(el);
       }
-      live.forEach((a) => a.revert());
     };
   }, [rootRef, maxTilt, scale, magneticStrength]);
 }

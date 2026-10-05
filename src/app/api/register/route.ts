@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/lib/role-utils";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
+import { EMAIL_RE } from "@/lib/ppdb";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * Endpoint pendaftaran akun — tersambung ke PostgreSQL via Prisma.
@@ -33,6 +35,40 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { message: "name, email, dan password wajib diisi." },
       { status: 400 }
+    );
+  }
+
+  // Validasi konsisten dengan reset-password & account (password 8–72).
+  // Sebelumnya register menerima password 1 karakter dan email apa pun,
+  // padahal endpoint reset/reset-password mensyaratkan >= 8.
+  if (!EMAIL_RE.test(trimmedEmail)) {
+    return NextResponse.json(
+      { message: "Format email tidak valid." },
+      { status: 400 }
+    );
+  }
+  if (password.length < 8 || password.length > 72) {
+    return NextResponse.json(
+      { message: "Password harus 8–72 karakter." },
+      { status: 400 }
+    );
+  }
+  if (trimmedName.length < 2 || trimmedName.length > 100) {
+    return NextResponse.json(
+      { message: "Nama harus 2–100 karakter." },
+      { status: 400 }
+    );
+  }
+
+  // Rate limit per IP — mencegah pembuatan akun massal.
+  const rl = rateLimit(`register:${clientIp(request)}`, {
+    limit: 5,
+    windowMs: 3_600_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { message: "Terlalu banyak percobaan pendaftaran. Coba lagi nanti." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
     );
   }
 

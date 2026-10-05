@@ -42,6 +42,38 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function unlockSpeech(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("nara:unlock-audio"));
+}
+
+async function speakReply(text: string): Promise<void> {
+  if (typeof window === "undefined" || !text.trim()) return;
+
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      console.warn("[chat] TTS tidak tersedia:", data?.message || res.status);
+      return;
+    }
+
+    const buffer = await res.arrayBuffer();
+    window.dispatchEvent(
+      new CustomEvent("nara:audio", {
+        detail: { buffer },
+      })
+    );
+  } catch (error) {
+    console.warn("[chat] TTS gagal:", error);
+  }
+}
+
 const GREETING: ChatMessage = {
   id: "greeting",
   role: "assistant",
@@ -69,8 +101,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const hydrated = useRef(false);
+  /**
+   * Nomor giliran. Dinaikkan tiap kali user memulai chat baru ATAU
+   * mengganti obrolan (clearChat / loadConversation). Balasan dari request
+   * lama yang datang belakangan lalu dibuang, supaya tidak menempel ke
+   * obrolan yang sudah diganti.
+   */
+  const seqRef = useRef(0);
+  /** Request chat yang sedang berjalan — dibatalkan saat ganti obrolan. */
+  const abortRef = useRef<AbortController | null>(null);
   const messagesRef = useRef(messages);
-  messagesRef.current = messages;
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     setMessages(loadDraft());
@@ -114,6 +158,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const next = (prev: ChatMessage[]) => [...prev, userMsg];
       setMessages(next);
       setIsTyping(true);
+      unlockSpeech();
+
+      const seq = ++seqRef.current;
+      abortRef.current?.abort();
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+      // Batas tunggu: tanpa ini fetch yang menggantung membuat `isTyping`
+      // terkunci selamanya (tombol kirim & input tetap disabled).
+      const timer = setTimeout(() => ctrl.abort(), 30_000);
+
       try {
         const history = [...messagesRef.current, userMsg].map((m) => ({
           role: m.role,
@@ -126,35 +180,51 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             messages: history.slice(-20),
             conversationId,
           }),
+          signal: ctrl.signal,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data?.message || "Gagal menghubungi AI.");
+
+        // Obrolan sudah diganti (clearChat / pilih riwayat lain) selagi
+        // request berjalan → jangan tempel balasannya ke obrolan baru.
+        if (seqRef.current !== seq) return;
+
+        const reply =
+          typeof data.reply === "string" && data.reply.trim()
+            ? data.reply
+            : "Maaf, saya tidak bisa menjawab saat ini.";
         setMessages((prev) => [
           ...prev,
           {
             id: uid(),
             role: "assistant",
-            text: data.reply ?? "Maaf, saya tidak bisa menjawab saat ini.",
+            text: reply,
             timestamp: nowTime(),
           },
         ]);
+        void speakReply(reply);
         if (typeof data.conversationId === "string") {
           setConversationId(data.conversationId);
         }
       } catch (error) {
+        if (seqRef.current !== seq) return;
+        const aborted = error instanceof Error && error.name === "AbortError";
         setMessages((prev) => [
           ...prev,
           {
             id: uid(),
             role: "assistant",
-            text:
-              error instanceof Error
+            text: aborted
+              ? "Waktu tunggu habis. Coba kirim lagi ya."
+              : error instanceof Error
                 ? error.message
                 : "Maaf, terjadi kesalahan. Coba lagi ya.",
             timestamp: nowTime(),
           },
         ]);
       } finally {
+        clearTimeout(timer);
+        if (abortRef.current === ctrl) abortRef.current = null;
         setIsTyping(false);
       }
     },
@@ -162,11 +232,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   );
 
   const clearChat = useCallback(() => {
+    // Batalkan request yang masih jalan supaya balasannya tidak jatuh ke
+    // obrolan baru yang baru saja dibuat.
+    seqRef.current++;
+    abortRef.current?.abort();
+    abortRef.current = null;
     setMessages([{ ...GREETING, timestamp: nowTime() }]);
     setConversationId(null);
+    setIsTyping(false);
   }, []);
 
   const loadConversation = useCallback(async (id: string) => {
+    seqRef.current++;
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsTyping(false);
+
     const res = await fetch("/api/chat/history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

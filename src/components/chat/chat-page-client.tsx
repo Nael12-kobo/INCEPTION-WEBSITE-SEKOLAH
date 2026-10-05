@@ -81,6 +81,31 @@ export function ChatPageClient() {
     }
   };
 
+  const deleteHistory = useCallback(
+    async (id: string) => {
+      // Hapus optimis dari daftar; kalau ternyata server menolak, muat ulang.
+      const wasActive = id === conversationId;
+      setHistory((prev) => prev.filter((it) => it.id !== id));
+      if (wasActive) {
+        clearChat();
+        setShowHistory(false);
+      }
+      try {
+        const res = await fetch("/api/chat/history", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+        if (!res.ok && res.status !== 404) {
+          await fetchHistory();
+        }
+      } catch {
+        await fetchHistory();
+      }
+    },
+    [conversationId, clearChat, fetchHistory]
+  );
+
   return (
     <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-sky-100 via-slate-50 to-indigo-100 lg:h-[calc(100dvh-0px)]">
       {/* ===== SATU VRM permanen — tidak pernah unmount saat pindah breakpoint ===== */}
@@ -135,6 +160,7 @@ export function ChatPageClient() {
               loading={historyLoading}
               activeId={conversationId}
               onPick={openHistory}
+              onDelete={deleteHistory}
               onClose={() => setShowHistory(false)}
             />
           )}
@@ -223,6 +249,7 @@ export function ChatPageClient() {
             loading={historyLoading}
             activeId={conversationId}
             onPick={openHistory}
+            onDelete={deleteHistory}
             onClose={() => setShowHistory(false)}
             floating
           />
@@ -270,6 +297,7 @@ function HistoryDrawer({
   loading,
   activeId,
   onPick,
+  onDelete,
   onClose,
   floating = false,
 }: {
@@ -277,6 +305,7 @@ function HistoryDrawer({
   loading: boolean;
   activeId: string | null;
   onPick: (id: string) => void;
+  onDelete: (id: string) => void;
   onClose: () => void;
   floating?: boolean;
 }) {
@@ -294,9 +323,6 @@ function HistoryDrawer({
           Riwayat percakapan (akun login)
         </p>
         <div className="flex items-center gap-1">
-          <span className="flex items-center gap-1 text-[10px] text-slate-400">
-            <Trash2 className="h-3 w-3" /> Guest tidak disimpan
-          </span>
           <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Tutup riwayat">
             <X className="h-4 w-4" />
           </Button>
@@ -311,19 +337,33 @@ function HistoryDrawer({
           </p>
         )}
         {items.map((it) => (
-          <button
+          <div
             key={it.id}
-            onClick={() => onPick(it.id)}
             className={cn(
-              "w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-blue-50",
+              "flex items-center gap-1 rounded-xl pr-1 transition-colors hover:bg-blue-50",
               activeId === it.id && "bg-blue-50 ring-1 ring-blue-200"
             )}
           >
-            <p className="truncate text-xs font-medium text-slate-800">{it.title}</p>
-            <p className="text-[10px] text-slate-400">
-              {new Date(it.updatedAt).toLocaleString("id-ID")}
-            </p>
-          </button>
+            <button
+              type="button"
+              onClick={() => onPick(it.id)}
+              className="min-w-0 flex-1 px-3 py-2.5 text-left"
+            >
+              <p className="truncate text-xs font-medium text-slate-800">{it.title}</p>
+              <p className="text-[10px] text-slate-400">
+                {new Date(it.updatedAt).toLocaleString("id-ID")}
+              </p>
+            </button>
+            {/* 44×44 agar nyaman di sentuh (belum sempat di-merge sebelumnya) */}
+            <button
+              type="button"
+              onClick={() => onDelete(it.id)}
+              aria-label={`Hapus riwayat ${it.title}`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         ))}
       </div>
     </div>

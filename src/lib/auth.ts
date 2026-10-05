@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import type { Provider } from "next-auth/providers";
 import { prisma } from "@/lib/prisma";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
+import { clientIp, rateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 /**
  * Konfigurasi Auth.js (NextAuth v5) dengan Prisma + PostgreSQL.
@@ -26,12 +27,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email" },
         password: { label: "Password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email =
           typeof credentials?.email === "string" ? credentials.email : "";
         const password =
           typeof credentials?.password === "string" ? credentials.password : "";
         if (!email || !password) return null;
+
+        // Guard brute-force: maksimal 5 percobaan per 5 menit untuk
+        // kombinasi email+IP. Dihitung SEBELUM bcrypt.compare supaya
+        // percobaan berlebih juga tidak membuang CPU.
+        const rlKey = `login:${email.trim().toLowerCase()}|${clientIp(request)}`;
+        const rl = rateLimit(rlKey, { limit: 5, windowMs: 5 * 60_000 });
+        if (!rl.ok) {
+          await logAudit({
+            actorEmail: email,
+            action: AUDIT_ACTIONS.LOGIN_FAILED,
+            targetType: "AUTH",
+            detail: `Login ditolak: terlalu banyak percobaan untuk ${email}`,
+          });
+          return null;
+        }
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.passwordHash) {
@@ -64,6 +80,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           targetId: user.id,
           detail: `Login berhasil via email & kata sandi`,
         });
+
+        // Login berhasil → bersihkan hitungan agar user sah tidak ikut
+        // terkunci oleh kegagalannya sendiri sebelumnya.
+        resetRateLimit(rlKey);
 
         return {
           id: user.id,

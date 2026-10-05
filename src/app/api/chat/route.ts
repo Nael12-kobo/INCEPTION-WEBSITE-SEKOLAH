@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { askGemini } from "@/lib/gemini";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 interface IncomingMessage {
   role: "user" | "assistant";
@@ -71,6 +72,36 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { message: "Kirim minimal satu pesan user." },
       { status: 400 }
+    );
+  }
+
+  // Batasi sebelum memanggil Gemini — endpoint ini terbuka untuk guest,
+  // tanpa ini satu script bisa menghabiskan seluruh kuota GEMINI_API_KEY.
+  // Dihitung per IP; lihat catatan batasan serverless di lib/rate-limit.
+  const ip = clientIp(request);
+  const perMinute = rateLimit(`chat:min:${ip}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  const perHour = rateLimit(`chat:hour:${ip}`, {
+    limit: 150,
+    windowMs: 3_600_000,
+  });
+  if (!perMinute.ok || !perHour.ok) {
+    const retryAfter = Math.max(
+      perMinute.ok ? perHour.retryAfterSec : perMinute.retryAfterSec,
+      1
+    );
+    return NextResponse.json(
+      {
+        message:
+          "Terlalu banyak permintaan. Tunggu sebentar lalu kirim lagi ya.",
+        retryAfterSec: retryAfter,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      }
     );
   }
 

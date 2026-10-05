@@ -89,7 +89,7 @@ export function LoginForm() {
 
       /**
        * Titik integrasi credentials: authorize() di src/lib/auth.ts
-       * masih placeholder (selalu null) sampai backend user dihubungkan.
+       * mengecek bcrypt + rate limit brute-force.
        */
       const result = await signIn("credentials", {
         email: email.trim(),
@@ -103,7 +103,21 @@ export function LoginForm() {
       }
 
       setSucceeded(true);
-      router.push("/dashboard");
+      /**
+       * Hormati callbackUrl (20+ tempat meng-redirect ke
+       * `/auth/login?callbackUrl=...`, mis. /admin, /ppdb, /dashboard).
+       * Dulu selalu dilempar ke /dashboard sehingga user yang mencoba
+       * buka /admin berakhir di dashboard.
+       *
+       * Hanya path relatif yang diterima supaya tidak jadi open redirect:
+       * tolak `//domain` dan `/\domain` (browser memperlakukan `\` = `/`).
+       */
+      const cb = new URLSearchParams(window.location.search).get("callbackUrl");
+      const safeCallback =
+        cb && cb.startsWith("/") && !cb.startsWith("//") && !cb.includes("\\")
+          ? cb
+          : null;
+      router.push(safeCallback ?? "/dashboard");
       router.refresh();
     } catch {
       setFormError(t("error.generic"));
