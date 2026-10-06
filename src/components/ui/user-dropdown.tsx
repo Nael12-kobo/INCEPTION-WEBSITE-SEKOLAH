@@ -161,8 +161,9 @@ export function UserDropdown({
         <div
           role="menu"
           className={cn(
-            "animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-72 origin-top-right overflow-hidden rounded-2xl border border-sky-100 bg-white py-1.5 shadow-xl shadow-sky-100/40",
-            "left-0 sm:left-auto sm:right-0"
+            // Selalu right-anchored (tanpa left-0): left-0 membuat menu
+            // melebar ke kanan layar HP karena trigger berada di ujung kanan.
+            "animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-2xl border border-sky-100 bg-white py-1.5 shadow-xl shadow-sky-100/40"
           )}
         >
           <div className="space-y-2 border-b border-slate-100 bg-slate-50/60 px-4 py-3.5">

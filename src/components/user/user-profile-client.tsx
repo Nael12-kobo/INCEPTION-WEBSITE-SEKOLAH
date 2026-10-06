@@ -261,7 +261,8 @@ export function UserProfileClient({
                   <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                     {r.label}
                   </dt>
-                  <dd className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                  {/* break-words di HP supaya alamat/nilai panjang tidak terpotong. */}
+                  <dd className="mt-0.5 break-words text-sm font-semibold text-slate-800 sm:truncate">
                     {r.value}
                   </dd>
                 </div>
@@ -304,7 +305,8 @@ export function UserProfileClient({
                     <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                       {r.label}
                     </dt>
-                    <dd className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                    {/* break-words di HP supaya alamat/nilai panjang tidak terpotong. */}
+                    <dd className="mt-0.5 break-words text-sm font-semibold text-slate-800 sm:truncate">
                       {r.value}
                     </dd>
                   </div>

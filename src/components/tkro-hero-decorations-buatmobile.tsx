@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 
 // Gear definitions: size, position, rotation speed, tooth count
+// Mobile: gear dikecilkan dan di-bleed ke sudut supaya masih terbaca di
+// layar 360px (ukuran lama 250/450/150px lebih lebar dari viewport).
 const gears: {
   size: number;
   top: string;
@@ -13,9 +15,9 @@ const gears: {
   direction: "normal" | "reverse";
   teeth: number;
 }[] = [
-  { size: 250, top: "2%",  left: "70%",  duration: 15, delay: 0,    direction: "normal",  teeth: 16 },
-  { size: 450, top: "40%",  right: "50%",  duration: 20, delay: 0,    direction: "normal",  teeth: 12 },
-  { size: 150, top: "0%",  right: "75%",  duration: 15, delay: 0,    direction: "normal",  teeth: 15 },
+  { size: 200, top: "-6%",  left: "-10%",  duration: 15, delay: 0,    direction: "normal",  teeth: 16 },
+  { size: 260, top: "46%",  right: "-12%", duration: 20, delay: 0,    direction: "normal",  teeth: 12 },
+  { size: 130, top: "4%",   right: "-6%",  duration: 15, delay: 0,    direction: "normal",  teeth: 15 },
 ];
 
 // Piston animations
@@ -97,7 +99,7 @@ function GearShape({ gear }: { gear: (typeof gears)[0] }) {
 
   return (
     <div
-      className="absolute lg:hidden opacity-[0.07]"
+      className="absolute md:hidden opacity-[0.07]"
       style={{
         ...pos,
         width: gear.size,
@@ -146,7 +148,7 @@ function Piston({ piston }: { piston: (typeof pistons)[0] }) {
 
   return (
     <div
-      className="absolute lg:hidden opacity-[0.08]"
+      className="absolute md:hidden opacity-[0.08]"
       style={{ ...pos }}
     >
       {/* Cylinder */}
@@ -188,7 +190,7 @@ function Bolt({ bolt }: { bolt: (typeof bolts)[0] }) {
 
   return (
     <div
-      className="absolute lg:hidden opacity-[0.1]"
+      className="absolute md:hidden opacity-[0.1]"
       style={{
         ...pos,
         width: bolt.size,
@@ -215,7 +217,7 @@ function TachometerArc({ arc }: { arc: (typeof tachometerArcs)[0] }) {
 
   return (
     <div
-      className="absolute lg:hidden opacity-[0.06]"
+      className="absolute md:hidden opacity-[0.06]"
       style={{ ...pos, width: arc.size, height: arc.size }}
     >
       <svg
@@ -305,7 +307,7 @@ export default function TKROHeroDecorations() {
   }, []);
 
   return (
-    <div className="absolute lg:hidden inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute md:hidden inset-0 overflow-hidden pointer-events-none">
       {/* Gears */}
       {gears.map((gear, i) => (
         <GearShape key={`gear-${i}`} gear={gear} />

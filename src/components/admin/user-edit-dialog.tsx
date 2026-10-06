@@ -75,8 +75,8 @@ function UserEditForm({
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
-        <div className="grid grid-cols-4 items-center gap-4">
-          <label htmlFor="name" className="text-right text-sm font-medium">
+        <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
+          <label htmlFor="name" className="text-left text-sm font-medium sm:text-right">
             Name
           </label>
           <Input
@@ -84,12 +84,12 @@ function UserEditForm({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="col-span-3"
+            className="sm:col-span-3"
             placeholder="User name"
           />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <label htmlFor="email" className="text-right text-sm font-medium">
+        <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
+          <label htmlFor="email" className="text-left text-sm font-medium sm:text-right">
             Email
           </label>
           <Input
@@ -97,12 +97,12 @@ function UserEditForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="col-span-3"
+            className="sm:col-span-3"
             placeholder="user@example.com"
           />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <label htmlFor="role" className="text-right text-sm font-medium">
+        <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
+          <label htmlFor="role" className="text-left text-sm font-medium sm:text-right">
             Role
           </label>
           <select
@@ -110,7 +110,7 @@ function UserEditForm({
             value={role}
             onChange={(e) => setRole(e.target.value)}
             disabled={!canEditRole}
-            className="col-span-3 flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            className="sm:col-span-3 flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
           >
             {(canEditRole ? accessibleRoles : [user.role]).map((r) => (
               <option key={r} value={r}>
@@ -120,11 +120,11 @@ function UserEditForm({
           </select>
         </div>
         {!canEditRole && (
-          <div className="col-span-4 text-sm text-slate-500">
+          <div className="sm:col-span-4 text-sm text-slate-500">
             Hanya Super Admin yang dapat mengubah role
           </div>
         )}
-        {error && <div className="col-span-4 text-sm text-rose-600">{error}</div>}
+        {error && <div className="sm:col-span-4 text-sm text-rose-600">{error}</div>}
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>

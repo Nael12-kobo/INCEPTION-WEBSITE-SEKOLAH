@@ -17,7 +17,7 @@ export function CtaPpdb() {
   useTiltHover(ref, { maxTilt: 5, scale: 1.015 });
   return (
     <section id="ppdb" ref={ref} className="bg-transparent">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div
           data-scrub-item
           data-tilt

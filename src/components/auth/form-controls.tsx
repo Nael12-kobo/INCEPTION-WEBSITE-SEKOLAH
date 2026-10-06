@@ -37,7 +37,8 @@ export const AuthInput = React.forwardRef<
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
           className={cn(
-            "h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400",
+            // text-base di HP mencegah auto-zoom iOS saat fokus (input <16px).
+            "h-11 w-full rounded-xl border bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 sm:text-sm",
             "shadow-sm shadow-sky-50 transition-[border-color,box-shadow] duration-200",
             "focus:outline-none focus:ring-4 focus:ring-sky-500/10",
             icon && "pl-10",
@@ -79,7 +80,7 @@ export const PasswordInput = React.forwardRef<
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
         aria-pressed={visible}
-        className="absolute right-2 top-[32px] flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-sky-50 hover:text-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+        className="absolute right-1.5 top-[30px] flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-sky-50 hover:text-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
       >
         {visible ? (
           <EyeOff className="h-4 w-4" aria-hidden />

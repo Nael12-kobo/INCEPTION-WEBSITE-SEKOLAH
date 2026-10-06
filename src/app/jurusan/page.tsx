@@ -76,7 +76,7 @@ export default function JurusanPage() {
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950">
       {/* Hero */}
       <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-16 md:py-20 text-center mt-20">
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Program Keahlian
           </h1>

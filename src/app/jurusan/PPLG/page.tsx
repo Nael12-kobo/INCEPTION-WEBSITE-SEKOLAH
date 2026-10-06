@@ -119,10 +119,10 @@ export default function PPLGPage() {
         <PPLGHeroDecorations />
         <PPLGHeroDecorationsMobile />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
           <Link
             href="/#jurusan"
-            className="inline-flex items-center gap-2 text-blue-200 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 py-2.5 min-h-11 text-blue-200 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="size-4" />
             Kembali ke Program Keahlian
@@ -145,7 +145,7 @@ export default function PPLGPage() {
                 mobile, dan gim berkualitas dunia.
               </p>
             </div>
-            <div className="flex-shrink-0 select-none drag-none">
+            <div className="flex-shrink-0 select-none">
               {/* Dulu `absolute left-240 top-80` (960px/320px) menimpa
                   `left-1/2 top-1/2` → ikon ter-clip `overflow-hidden`. */}
               <Image
@@ -330,11 +330,11 @@ export default function PPLGPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {mitra.map((m) => (
               <div
                 key={m.nama}
-                className="w-40 sm:w-44 h-24 bg-white rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-blue-300 transition-all duration-300 flex items-center justify-center px-4"
+                className="w-full h-24 bg-white rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-blue-300 transition-all duration-300 flex items-center justify-center px-4"
                 title={m.nama}
               >
                 {m.gambar ? (

@@ -184,7 +184,8 @@ function NotificationBell({
         variant="outline"
         size="icon-sm"
         aria-label={`Notifikasi (${activities.length} aktivitas terbaru)`}
-        className="relative"
+        // h-11: target sentuh nyaman di HP; kembali 32px (icon-sm) di ≥sm.
+        className="relative h-11 w-11 sm:h-8 sm:w-8"
         onClick={() => setOpen((o) => !o)}
       >
         <Bell className="h-4 w-4 text-slate-600" aria-hidden />
@@ -196,7 +197,9 @@ function NotificationBell({
       </Button>
 
       {open && (
-        <div className="animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        // max-w-[75vw]: bell tidak di pojok kanan header, jadi w-80 bisa keluar
+        // layar di HP 360px — batasi agar tepi kirinya tetap terlihat.
+        <div className="animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-80 max-w-[75vw] overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h4 className="font-h4 text-sm text-slate-900">Aktivitas Terbaru</h4>
             {isSuperAdmin && (
@@ -418,14 +421,17 @@ function AdminShellInner({
       </aside>
 
       <div className="flex min-h-dvh w-full min-w-0 flex-1 flex-col lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 backdrop-blur px-4 sm:px-6">
+        {/* top-[env(safe-area-inset-top)]: viewportFit=cover → header harus
+            turun di bawah status bar iPhone (env=0 di perangkat lain). */}
+        <header className="sticky top-[env(safe-area-inset-top)] z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 backdrop-blur px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon-sm"
-                  className="lg:hidden"
+                  // h-11: hamburger = kontrol utama di HP; 32px di ≥sm.
+                  className="h-11 w-11 sm:h-8 sm:w-8 lg:hidden"
                   aria-label="Buka menu"
                 >
                   <Menu className="h-4 w-4" />
@@ -449,23 +455,29 @@ function AdminShellInner({
               </SheetContent>
             </Sheet>
 
-            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-              <span className="text-slate-700 font-semibold">Admin</span>
-              <ChevronRight className="h-3 w-3 text-slate-400" />
-              <span className="text-slate-900 font-semibold">
+            {/* min-w-0 + truncate: label breadcrumb tak boleh mendorong header
+                melebihi 360px (keluar viewport / bikin scroll horizontal). */}
+            <div className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-500">
+              {/* Prefix "Admin ›" hanya di ≥sm — di HP hanya judul halaman
+                  yang ditampilkan agar baris header tetap muat di 360px. */}
+              <span className="hidden text-slate-700 font-semibold sm:inline">Admin</span>
+              <ChevronRight className="hidden h-3 w-3 text-slate-400 sm:block" />
+              <span className="truncate text-slate-900 font-semibold">
                 {breadcrumbSection}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="h-11 sm:h-8">
               <Link href="/">
                 <Home className="h-4 w-4" aria-hidden />
                 <span className="hidden sm:inline">Beranda</span>
               </Link>
             </Button>
-            <Button variant="outline" size="sm" asChild>
+            {/* Sembunyikan di <sm: header 360px muat hamburger + breadcrumb +
+                tombol lain tanpa overflow (label dashboard sudah ada di drawer). */}
+            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
               <Link href="/dashboard">
                 <LayoutDashboard className="h-4 w-4" aria-hidden />
                 <span className="hidden sm:inline">Dashboard User</span>

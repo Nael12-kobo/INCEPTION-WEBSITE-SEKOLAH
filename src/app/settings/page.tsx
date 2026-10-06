@@ -33,7 +33,7 @@ export default async function SettingsPage() {
     <div className="space-y-8">
       <div className="space-y-1">
         <h1 className="font-h1 text-slate-900">Pengaturan Akun</h1>
-        <p className="font-body text-slate-500">
+        <p className="font-body text-slate-500 break-words">
           Kelola profil dan keamanan akun {user.email}.
         </p>
       </div>

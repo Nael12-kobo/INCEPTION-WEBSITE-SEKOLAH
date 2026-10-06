@@ -94,7 +94,9 @@ export function Fasilitas() {
                 variant={active === t.id ? "default" : "outline"}
                 onClick={() => setActive(t.id)}
                 className={cn(
-                  "rounded-full",
+                  // Ukuran dasar dikecilkan supaya 2 pill per baris di 360px
+                  // (diukur pakai font Geist 600: text-[13px] masih 3 baris)
+                  "rounded-full px-3 text-[12px] sm:px-5 sm:text-sm",
                   active !== t.id && "glass-chip border-white/60 hover:border-sky-300",
                   active === t.id && "shadow-lg shadow-sky-300/50",
                 )}

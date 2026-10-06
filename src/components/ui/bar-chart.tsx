@@ -56,11 +56,17 @@ export function BarChart({
 
   return (
     <div
-      className={cn("relative w-full select-none", className)}
+      className={cn(
+        // overflow-x-auto + min-w-[560px]: teks SVG memakai
+        // preserveAspectRatio="none", jadi di layar <560px label sumbu akan
+        // terkompres horizontal. Desktop ≥560px tidak pernah scroll (identik).
+        "relative w-full select-none overflow-x-auto subtle-scroll",
+        className
+      )}
       style={{ minHeight: height }}
     >
       <div
-        className="relative"
+        className="relative min-w-[560px]"
         style={{ height }}
         onMouseLeave={() => {
           setHoveredIdx(null);

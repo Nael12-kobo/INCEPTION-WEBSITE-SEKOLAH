@@ -139,7 +139,7 @@ function ProfileForm({
             </div>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
               Simpan Perubahan
@@ -237,7 +237,7 @@ function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
                   type="button"
                   onClick={() => setShowCurrent((v) => !v)}
                   aria-label={showCurrent ? "Sembunyikan sandi" : "Tampilkan sandi"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600"
                 >
                   {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -265,7 +265,7 @@ function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
                 type="button"
                 onClick={() => setShowNew((v) => !v)}
                 aria-label={showNew ? "Sembunyikan sandi" : "Tampilkan sandi"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-slate-600"
               >
                 {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>

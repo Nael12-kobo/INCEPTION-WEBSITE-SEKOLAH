@@ -24,7 +24,7 @@ export function Stats() {
               key={s.label}
               data-scrub-item
               data-scrub-dir="left"
-              className="glass glass-hover glass-glare rounded-3xl p-6 text-center"
+              className="glass glass-hover glass-glare rounded-3xl p-4 text-center sm:p-6"
             >
               <span
                 data-magnetic

@@ -123,7 +123,7 @@ function CodeCard({ style, animation }: { style: React.CSSProperties; animation:
           </span>
         </div>
         {/* Code with typewriter */}
-        <code className="text-s font-mono text-white/80 leading-relaxed">
+        <code className="text-xs font-mono text-white/80 leading-relaxed">
           <TypewriterText key={`${snippetIdx}-${snippet.code}`} text={snippet.code} onCycleDone={handleCycleDone} />
         </code>
       </div>

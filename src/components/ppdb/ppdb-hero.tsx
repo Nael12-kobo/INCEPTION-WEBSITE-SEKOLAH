@@ -39,7 +39,7 @@ export function PpdbHero() {
         </div>
 
         <div className="relative text-center">
-          <Badge className="border-white/25 bg-white/15 text-white backdrop-blur">
+          <Badge className="max-w-full text-left border-white/25 bg-white/15 text-white backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             PPDB {PPDB_YEAR} — {PPDB_PHASE} — Bebas Zonasi
           </Badge>

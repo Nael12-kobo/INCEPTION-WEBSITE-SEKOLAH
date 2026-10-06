@@ -110,7 +110,7 @@ export function AdminAuditClient({ initialRows }: { initialRows: AuditRow[] }) {
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Cari aktivitas..."
@@ -119,7 +119,8 @@ export function AdminAuditClient({ initialRows }: { initialRows: AuditRow[] }) {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="flex rounded-xl border border-slate-200 bg-white p-0.5">
+            {/* flex-wrap: 4 tombol ≈ 290px > 280px konten card di HP 360px. */}
+            <div className="flex flex-wrap rounded-xl border border-slate-200 bg-white p-0.5">
               {FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

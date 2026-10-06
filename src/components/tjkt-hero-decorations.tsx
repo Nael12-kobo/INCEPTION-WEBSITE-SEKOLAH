@@ -132,7 +132,8 @@ function SignalWave({ wave }: { wave: (typeof signalWaves)[0] }) {
   if ("right" in wave) pos.right = wave.right;
 
   return (
-    <div className="absolute" style={pos}>
+    // Ring sinyal disembunyikan di bawah md agar teks hero tetap bersih di HP.
+    <div className="hidden md:block absolute" style={pos}>
       {[0, 1, 2].map((i) => (
         <div
           key={i}

@@ -182,7 +182,7 @@ export function AdminUsersClient({
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full sm:min-w-[700px]">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="text-left font-overline text-[11px] text-slate-500 uppercase tracking-wider py-3 px-3">

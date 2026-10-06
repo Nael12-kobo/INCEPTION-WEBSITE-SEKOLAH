@@ -197,7 +197,7 @@ export function AcademicClient({ userName }: { userName: string }) {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                  className={`rounded-lg px-3.5 py-1.5 min-h-9 text-xs font-semibold transition-colors ${
                     selectedDay === day
                       ? "bg-sky-700 text-white shadow-sm"
                       : "bg-white text-slate-600 hover:bg-slate-100 ring-1 ring-slate-200"
@@ -269,16 +269,17 @@ export function AcademicClient({ userName }: { userName: string }) {
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase text-slate-600">
                 <tr>
                   <th className="px-4 py-3">Mata Pelajaran</th>
                   <th className="px-4 py-3 text-center">SKS / JP</th>
                   <th className="px-4 py-3 text-center">Tugas & Praktik</th>
-                  <th className="px-4 py-3 text-center">UTS</th>
-                  <th className="px-4 py-3 text-center">UAS</th>
+                  {/* Kolom sekunder disembunyikan di HP — tabel digulir horizontal. */}
+                  <th className="hidden px-4 py-3 text-center sm:table-cell">UTS</th>
+                  <th className="hidden px-4 py-3 text-center sm:table-cell">UAS</th>
                   <th className="px-4 py-3 text-center">Nilai Akhir</th>
-                  <th className="px-4 py-3 text-center">Predikat</th>
+                  <th className="hidden px-4 py-3 text-center sm:table-cell">Predikat</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -287,10 +288,10 @@ export function AcademicClient({ userName }: { userName: string }) {
                     <td className="px-4 py-3.5 font-medium text-slate-900">{g.subject}</td>
                     <td className="px-4 py-3.5 text-center text-slate-600">{g.credit}</td>
                     <td className="px-4 py-3.5 text-center text-slate-700">{g.tugas}</td>
-                    <td className="px-4 py-3.5 text-center text-slate-700">{g.uts}</td>
-                    <td className="px-4 py-3.5 text-center text-slate-700">{g.uas}</td>
+                    <td className="hidden px-4 py-3.5 text-center text-slate-700 sm:table-cell">{g.uts}</td>
+                    <td className="hidden px-4 py-3.5 text-center text-slate-700 sm:table-cell">{g.uas}</td>
                     <td className="px-4 py-3.5 text-center font-bold text-sky-700">{g.finalScore}</td>
-                    <td className="px-4 py-3.5 text-center">
+                    <td className="hidden px-4 py-3.5 text-center sm:table-cell">
                       <span className="inline-block rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
                         {g.predikat}
                       </span>
@@ -320,7 +321,7 @@ export function AcademicClient({ userName }: { userName: string }) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 pt-2 border-t border-slate-100">
                 <span>Diterbitkan oleh: <strong className="text-slate-700">{mod.author}</strong></span>
                 <Button size="sm" variant="ghost" className="text-sky-600 hover:text-sky-700 gap-1.5 font-medium">
                   <Download className="h-4 w-4" /> Download ({mod.downloads})

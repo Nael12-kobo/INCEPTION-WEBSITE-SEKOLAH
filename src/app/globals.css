@@ -298,6 +298,10 @@
     font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
     font-size: var(--font-body);
     line-height: var(--leading-body);
+    /* `clip` (bukan `hidden`) supaya transform reveal useAnimeFlowReveal
+       (+170px) tidak bikin halaman bisa digeser horizontal di HP,
+       tapi position: sticky Navbar tetap berfungsi. */
+    overflow-x: clip;
   }
   h1 { font-size: var(--font-h1); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }
   h2 { font-size: var(--font-h2); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }

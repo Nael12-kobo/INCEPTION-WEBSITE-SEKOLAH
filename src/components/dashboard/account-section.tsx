@@ -95,7 +95,8 @@ export function AccountSection({ user }: { user: DashboardUser }) {
                   <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                     {r.label}
                   </dt>
-                  <dd className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                  {/* break-words di HP supaya alamat/nilai panjang tidak terpotong. */}
+                  <dd className="mt-0.5 break-words text-sm font-semibold text-slate-800 sm:truncate">
                     {r.value}
                   </dd>
                 </div>
@@ -103,7 +104,8 @@ export function AccountSection({ user }: { user: DashboardUser }) {
             ))}
           </dl>
 
-          <div className="mt-6 flex items-center gap-3 border-t border-sky-100 pt-4">
+          {/* flex-wrap: dua tombol label panjang tidak muat di layar 360px. */}
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-sky-100 pt-4">
             <Button size="sm" asChild>
               <a href="/profile">
                 Lihat Profil Lengkap

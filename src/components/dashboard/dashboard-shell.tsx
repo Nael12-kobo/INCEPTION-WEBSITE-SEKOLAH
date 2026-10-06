@@ -263,7 +263,7 @@ function NotificationBell({ activities }: { activities: DashboardActivityItem[] 
       </Button>
 
       {open && (
-        <div className="animate-fade-in elevation-4 absolute top-full right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200 p-0 overflow-hidden z-50">
+        <div className="animate-fade-in elevation-4 absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-6rem)] rounded-2xl bg-white border border-slate-200 p-0 overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <h4 className="font-h4 text-slate-900">Aktivitas Terbaru</h4>
           </div>

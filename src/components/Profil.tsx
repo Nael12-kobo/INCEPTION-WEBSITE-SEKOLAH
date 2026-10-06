@@ -21,7 +21,7 @@ export function Profil() {
         aria-hidden
         className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-violet-300/50 blur-3xl"
       />
-      <div className="tilt-scene relative mx-auto grid max-w-6xl items-start gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2">
+      <div className="tilt-scene relative mx-auto grid max-w-6xl items-start gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2">
         <div data-scrub-item data-scrub-dir="left">
           <Badge variant="secondary" className="glass-chip border-white/60">
             Profil Sekolah

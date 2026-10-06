@@ -224,7 +224,7 @@ function ToastViewport({
       aria-live="polite"
       aria-atomic="true"
       className={cn(
-        "pointer-events-none fixed gap-3 right-3 top-10 z-100 max-w-sm -space-y-3.5",
+        "pointer-events-none fixed gap-3 right-3 top-20 z-100 max-w-sm -space-y-3.5",
         "sm:right-6 sm:top-10 sm:w-96 sm:items-end"
       )}
     >

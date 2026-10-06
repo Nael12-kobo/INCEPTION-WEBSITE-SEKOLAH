@@ -10,7 +10,7 @@ import { HomeBackdrop } from "@/components/HomeBackdrop";
 
 export default function Home() {
   return (
-    <div className="relative flex min-h-screen flex-col  font-sans text-slate-900">
+    <div className="relative flex min-h-dvh flex-col  font-sans text-slate-900">
       <HomeBackdrop />
       <main className="relative flex-1">
         <Hero />

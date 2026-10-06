@@ -164,7 +164,9 @@ export function AdminPpdbClient({
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full min-w-[800px]">
+            {/* min-w 520 di HP: kolom Jurusan/Tanggal sudah hidden, 800px bikin
+                scroll horizontal kosong; 800px kembali di ≥sm. */}
+            <table className="w-full min-w-[520px] sm:min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="text-left font-overline text-[11px] text-slate-500 uppercase tracking-wider py-3 px-3">
@@ -226,7 +228,7 @@ export function AdminPpdbClient({
                             value={r.status}
                             disabled={statusUpdating === r.id}
                             onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                            className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
+                            className="h-10 sm:h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
                           >
                             {PPDB_STATUSES.map((s) => (
                               <option key={s} value={s}>

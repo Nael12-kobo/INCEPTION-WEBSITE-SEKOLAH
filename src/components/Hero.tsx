@@ -134,7 +134,7 @@ export function Hero() {
         />
       </div>
 
-      <div ref={contentRef} className="tilt-scene relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
+      <div ref={contentRef} className="tilt-scene relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
         {/* Kolom teks */}
         <div data-scrub-item data-scrub-dir="left">
           <Badge

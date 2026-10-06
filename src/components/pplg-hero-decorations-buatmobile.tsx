@@ -47,10 +47,12 @@ const codeSnippets = [
 const TOTAL_SNIPPETS = codeSnippets.length;
 
 // Card layout config (positions, rotation, animation timing)
+// Mobile: posisi disusun agar kartu (maks 62vw) tidak terpotong tepi layar
+// 360px dan tidak tertutup logo hero di bawah (rentang ~62%-94% tinggi hero).
 const codeCards = [
-  { left: "0%", top: "80%", rotate: 4,  duration: 15,   delay: 1.2 },
-  { right: "80%", top: "25%", rotate: 2, duration: 13.5, delay: 0.6 },
-  { left: "80%", top: "15%", rotate: 5,  duration: 14.5, delay: 1.8 },
+  { left: "2%", top: "2%",  rotate: 4,  duration: 15,   delay: 1.2 },
+  { right: "2%", top: "20%", rotate: 2, duration: 13.5, delay: 0.6 },
+  { left: "36%", top: "40%", rotate: 5,  duration: 14.5, delay: 1.8 },
 ];
 
 // Typewriter: types text, pauses, deletes, then calls onCycleDone
@@ -110,7 +112,7 @@ function CodeCard({ style, animation }: { style: React.CSSProperties; animation:
       className="absolute md:hidden pointer-events-none"
       style={{ ...style, animation }}
     >
-      <div className="bg-black/40 backdrop-blur-md rounded-lg border border-white/10 px-4 py-2.5 shadow-xl max-w-[250px]">
+      <div className="bg-black/40 backdrop-blur-md rounded-lg border border-white/10 px-4 py-2.5 shadow-xl max-w-[min(250px,62vw)]">
         {/* Window dots */}
         <div className="flex items-center gap-1.5 mb-2">
           <span className="w-3 h-3 rounded-full bg-red-400/80" />
@@ -121,7 +123,7 @@ function CodeCard({ style, animation }: { style: React.CSSProperties; animation:
           </span>
         </div>
         {/* Code with typewriter */}
-        <code className="text-s font-mono text-white/80 leading-relaxed">
+        <code className="text-xs font-mono text-white/80 leading-relaxed">
           <TypewriterText key={`${snippetIdx}-${snippet.code}`} text={snippet.code} onCycleDone={handleCycleDone} />
         </code>
       </div>

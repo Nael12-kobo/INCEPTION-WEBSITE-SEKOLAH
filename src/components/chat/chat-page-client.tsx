@@ -172,8 +172,9 @@ export function ChatPageClient() {
       {!isDesktop && (
       <>
         {/* Top bar melayang */}
-        <div className="absolute left-4 right-4 top-4 flex items-center justify-between">
-          <Button asChild variant="outline" size="sm" className="bg-white/70 backdrop-blur-xl">
+        {/* top aman di bawah status bar iPhone (viewportFit=cover; env=0 di HP lain). */}
+        <div className="absolute left-4 right-4 top-[calc(env(safe-area-inset-top)+1rem)] flex items-center justify-between">
+          <Button asChild variant="outline" size="sm" className="h-11 bg-white/70 backdrop-blur-xl sm:h-8">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" /> Kembali
             </Link>
@@ -182,19 +183,19 @@ export function ChatPageClient() {
             <Button
               variant="outline"
               size="icon-sm"
-              className="bg-white/70 backdrop-blur-xl"
+              aria-label="Riwayat"
+              className="h-11 w-11 bg-white/70 backdrop-blur-xl"
               onClick={() => {
                 setShowHistory((v) => !v);
                 if (!showHistory) void fetchHistory();
               }}
-              aria-label="Riwayat"
             >
               <History className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="icon-sm"
-              className="bg-white/70 backdrop-blur-xl"
+              className="h-11 w-11 bg-white/70 backdrop-blur-xl"
               onClick={() => setExpanded((v) => !v)}
               aria-label={expanded ? "Kecilkan chat" : "Fullscreen chat"}
             >

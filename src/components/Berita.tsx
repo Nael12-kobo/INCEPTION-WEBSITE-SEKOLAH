@@ -31,7 +31,7 @@ export function Berita() {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 170 });
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
   return (
-    <section id="berita" ref={ref} className="bg-transparent">
+    <section id="berita" ref={ref} className="overflow-hidden bg-transparent">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-xl">
@@ -44,7 +44,7 @@ export function Berita() {
           </div>
           <span
             data-magnetic
-            className="glass-chip inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-sky-700"
+            className="glass-chip inline-flex items-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold text-sky-700 sm:py-2"
           >
             Lihat semua <ArrowRight className="h-4 w-4" />
           </span>
@@ -75,7 +75,7 @@ export function Berita() {
               <CardFooter>
                 <span
                   data-magnetic
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900"
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
                 >
                   Baca selengkapnya <ArrowRight className="h-4 w-4" />
                 </span>

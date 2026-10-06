@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
  */
 
 const baseField =
-  "w-full rounded-xl border bg-white px-3.5 text-sm text-slate-900 shadow-sm shadow-sky-50 " +
+  // text-base di HP mencegah auto-zoom iOS saat fokus (input <16px).
+  "w-full rounded-xl border bg-white px-3.5 text-base text-slate-900 sm:text-sm shadow-sm shadow-sky-50 " +
   "transition-[border-color,box-shadow] duration-200 placeholder:text-slate-400 " +
   "focus:outline-none focus:ring-4 focus:ring-sky-500/10 disabled:cursor-not-allowed disabled:bg-slate-50";
 

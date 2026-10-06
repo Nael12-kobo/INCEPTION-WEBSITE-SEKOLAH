@@ -43,7 +43,7 @@ export function Jurusan() {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 170 });
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
   return (
-    <section id="jurusan" ref={ref} className="relative bg-transparent">
+    <section id="jurusan" ref={ref} className="relative overflow-hidden bg-transparent">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="mx-auto max-w-2xl text-center">
           <Badge variant="secondary" className="glass-chip border-white/60">
@@ -91,7 +91,7 @@ export function Jurusan() {
                 <Link
                   data-magnetic
                   href="#ppdb"
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900"
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
                 >
                   Pelajari & daftar
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

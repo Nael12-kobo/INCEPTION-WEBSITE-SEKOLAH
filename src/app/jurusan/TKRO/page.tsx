@@ -98,10 +98,10 @@ export default function TKROPage() {
         <TKROHeroDecorations />
         <TKROHeroDecorationsMobile />
         
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
           <Link
             href="/#jurusan"
-            className="inline-flex items-center gap-2 text-orange-200 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 py-2.5 min-h-11 text-orange-200 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="size-4" />
             Kembali ke Program Keahlian

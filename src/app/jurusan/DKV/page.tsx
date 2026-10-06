@@ -91,15 +91,15 @@ const keunggulan = [
 
 export default function DKVPage() {
   return (
-    <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none drag-none">
+    <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-900 text-white">
         <DKVHeroDecorations />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
           <Link
             href="/#jurusan"
-            className="inline-flex items-center gap-2 text-blue-200 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 py-2.5 min-h-11 text-blue-200 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="size-4" />
             Kembali ke Program Keahlian
@@ -122,7 +122,7 @@ export default function DKVPage() {
                 dan pesan melalui desain grafis, fotografi, dan media digital.
               </p>
             </div>
-            <div className="flex-shrink-0 select-none drag-none">
+            <div className="flex-shrink-0 select-none">
               {/* Dulu `absolute left-240 top-80` (960px/320px) menimpa
                   `left-1/2 top-1/2` → ikon ter-clip `overflow-hidden`. */}
               <Image

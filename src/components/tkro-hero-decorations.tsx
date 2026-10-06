@@ -109,7 +109,7 @@ function GearShape({ gear }: { gear: (typeof gears)[0] }) {
 
   return (
     <div
-      className="absolute hidden lg:block opacity-[0.07]"
+      className="absolute hidden md:block opacity-[0.07]"
       style={{
         ...pos,
         width: gear.size,
@@ -158,7 +158,7 @@ function Piston({ piston }: { piston: (typeof pistons)[0] }) {
 
   return (
     <div
-      className="absolute  hidden lg:block opacity-[0.08]"
+      className="absolute  hidden md:block opacity-[0.08]"
       style={{ ...pos }}
     >
       {/* Cylinder */}
@@ -200,7 +200,7 @@ function Bolt({ bolt }: { bolt: (typeof bolts)[0] }) {
 
   return (
     <div
-      className="absolute hidden lg:block opacity-[0.1]"
+      className="absolute hidden md:block opacity-[0.1]"
       style={{
         ...pos,
         width: bolt.size,
@@ -227,7 +227,7 @@ function TachometerArc({ arc }: { arc: (typeof tachometerArcs)[0] }) {
 
   return (
     <div
-      className="absolute hidden lg:block opacity-[0.06]"
+      className="absolute hidden md:block opacity-[0.06]"
       style={{ ...pos, width: arc.size, height: arc.size }}
     >
       <svg
@@ -317,7 +317,7 @@ export default function TKROHeroDecorations() {
   }, []);
 
   return (
-    <div className="absolute hidden lg:block inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute hidden md:block inset-0 overflow-hidden pointer-events-none">
       {/* Gears */}
       {gears.map((gear, i) => (
         <GearShape key={`gear-${i}`} gear={gear} />

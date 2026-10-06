@@ -38,7 +38,7 @@ const kompetensi = [
   {
     judul: "Cloud Computing & Virtualisasi",
     deskripsi:
-      "Belajar部署 dan mengelola layanan cloud menggunakan AWS, Azure, Google Cloud, serta teknologi virtualisasi seperti VMware dan Proxmox.",
+      "Belajar dan mengelola layanan cloud menggunakan AWS, Azure, Google Cloud, serta teknologi virtualisasi seperti VMware dan Proxmox.",
   },
   {
     judul: "IoT & Smart Networking",
@@ -91,15 +91,15 @@ const keunggulan = [
 
 export default function TJKTPage() {
   return (
-    <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none drag-none">
+    <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 text-white">
         <TJKTHeroDecorations />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
           <Link
             href="/#jurusan"
-            className="inline-flex items-center gap-2 text-gray-200 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 py-2.5 min-h-11 text-gray-200 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="size-4" />
             Kembali ke Program Keahlian
@@ -122,7 +122,7 @@ export default function TJKTPage() {
                 dan mengamankan infrastruktur telekomunikasi modern.
               </p>
             </div>
-            <div className="flex-shrink-0 select-none drag-none">
+            <div className="flex-shrink-0 select-none">
               {/* Dulu `absolute` + `left-240 top-80` (Tailwind v4 = 960px/320px)
                   yang menimpa `left-1/2 top-1/2` → ikon mendarat di luar
                   frame dan ter-clip `overflow-hidden`. Sekarang ikon jadi
