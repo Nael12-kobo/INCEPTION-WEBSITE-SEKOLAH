@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     text.includes("!") ||
     /\b(wah|mantap|keren|bagus|selamat|senang|yuk|ayo|tertarik)\b/i.test(text);
   const direction = isExcited
-    ? "[berbicara dalam bahasa Indonesia dengan pelafalan Indonesia, ceria dan antusias]"
-    : "[berbicara dalam bahasa Indonesia dengan pelafalan Indonesia, hangat dan ceria]";
+    ? "[berbicara terutama dalam bahasa Indonesia dengan pelafalan Indonesia, ceria dan antusias. Pertahankan semua kata atau kalimat bahasa Inggris apa adanya dan ucapkan kata bahasa Inggris dengan pelafalan bahasa Inggris. Jangan menerjemahkan, mengubah, atau meng-Indonesia-kan kata bahasa Inggris seperti mobile menjadi mobil.]"
+    : "[berbicara terutama dalam bahasa Indonesia dengan pelafalan Indonesia, hangat dan ceria. Pertahankan semua kata atau kalimat bahasa Inggris apa adanya dan ucapkan kata bahasa Inggris dengan pelafalan bahasa Inggris. Jangan menerjemahkan, mengubah, atau meng-Indonesia-kan kata bahasa Inggris seperti mobile menjadi mobil.]";
   const speechText = `${direction} ${text}`;
   const fish = new FishAudioClient({ apiKey });
   const textStream = (async function* () {

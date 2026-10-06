@@ -13,19 +13,8 @@ const ACRONYM_PRONUNCIATIONS: Record<string, string> = {
   HTML: "ha te em el",
 };
 
-const WORD_PRONUNCIATIONS: Array<[RegExp, string]> = [
-  [/\bwebsite\b/gi, "situs web"],
-  [/\bonline\b/gi, "daring"],
-  [/\bgame\b/gi, "gim"],
-  [/\bsoftware\b/gi, "sofwer"],
-  [/\bhardware\b/gi, "hardwer"],
-  [/\bstreaming\b/gi, "striming"],
-  [/\bbrowser\b/gi, "brauser"],
-  [/\blogin\b/gi, "lokin"],
-  [/\blogout\b/gi, "lokaut"],
-  [/\bfrontend\b/gi, "front end"],
-  [/\bbackend\b/gi, "bek end"],
-];
+// Kata bahasa Inggris dibiarkan apa adanya agar Fish Audio bisa mengucapkannya
+// dengan pelafalan bahasa Inggris, bukan diterjemahkan ke padanan bahasa Indonesia.
 
 const SMALL_NUMBERS = [
   "nol", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan",
@@ -85,10 +74,6 @@ export function normalizeForSpeech(input: string): string {
 
   for (const [key, pronunciation] of Object.entries(ACRONYM_PRONUNCIATIONS)) {
     text = text.replace(new RegExp("\\b" + key + "\\b", "gi"), pronunciation);
-  }
-
-  for (const [pattern, pronunciation] of WORD_PRONUNCIATIONS) {
-    text = text.replace(pattern, pronunciation);
   }
 
   return text
