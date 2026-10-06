@@ -49,7 +49,7 @@ interface VrmViewerProps {
  * Viewer karakter VRM (three + @pixiv/three-vrm), VRM 1.0.
  * - src default dari NEXT_PUBLIC_VRM_URL (/models/character.vrm).
  * - File ±17.5MB (aslinya 149MB, dipangkas oleh scripts/optimize-vrm.mjs):
- *   tampilkan progress unduhan % + MB, tanpa timeout agresif.
+ *   saat memuat tampilkan GIF /animated/loading.gif, tanpa timeout agresif.
  * - Cache di-bust via query `?v=` (lihat cacheVersion di bawah).
  * - Auto-frame bounding box agar karakter selalu masuk frame.
  * - Offset global (prop globalOffset: offsetX/offsetY/rotationYOffset/
@@ -80,9 +80,6 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
     "loading"
   );
   const [hint, setHint] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [loadedMB, setLoadedMB] = useState(0);
-  const [totalMB, setTotalMB] = useState<number | null>(null);
 
   useEffect(() => {
     speakingRef.current = speaking;
@@ -414,22 +411,7 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
 
         let gltf: import("three/examples/jsm/loaders/GLTFLoader.js").GLTF;
         try {
-          gltf = await loader.loadAsync(
-            url,
-            (event) => {
-              if (isCancelled()) return;
-              if (event.total > 0) {
-                setProgress(
-                  Math.min(100, Math.round((event.loaded / event.total) * 100))
-                );
-                setLoadedMB(event.loaded / 1024 / 1024);
-                setTotalMB(event.total / 1024 / 1024);
-              } else {
-                // Server tidak mengirim content-length — tampilkan MB berjalan.
-                setLoadedMB(event.loaded / 1024 / 1024);
-              }
-            }
-          );
+          gltf = await loader.loadAsync(url);
         } catch (loadError) {
           // Abort saat unmount/StrictMode remount — bukan error, diam saja.
           if (isCancelled()) return;
@@ -508,7 +490,6 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
         baseZ = vrm.scene.position.z;
 
         if (!isCancelled()) {
-          setProgress(100);
           setStatus("ready");
         }
 
@@ -819,29 +800,13 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       <div ref={mountRef} className="absolute inset-0" />
       
       {status === "loading" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center">
-          <div className="flex h-24 w-24 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-700 text-white shadow-2xl">
-            <Bot className="h-12 w-12" />
-          </div>
-          <p className="text-sm font-semibold text-slate-700">
-            Memuat karakter 3D... {progress > 0 ? `${progress}%` : ""}
-          </p>
-          {/* Progress bar — penting untuk file besar */}
-          <div className="h-2 w-56 overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 transition-[width] duration-200"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="max-w-sm text-xs text-slate-500">
-            {loadedMB > 0
-              ? `${loadedMB.toFixed(1)} MB${totalMB ? ` / ${totalMB.toFixed(0)} MB` : " terunduh..."}`
-              : "Menghubungi server..."}
-          </p>
-          <p className="max-w-sm text-[11px] text-slate-400">
-            File model berukuran besar — loading pertama bisa memakan waktu.
-            Kunjungan berikutnya instan dari cache.
-          </p>
+        <div className="absolute inset-0 flex items-center justify-center bg-white">
+          <img
+            src="/animated/loading.gif"
+            alt="Memuat karakter 3D..."
+            className="h-60 w-60 object-contain md:h-100 md:w-100"
+            draggable={false}
+          />
         </div>
       )}
       {status === "fallback" && (
