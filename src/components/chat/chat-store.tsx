@@ -63,6 +63,21 @@ async function speakReply(text: string): Promise<void> {
       return;
     }
 
+    const body = res.body;
+    const canStream =
+      !!body &&
+      typeof window.MediaSource !== "undefined" &&
+      MediaSource.isTypeSupported("audio/mpeg");
+
+    if (canStream && body) {
+      window.dispatchEvent(
+        new CustomEvent("nara:audio-stream", {
+          detail: { stream: body },
+        })
+      );
+      return;
+    }
+
     const buffer = await res.arrayBuffer();
     window.dispatchEvent(
       new CustomEvent("nara:audio", {

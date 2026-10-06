@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FishAudioClient, RealtimeEvents } from "fish-audio";
 import { normalizeForSpeech } from "@/lib/tts-normalizer";
 
 export const runtime = "nodejs";
@@ -29,52 +30,111 @@ export async function POST(request: Request) {
 
   const text = normalizeForSpeech(rawText);
   if (!text) {
-    return NextResponse.json({ message: "Teks TTS kosong setelah normalisasi." }, { status: 400 });
+    return NextResponse.json(
+      { message: "Teks TTS kosong setelah normalisasi." },
+      { status: 400 }
+    );
   }
 
-  const payload: Record<string, unknown> = {
-    text: text.slice(0, 5000),
-    format: "mp3",
-  };
-
-  if (referenceId) {
-    payload.reference_id = referenceId;
-  }
+  const fish = new FishAudioClient({ apiKey });
+  const textStream = (async function* () {
+    yield text.slice(0, 5000);
+  })();
 
   try {
-    const response = await fetch("https://api.fish.audio/v1/tts", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        model,
+    const connection = await fish.textToSpeech.convertRealtime(
+      {
+        text: "",
+        reference_id: referenceId,
+        chunk_length: 100,
+        normalize: false,
+        format: "mp3",
+        sample_rate: 44100,
+        latency: "balanced",
+        temperature: 0.65,
+        top_p: 0.7,
       },
-      body: JSON.stringify(payload),
-      cache: "no-store",
+      textStream,
+      model as never
+    );
+
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        let closed = false;
+
+        const close = () => {
+          if (closed) return;
+          closed = true;
+          try {
+            controller.close();
+          } catch {
+            /* stream sudah ditutup */
+          }
+        };
+
+        const onAudio = (audio: unknown) => {
+          if (closed) return;
+          let bytes: Uint8Array | null = null;
+          if (audio instanceof Uint8Array) {
+            bytes = audio;
+          } else if (typeof Buffer !== "undefined" && Buffer.isBuffer(audio)) {
+            bytes = new Uint8Array(audio.buffer, audio.byteOffset, audio.byteLength);
+          }
+          if (bytes?.byteLength) {
+            controller.enqueue(bytes);
+          }
+        };
+
+        const onError = (error: unknown) => {
+          if (closed) return;
+          closed = true;
+          console.error("[/api/tts] Fish Audio WebSocket error:", error);
+          try {
+            controller.error(
+              error instanceof Error ? error : new Error("Fish Audio streaming error")
+            );
+          } catch {
+            /* stream sudah ditutup */
+          }
+        };
+
+        connection.on(RealtimeEvents.AUDIO_CHUNK, onAudio);
+        connection.on(RealtimeEvents.ERROR, onError);
+        connection.on(RealtimeEvents.CLOSE, close);
+
+        request.signal.addEventListener(
+          "abort",
+          () => {
+            try {
+              connection.close();
+            } catch {
+              /* abaikan */
+            }
+            close();
+          },
+          { once: true }
+        );
+      },
+      cancel() {
+        try {
+          connection.close();
+        } catch {
+          /* abaikan */
+        }
+      },
     });
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      console.error("[/api/tts] Fish Audio gagal:", response.status, detail.slice(0, 500));
-      return NextResponse.json(
-        { message: `Fish Audio gagal (${response.status}).` },
-        { status: 502 }
-      );
-    }
-
-    const audio = await response.arrayBuffer();
-
-    return new NextResponse(audio, {
+    return new NextResponse(stream, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
-        "Cache-Control": "no-store",
+        "Cache-Control": "no-cache, no-transform",
       },
     });
   } catch (error) {
     console.error("[/api/tts] Request Fish Audio gagal:", error);
     return NextResponse.json(
-      { message: "Tidak bisa menghubungi Fish Audio." },
+      { message: "Tidak bisa memulai streaming Fish Audio." },
       { status: 502 }
     );
   }

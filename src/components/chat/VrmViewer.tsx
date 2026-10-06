@@ -68,6 +68,12 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
   const analyserRef = useRef<AnalyserNode | null>(null);
   const analyserDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const audioSpeakingRef = useRef(false);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
+  const mediaSourceRef = useRef<MediaSource | null>(null);
+  const sourceBufferRef = useRef<SourceBuffer | null>(null);
+  const mediaElementSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const streamReaderRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "fallback">(
     "loading"
   );
@@ -135,28 +141,67 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       }
     };
 
+    const stopCurrentAudio = () => {
+      try {
+        streamReaderRef.current?.cancel();
+      } catch {
+        /* stream mungkin sudah selesai */
+      }
+      streamReaderRef.current = null;
+
+      try {
+        audioSourceRef.current?.stop();
+      } catch {
+        /* audio mungkin sudah selesai */
+      }
+      audioSourceRef.current?.disconnect();
+      audioSourceRef.current = null;
+
+      mediaElementSourceRef.current?.disconnect();
+      mediaElementSourceRef.current = null;
+
+      const audio = audioElementRef.current;
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        audio.remove();
+      }
+      audioElementRef.current = null;
+
+      if (audioObjectUrlRef.current) {
+        URL.revokeObjectURL(audioObjectUrlRef.current);
+        audioObjectUrlRef.current = null;
+      }
+      mediaSourceRef.current = null;
+      sourceBufferRef.current = null;
+      audioSpeakingRef.current = false;
+      analyserRef.current = null;
+      analyserDataRef.current = null;
+    };
+
     const onAudio = async (event: Event) => {
       const buffer = (event as CustomEvent<{ buffer?: ArrayBuffer }>).detail?.buffer;
       if (!buffer) return;
 
       try {
+        stopCurrentAudio();
         const ctx = createAudioContext();
         if (!ctx) return;
         await ctx.resume().catch(() => undefined);
 
         const audioBuffer = await ctx.decodeAudioData(buffer.slice(0));
-        audioSourceRef.current?.stop();
-        audioSourceRef.current?.disconnect();
-
-        const source = ctx.createBufferSource();
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
         analyser.smoothingTimeConstant = 0.7;
         const data = new Uint8Array(analyser.fftSize);
+        analyser.connect(ctx.destination);
+        analyserRef.current = analyser;
+        analyserDataRef.current = data;
 
+        const source = ctx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(analyser);
-        analyser.connect(ctx.destination);
         source.onended = () => {
           if (audioSourceRef.current === source) {
             audioSourceRef.current = null;
@@ -165,10 +210,7 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
             analyserDataRef.current = null;
           }
         };
-
         audioSourceRef.current = source;
-        analyserRef.current = analyser;
-        analyserDataRef.current = data;
         audioSpeakingRef.current = true;
         source.start(0);
       } catch (error) {
@@ -177,8 +219,121 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       }
     };
 
+    const onAudioStream = async (event: Event) => {
+      const stream = (event as CustomEvent<{ stream?: ReadableStream<Uint8Array> }>).detail?.stream;
+      if (!stream) return;
+
+      try {
+        stopCurrentAudio();
+        const ctx = createAudioContext();
+        if (!ctx) return;
+        await ctx.resume().catch(() => undefined);
+
+        const audio = document.createElement("audio");
+        audio.dataset.naraAudio = "true";
+        audio.preload = "auto";
+        audio.autoplay = true;
+        audio.style.display = "none";
+        document.body.appendChild(audio);
+        audioElementRef.current = audio;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.7;
+        const data = new Uint8Array(analyser.fftSize);
+        const mediaElementSource = ctx.createMediaElementSource(audio);
+        mediaElementSource.connect(analyser);
+        analyser.connect(ctx.destination);
+        mediaElementSourceRef.current = mediaElementSource;
+        analyserRef.current = analyser;
+        analyserDataRef.current = data;
+
+        const mediaSource = new MediaSource();
+        mediaSourceRef.current = mediaSource;
+        const objectUrl = URL.createObjectURL(mediaSource);
+        audioObjectUrlRef.current = objectUrl;
+        audio.src = objectUrl;
+
+        const reader = stream.getReader();
+        streamReaderRef.current = reader;
+        const queue: Uint8Array[] = [];
+        let done = false;
+        let started = false;
+
+        const appendNext = () => {
+          const sourceBuffer = sourceBufferRef.current;
+          if (!sourceBuffer || sourceBuffer.updating) return;
+          const next = queue.shift();
+          if (next) {
+            const ab = next.buffer.slice(
+              next.byteOffset,
+              next.byteOffset + next.byteLength
+            );
+            sourceBuffer.appendBuffer(ab as ArrayBuffer);
+            return;
+          }
+          if (done && mediaSource.readyState === "open") {
+            try {
+              mediaSource.endOfStream();
+            } catch {
+              /* sudah ditutup */
+            }
+          }
+        };
+
+        mediaSource.addEventListener(
+          "sourceopen",
+          () => {
+            if (mediaSourceRef.current !== mediaSource) return;
+            if (!MediaSource.isTypeSupported("audio/mpeg")) {
+              console.warn("[VrmViewer] MediaSource audio/mpeg tidak didukung");
+              return;
+            }
+
+            const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+            sourceBufferRef.current = sourceBuffer;
+            sourceBuffer.addEventListener("updateend", () => {
+              if (!started) {
+                started = true;
+                audioSpeakingRef.current = true;
+                void audio.play().catch((error) => {
+                  console.warn("[VrmViewer] autoplay audio gagal", error);
+                });
+              }
+              appendNext();
+            });
+            appendNext();
+          },
+          { once: true }
+        );
+
+        audio.onended = () => {
+          if (audioElementRef.current === audio) {
+            audioSpeakingRef.current = false;
+          }
+        };
+
+        while (true) {
+          const result = await reader.read();
+          if (result.done) {
+            done = true;
+            appendNext();
+            break;
+          }
+          if (result.value?.byteLength) {
+            queue.push(result.value);
+            appendNext();
+          }
+        }
+      } catch (error) {
+        audioSpeakingRef.current = false;
+        console.warn("[VrmViewer] audio TTS streaming gagal diputar", error);
+      }
+    };
+
     window.addEventListener("nara:unlock-audio", onUnlockAudio);
     window.addEventListener("nara:audio", onAudio);
+    window.addEventListener("nara:audio-stream", onAudioStream);
     // Node mount dicapture di awal effect agar cleanup tidak membaca
     // mountRef.current yang bisa sudah berubah (StrictMode remount).
     const effectMount = mountRef.current;
@@ -576,16 +731,8 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       if (onResize) window.removeEventListener("resize", onResize);
       window.removeEventListener("nara:unlock-audio", onUnlockAudio);
       window.removeEventListener("nara:audio", onAudio);
-      try {
-        audioSourceRef.current?.stop();
-      } catch {
-        /* audio mungkin sudah selesai */
-      }
-      audioSourceRef.current?.disconnect();
-      audioSourceRef.current = null;
-      analyserRef.current = null;
-      analyserDataRef.current = null;
-      audioSpeakingRef.current = false;
+      window.removeEventListener("nara:audio-stream", onAudioStream);
+      stopCurrentAudio();
       void audioContextRef.current?.close().catch(() => undefined);
       audioContextRef.current = null;
       ro?.disconnect();
