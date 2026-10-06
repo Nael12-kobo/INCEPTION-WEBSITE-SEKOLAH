@@ -39,6 +39,7 @@ const mobileLinks = [
   { href: "/#fasilitas", label: "Fasilitas" },
   { href: "/#berita", label: "Berita" },
   { href: "/#ppdb", label: "PPDB" },
+  { href: "/guru-karyawan", label: "Guru & Karyawan" },
   // Tanpa link ini, pengunjung HP tidak punya jalan menuju login —
   // satu-satunya akses sebelumnya lewat redirect dari /ppdb.
   { href: "/auth/login", label: "Masuk" },
@@ -47,8 +48,11 @@ const mobileLinks = [
 export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
+      {/* gap-1 (bukan gap-4): saat 1024px muatan nav hampir penuh — gap cuma
+          berpengaruh kalau sempit, saat lega justify-between tetap memisahkan
+          grup dengan jarak yang sama. Dibutuhkan untuk muat button "Guru". */}
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-1 px-4 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           
             <Image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={40} height={40} className=" drop-shadow-lg" />
           
@@ -135,6 +139,12 @@ export function Navbar() {
               <GraduationCap />
               Tentang
             </Link>
+          </Button>
+          {/* Label "Guru" (bukan "Guru & Karyawan") — versi penuh tidak muat
+              di 1024–1080px: logo membungkus & menimpa menu Profil.
+              Menu HP tetap memakai label penuh. px-3 menghemat 16px lagi. */}
+          <Button variant="ghost" className="px-3" asChild>
+            <Link href="/guru-karyawan">Guru</Link>
           </Button>
           <Button variant="ghost" asChild>
             <Link href="/auth/login">Masuk</Link>
