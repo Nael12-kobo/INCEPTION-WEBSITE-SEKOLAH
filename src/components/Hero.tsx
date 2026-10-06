@@ -224,20 +224,20 @@ export function Hero() {
         <div data-scrub-item data-scrub-dir="right" data-tilt className="hidden lg:block">
           
           <div className="flex relative z-[-50] top-35 justify-center items-center opacity-75">
-        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-blue-600/50 justify-center items-center" />
-        <Loader2 strokeWidth={2} className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-blue-600/20 justify-center items-center" />
+        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 justify-center items-center" />
+        <Loader2 strokeWidth={2} className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center" />
 
-        <Loader2 strokeWidth={2} className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-blue-500/80 justify-center items-center" />
+        <Loader2 strokeWidth={2} className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center" />
         <Loader2 strokeWidth={1} className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 justify-center items-center" />
         <Loader2 strokeWidth={1.25} className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 justify-center items-center text-shadow-lg" />
 
         <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] " ></div>
-        <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-blue-600/80 animate-[spin_60s_linear_infinite_reverse] " ></div>
+        <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] " ></div>
 
         </div>
 
           <div>
-          <Image data-hero-image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={300} height={300} className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow-2xl drop-shadow-sky-200/60"/>
+          <Image data-hero-image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={300} height={300} className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
           </div>
           <div data-magnetic className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15">
             <p className="text-2xl font-extrabold text-sky-700">911+</p>

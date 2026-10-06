@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone, RadioTower } from "lucide-react";
 
@@ -15,9 +16,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 text-white">
-              <RadioTower className="h-5 w-5" />
-            </span>
+            <Image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={40} height={40} className=" drop-shadow-lg" />
             <span className="leading-tight">
               <span className="block text-sm font-bold text-white">SMK Telekomunikasi</span>
               <span className="block text-xs font-medium text-sky-400">Tunas Harapan</span>
@@ -72,15 +71,15 @@ export function Footer() {
           <ul className="mt-4 space-y-3 text-sm text-slate-400">
             <li className="flex gap-2.5">
               <MapPin className="h-4 w-4 shrink-0 text-sky-400" />
-              Jl. Telekomunikasi No. 1, Tunas Harapan
+              Jl. Umbul Senjoyo I, No. 3 Desa Bener, Kec. Tengaran, Kabupaten Semarang, Jawa Tengah.
             </li>
             <li className="flex gap-2.5">
               <Phone className="h-4 w-4 shrink-0 text-sky-400" />
-              (021) 555-0126
+              (0298) 311391
             </li>
             <li className="flex gap-2.5">
               <Mail className="h-4 w-4 shrink-0 text-sky-400" />
-              info@smktunasharapan.sch.id
+              info@tunasharapan.info
             </li>
           </ul>
         </div>

@@ -60,7 +60,7 @@ export function Navbar() {
             <span className="block text-sm font-bold tracking-tight text-slate-900">
               SMK Telekomunikasi
             </span>
-            <span className="block text-xs font-medium text-blue-600">Tunas Harapan</span>
+            <span className="block text-xs font-medium text-blue-500">Tunas Harapan</span>
           </span>
         </Link>
 

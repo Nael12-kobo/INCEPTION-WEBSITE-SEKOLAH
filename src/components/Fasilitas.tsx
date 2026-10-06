@@ -81,7 +81,6 @@ const galeri: { src: string; label: string; alt: string }[] = [
   { src: "/images/fasilitas/tkj-lab.jpg", label: "Lab TKJ", alt: "Laboratorium Teknik Komputer dan Jaringan" },
   { src: "/images/fasilitas/tkro-1.jpg", label: "Bengkel TKRO 1", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
   { src: "/images/fasilitas/tkro-2.jpg", label: "Bengkel TKRO 2", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
-  { src: "/images/fasilitas/tkro-4.jpg", label: "Bengkel TKRO 3", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
   { src: "/images/fasilitas/uks.jpg", label: "UKS", alt: "Unit Kesehatan Sekolah" },
   { src: "/images/fasilitas/uks-2.jpg", label: "UKS 2", alt: "Unit Kesehatan Sekolah" },
   { src: "/images/fasilitas/dak.jpg", label: "DAK", alt: "Ruang DAK sekolah" },

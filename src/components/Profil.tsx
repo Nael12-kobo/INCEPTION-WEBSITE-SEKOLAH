@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { CheckCircle2, Quote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,9 +74,7 @@ export function Profil() {
               Dan saat ini saya bekerja sebagai IT Senior Network & Infrastruktur di Transcosmos Indonesia site Semarang ”
             </blockquote>
             <div className="mt-6 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-lg font-bold text-white shadow-lg shadow-sky-300/50">
-                H
-              </span>
+              <Image src="/agil.jpg" alt="Foto Visentius Agiola Stanlay" width={12} height={12} className="h-10 w-10 rounded-full object-cover" />
               <div>
                 <p className="text-sm font-bold text-slate-900">Visentius Agiola Stanlay</p>
                 <p className="text-xs text-slate-500">IT Senior Network & Infrastruktur</p>

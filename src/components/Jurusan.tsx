@@ -14,6 +14,7 @@ const jurusan = [
     singkatan: "PPLG",
     desc: "Pengembangan web, aplikasi mobile, basis data, dan integrasi layanan digital modern.",
     skills: ["Web & Mobile", "Database", "UI/UX"],
+    link: "/jurusan/PPLG",
   },
   {
     icon: Network,
@@ -21,6 +22,7 @@ const jurusan = [
     singkatan: "TJKT",
     desc: "Instalasi jaringan LAN/WAN, administrasi server, keamanan siber, dan cloud computing.",
     skills: ["Cisco & Mikrotik", "Linux Server", "Cyber Security"],
+    link: "/jurusan/TJKT",
   },
   {
     icon: Camera,
@@ -28,6 +30,7 @@ const jurusan = [
     singkatan: "DKV",
     desc: "Teori warna, tipografi, penggunaan perangkat lunak desain, ilustrasi digital, fotografi, dan videografi.",
     skills: ["Fotografi", "Videografi", "Broadcasting", "Illustrasi Digital"],
+    link: "/jurusan/DKV",
   },
     {
     icon: Engine,
@@ -35,6 +38,7 @@ const jurusan = [
     singkatan: "TKRO",
     desc: "Perawatan dan perbaikan kendaraan bermotor, sistem elektrik, dan mekanik.",
     skills: ["Perawatan", "Perbaikan", "Sistem Elektrik"],
+    link: "/jurusan/TKRO",
   },
 
 ];
@@ -90,10 +94,10 @@ export function Jurusan() {
               <CardFooter>
                 <Link
                   data-magnetic
-                  href="#ppdb"
+                  href={j.link}
                   className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
                 >
-                  Pelajari & daftar
+                  Pelajari lebih lanjut
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </CardFooter>

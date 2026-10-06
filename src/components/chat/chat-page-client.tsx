@@ -127,17 +127,13 @@ export function ChatPageClient() {
               <ArrowLeft className="h-4 w-4" /> Beranda
             </Link>
           </Button>
-          <span className="rounded-full bg-white/70 px-3 py-1.5 text-xs font-medium text-slate-600 backdrop-blur-xl">
-            Karakter 3D • VRM
-          </span>
         </div>
         <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 bg-white/60 p-4 backdrop-blur-xl">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-            <Bot className="h-4 w-4 text-blue-600" /> Asisten Sekolah
+            <Bot className="h-4 w-4 text-blue-600" /> Nana AI
           </p>
           <p className="mt-1 text-xs leading-relaxed text-slate-600">
-            Tanya soal jurusan, fasilitas, atau PPDB — jawaban memakai Gemini
-            3.5 Flash-Lite. Riwayat tersimpan otomatis bila kamu login.
+            Asisten sekolah berbasis AI, dapat membantu menjawab pertanyaan seputar sekolah, jurusan, fasilitas, dan informasi PPDB.
           </p>
         </div>
 
