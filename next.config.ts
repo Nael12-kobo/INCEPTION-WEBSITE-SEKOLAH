@@ -3,6 +3,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  images: {
+    // Foto berita diambil dari situs resmi sekolah (WordPress).
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.tunasharapan.info",
+        pathname: "/official/wp-content/uploads/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {
