@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { BookOpen, FlaskConical, Trophy, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,26 @@ const data: Record<TabId, { title: string; desc: string; items: string[] }> = {
   },
 };
 
+/**
+ * Dokumentasi foto fasilitas (dari folder dokumentasi sekolah).
+ * Semua foto 1599×1200 (rasio 4:3).
+ */
+const galeri: { src: string; label: string; alt: string }[] = [
+  { src: "/images/fasilitas/perpustakaan.jpg", label: "Perpustakaan", alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan" },
+  { src: "/images/fasilitas/tefa.jpg", label: "Teaching Factory", alt: "Teaching Factory (TEFA)" },
+  { src: "/images/fasilitas/gedung-tkj.jpg", label: "Gedung TKJ", alt: "Gedung Teknik Komputer dan Jaringan" },
+  { src: "/images/fasilitas/tkj-lab.jpg", label: "Lab TKJ", alt: "Laboratorium Teknik Komputer dan Jaringan" },
+  { src: "/images/fasilitas/tkro-1.jpg", label: "Bengkel TKRO 1", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
+  { src: "/images/fasilitas/tkro-2.jpg", label: "Bengkel TKRO 2", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
+  { src: "/images/fasilitas/tkro-4.jpg", label: "Bengkel TKRO 3", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
+  { src: "/images/fasilitas/uks.jpg", label: "UKS", alt: "Unit Kesehatan Sekolah" },
+  { src: "/images/fasilitas/uks-2.jpg", label: "UKS 2", alt: "Unit Kesehatan Sekolah" },
+  { src: "/images/fasilitas/dak.jpg", label: "DAK", alt: "Ruang DAK sekolah" },
+  { src: "/images/fasilitas/dak-2.jpg", label: "DAK 2", alt: "Ruang DAK sekolah" },
+  { src: "/images/fasilitas/dak-3.jpg", label: "DAK 3", alt: "Ruang DAK sekolah" },
+  { src: "/images/fasilitas/dak-studio.jpg", label: "DAK Studio", alt: "Studio DAK sekolah" },
+];
+
 export function Fasilitas() {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "left", distance: 170 });
   useTiltHover(ref, { maxTilt: 6, scale: 1.02 });
@@ -134,6 +155,30 @@ export function Fasilitas() {
             </ul>
           </CardContent>
         </Card>
+
+        {/* Galeri dokumentasi fasilitas — foto asli dari folder dokumentasi */}
+        <div
+          data-scrub-item
+          className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+        >
+          {galeri.map((g) => (
+            <figure
+              key={g.src}
+              className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shadow-sm ring-1 ring-white/60"
+            >
+              <Image
+                src={g.src}
+                alt={g.alt}
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3 pt-8 text-xs font-semibold text-white">
+                {g.label}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   );
