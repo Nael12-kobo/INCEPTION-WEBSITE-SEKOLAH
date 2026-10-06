@@ -4,12 +4,11 @@ import { Fragment, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { animate, stagger } from "animejs";
-import { ArrowRight, Award, PlayCircle, Signal } from "lucide-react";
+import { ArrowRight, Award, PlayCircle, Signal, Loader2} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
-
 const TITLE_TOP = "SMK Telekomunikasi ";
 const TITLE_BOTTOM = "Tunas Harapan";
 
@@ -220,39 +219,36 @@ export function Hero() {
         {/* Kolom gambar */}
         {/* Kolom gambar. Jangan pakai `translate-x-50`: di Tailwind v4 itu
             = 200px (spacing × 50), bukan 50% — gambar keluar frame di HP. */}
-        <div data-scrub-item data-scrub-dir="right" data-tilt className="glass relative rounded-[2rem] overflow-visible p-3">
-          <div
-            className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-sky-200/60 via-transparent to-cyan-100/60 blur-xl"
-            aria-hidden
-          />
-          <div data-hero-image className="relative glass-glare overflow-hidden rounded-[1.6rem] border border-white/60 bg-white shadow-2xl shadow-sky-200/60">
-            <Image
-              src="/images/hero-sekolah.svg"
-              alt="Gedung dan kegiatan SMK Telekomunikasi Tunas Harapan"
-              width={960}
-              height={720}
-              priority
-              className="aspect-[4/3] w-full object-cover"
-            />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-sky-950/70 via-sky-900/20 to-transparent p-5 pt-12">
-              <p className="text-sm font-semibold text-white">
-                Kampus modern dengan lab fiber optik & jaringan
-              </p>
-              <p className="text-xs text-sky-100">
-                Jl. Telekomunikasi No. 1 — Tunas Harapan
-              </p>
-            </div>
-          </div>
+        <div>
+                  
+        <div data-scrub-item data-scrub-dir="right" data-tilt className="hidden lg:block">
+          
+          <div className="flex relative z-[-50] top-35 justify-center items-center opacity-75">
+        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-blue-600/50 justify-center items-center" />
+        <Loader2 strokeWidth={2} className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-blue-600/20 justify-center items-center" />
 
-          <div data-magnetic className="glass-strong absolute -left-4 top-6 rounded-2xl px-4 py-3 sm:-left-8">
+        <Loader2 strokeWidth={2} className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-blue-500/80 justify-center items-center" />
+        <Loader2 strokeWidth={1} className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 justify-center items-center" />
+        <Loader2 strokeWidth={1.25} className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 justify-center items-center text-shadow-lg" />
+
+        <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] " ></div>
+        <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-blue-600/80 animate-[spin_60s_linear_infinite_reverse] " ></div>
+
+        </div>
+
+          <div>
+          <Image data-hero-image src="/images/TTH.png" alt="Logo SMK Telekomunikasi Tunas Harapan" width={300} height={300} className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow-2xl drop-shadow-sky-200/60"/>
+          </div>
+          <div data-magnetic className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15">
             <p className="text-2xl font-extrabold text-sky-700">911+</p>
             <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
           </div>
-          <div data-magnetic className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:-right-6">
+          <div data-magnetic className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:right-12">
             <p className="text-2xl font-extrabold text-sky-700">96%</p>
             <p className="text-xs font-medium text-slate-500">
               Lulusan terserap
             </p>
+          </div>
           </div>
           
         </div>
