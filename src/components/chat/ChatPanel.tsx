@@ -108,6 +108,10 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
 
   const submit = () => {
     if (!value.trim() || isTyping) return;
+    if (value.length > 500) {
+      alert("Pesan terlalu panjang! Maksimal 500 karakter.");
+      return;
+    }
     void sendMessage(value);
     setValue("");
   };
@@ -119,6 +123,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
           placeholder="Ketik pesan Anda..."
           value={value}
           autoFocus={autoFocus}
+          maxLength={500}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -140,6 +145,9 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
       </div>
       <p className="mt-2 text-center text-[10px] text-slate-500">
         Powered by Gemini 3.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
+      </p>
+      <p className="text-right text-[10px] text-slate-400">
+        {value.length}/500
       </p>
     </div>
   );

@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
 import { cn } from "@/lib/utils";
+import { ImageModal } from "@/components/ImageModal";
 
 const tabs = [
   { id: "lab", label: "Lab & Praktik", icon: FlaskConical },
@@ -74,19 +75,79 @@ const data: Record<TabId, { title: string; desc: string; items: string[] }> = {
  * Dokumentasi foto fasilitas (dari folder dokumentasi sekolah).
  * Semua foto 1599×1200 (rasio 4:3).
  */
-const galeri: { src: string; label: string; alt: string }[] = [
-  { src: "/images/fasilitas/perpustakaan.jpg", label: "Perpustakaan", alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan" },
-  { src: "/images/fasilitas/tefa.jpg", label: "Teaching Factory", alt: "Teaching Factory (TEFA)" },
-  { src: "/images/fasilitas/gedung-tkj.jpg", label: "Gedung TKJ", alt: "Gedung Teknik Komputer dan Jaringan" },
-  { src: "/images/fasilitas/tkj-lab.jpg", label: "Lab TKJ", alt: "Laboratorium Teknik Komputer dan Jaringan" },
-  { src: "/images/fasilitas/tkro-1.jpg", label: "Bengkel TKRO 1", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
-  { src: "/images/fasilitas/tkro-2.jpg", label: "Bengkel TKRO 2", alt: "Bengkel Teknik Kendaraan Ringan Otomotif" },
-  { src: "/images/fasilitas/uks.jpg", label: "UKS", alt: "Unit Kesehatan Sekolah" },
-  { src: "/images/fasilitas/uks-2.jpg", label: "UKS 2", alt: "Unit Kesehatan Sekolah" },
-  { src: "/images/fasilitas/dak.jpg", label: "DAK", alt: "Ruang DAK sekolah" },
-  { src: "/images/fasilitas/dak-2.jpg", label: "DAK 2", alt: "Ruang DAK sekolah" },
-  { src: "/images/fasilitas/dak-3.jpg", label: "DAK 3", alt: "Ruang DAK sekolah" },
-  { src: "/images/fasilitas/dak-studio.jpg", label: "DAK Studio", alt: "Studio DAK sekolah" },
+const galeri: { src: string; label: string; alt: string; description: string }[] = [
+  {
+    src: "/images/fasilitas/perpustakaan.jpg",
+    label: "Perpustakaan",
+    alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
+    description: "Perpustakaan lengkap dengan koleksi buku, jurnal, dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa."
+  },
+  {
+    src: "/images/fasilitas/tefa.jpg",
+    label: "Teaching Factory",
+    alt: "Teaching Factory (TEFA)",
+    description: "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi."
+  },
+  {
+    src: "/images/fasilitas/gedung-tkj.jpg",
+    label: "Gedung TKJ",
+    alt: "Gedung Teknik Komputer dan Jaringan",
+    description: "Gedung khusus untuk program keahlian Teknik Komputer dan Jaringan dengan peralatan modern."
+  },
+  {
+    src: "/images/fasilitas/tkj-lab.jpg",
+    label: "Lab TKJ",
+    alt: "Laboratorium Teknik Komputer dan Jaringan",
+    description: "Laboratorium TKJ dilengkapi dengan perangkat jaringan Cisco, Mikrotik, dan server untuk praktik konfigurasi jaringan."
+  },
+  {
+    src: "/images/fasilitas/tkro-1.jpg",
+    label: "Bengkel TKRO 1",
+    alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
+    description: "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan."
+  },
+  {
+    src: "/images/fasilitas/tkro-2.jpg",
+    label: "Bengkel TKRO 2",
+    alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
+    description: "Bengkel TKRO 2 sebagai pelengkap fasilitas praktik untuk menampung lebih banyak siswa."
+  },
+  {
+    src: "/images/fasilitas/uks.jpg",
+    label: "UKS",
+    alt: "Unit Kesehatan Sekolah",
+    description: "Unit Kesehatan Sekolah yang siap melayani siswa untuk pertolongan pertama dan pemeriksaan kesehatan dasar."
+  },
+  {
+    src: "/images/fasilitas/uks-2.jpg",
+    label: "UKS 2",
+    alt: "Unit Kesehatan Sekolah",
+    description: "Fasilitas UKS tambahan dengan peralatan medis untuk menunjang kesehatan siswa."
+  },
+  {
+    src: "/images/fasilitas/dak.jpg",
+    label: "DAK",
+    alt: "Ruang DAK sekolah",
+    description: "Ruang DAK yang difungsikan sebagai ruang belajar pada jurusan DKV atau Multi Media di lengkapi dengan fasilitas multimedia yang lengkap."
+  },
+  {
+    src: "/images/fasilitas/dak-2.jpg",
+    label: "DAK 2",
+    alt: "Ruang DAK sekolah",
+    description: "Ruang DAK 2 sebagai ruang belajar tambahan dengan desain modern untuk mendukung pembelajaran berbasis teknologi."
+  },
+  {
+    src: "/images/fasilitas/dak-3.jpg",
+    label: "DAK 3",
+    alt: "Ruang DAK sekolah",
+    description: "Ruang DAK 3  sebagai ruang belajar tambahan yang dilengkapi dengan AC dan proyektor."
+  },
+  {
+    src: "/images/fasilitas/dak-studio.jpg",
+    label: "DAK Studio",
+    alt: "Studio DAK sekolah",
+    description: "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah."
+  },
 ];
 
 export function Fasilitas() {
@@ -94,6 +155,7 @@ export function Fasilitas() {
   useTiltHover(ref, { maxTilt: 6, scale: 1.02 });
   const [active, setActive] = useState<TabId>("lab");
   const content = data[active];
+  const [selectedImage, setSelectedImage] = useState<typeof galeri[0] | null>(null);
 
   return (
     <section id="fasilitas" ref={ref} className="bg-transparent">
@@ -166,14 +228,22 @@ export function Fasilitas() {
             <figure
               key={g.src}
               data-tilt
-              className="glass glass-glare relative aspect-[4/3] overflow-hidden rounded-2xl"
+              className="glass glass-glare relative aspect-[4/3] overflow-hidden rounded-2xl group"
             >
+              <div
+                className="absolute inset-0 z-20 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage(g);
+                }}
+                title="Klik untuk memperbesar"
+              />
               <Image
                 src={g.src}
                 alt={g.alt}
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                className="object-cover"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
               {/* z-10: caption harus di atas pseudo-element glare (::after) */}
               <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3 pt-8 text-xs font-semibold text-white">
@@ -183,6 +253,15 @@ export function Fasilitas() {
           ))}
         </div>
       </div>
+
+      <ImageModal
+        isOpen={selectedImage !== null}
+        onClose={() => setSelectedImage(null)}
+        src={selectedImage?.src || ""}
+        alt={selectedImage?.alt || ""}
+        title={selectedImage?.label}
+        description={selectedImage?.description}
+      />
     </section>
   );
 }

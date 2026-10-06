@@ -124,54 +124,6 @@ function ChatBubbleInner() {
           </DialogHeader>
         </DialogContent>
       </Dialog>
-
-      <style jsx global>{`
-        @keyframes bounce-slow {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-        /* Panel muncul/keluar dari sudut kanan-bawah (menggantikan
-           animasi bawaan DialogContent yang slide dari kiri-atas).
-           Rule unlayered ini menang atas @layer utilities Tailwind,
-           jadi deterministik — dialog tengah lain tidak terpengaruh
-           karena selector di-scope ke .chat-panel-content. */
-        .chat-panel-content[data-state="open"] {
-          animation: chat-panel-in 0.25s ease-out;
-          transform-origin: bottom right;
-        }
-        .chat-panel-content[data-state="closed"] {
-          animation: chat-panel-out 0.2s ease-in forwards;
-          transform-origin: bottom right;
-        }
-        @keyframes chat-panel-in {
-          from {
-            opacity: 0;
-            transform: translate(24px, 24px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translate(0, 0) scale(1);
-          }
-        }
-        @keyframes chat-panel-out {
-          from {
-            opacity: 1;
-            transform: translate(0, 0) scale(1);
-          }
-          to {
-            opacity: 0;
-            transform: translate(24px, 24px) scale(0.96);
-          }
-        }
-      `}</style>
     </>
   );
 }

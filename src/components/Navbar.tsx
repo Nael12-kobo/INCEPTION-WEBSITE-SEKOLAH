@@ -34,12 +34,16 @@ const programLinks = [
 ];
 
 const mobileLinks = [
-  { href: "/#profil", label: "Profil" },
-  { href: "/#jurusan", label: "Jurusan" },
+  { href: "/#profil", label: "Profil Sekolah" },
+  { href: "/#statistik", label: "Data & Statistik" },
   { href: "/#fasilitas", label: "Fasilitas" },
+  { href: "/jurusan/PPLG", label: "PPLG - Pengembangan Perangkat Lunak" },
+  { href: "/jurusan/TJKT", label: "TJKT - Jaringan Komputer" },
+  { href: "/jurusan/DKV", label: "DKV - Desain Komunikasi Visual" },
+  { href: "/jurusan/TKRO", label: "TKRO - Kendaraan Ringan Otomotif" },
   { href: "/#berita", label: "Berita" },
-  { href: "/#ppdb", label: "PPDB" },
   { href: "/guru-karyawan", label: "Guru & Karyawan" },
+  { href: "/#profil", label: "Tentang" },
   // Tanpa link ini, pengunjung HP tidak punya jalan menuju login —
   // satu-satunya akses sebelumnya lewat redirect dari /ppdb.
   { href: "/auth/login", label: "Masuk" },
@@ -170,16 +174,55 @@ export function Navbar() {
               </SheetTitle>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-1">
-              {mobileLinks.map((l) => (
-                <Link
-                  key={l.href + l.label}
-                  href={l.href}
-                  className="rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
-                >
-                  {l.label}
-                </Link>
-              ))}
-              <Button asChild className="mt-4">
+              {/* Section Profil */}
+              <div className="mb-2">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Profil
+                </p>
+                {mobileLinks.slice(0, 3).map((l) => (
+                  <Link
+                    key={l.href + l.label}
+                    href={l.href}
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Section Program */}
+              <div className="mb-2">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Program Keahlian
+                </p>
+                {mobileLinks.slice(3, 7).map((l) => (
+                  <Link
+                    key={l.href + l.label}
+                    href={l.href}
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Section Lainnya */}
+              <div className="mb-2">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Lainnya
+                </p>
+                {mobileLinks.slice(7).map((l) => (
+                  <Link
+                    key={l.href + l.label}
+                    href={l.href}
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+
+              <Button asChild className="mt-4 w-full">
                 <Link href="#ppdb">PPDB 2026</Link>
               </Button>
             </nav>

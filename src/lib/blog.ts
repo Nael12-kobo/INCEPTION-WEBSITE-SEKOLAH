@@ -139,7 +139,10 @@ export async function ambilBerita(limit = 9): Promise<Berita[]> {
     const res = await fetch(`${API}?per_page=${limit}&_embed`, {
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(15_000),
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; SMKTunasHarapanBot/1.0; +https://smktunasharapan.sch.id)",
+      },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 

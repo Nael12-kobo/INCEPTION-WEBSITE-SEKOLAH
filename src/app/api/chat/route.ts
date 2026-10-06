@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         .slice(-20)
         .map((m) => ({
           role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
-          content: m.content.trim().slice(0, 4000),
+          content: m.content.trim().slice(0, 500),
         }))
     : [];
 
