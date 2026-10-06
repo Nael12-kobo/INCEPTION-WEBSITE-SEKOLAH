@@ -16,10 +16,17 @@ const TITLE_BOTTOM = "Tunas Harapan";
 /**
  * Huruf per-karakter untuk animasi `data-hero-letter`.
  *
- * Spasi sengaja dirender sebagai text node biasa, BUKAN NBSP ("\u00A0").
- * NBSP membuat "SMK Telekomunikasi" jadi satu token yang tidak bisa dipecah
- * → di layar 360–412px judul meluber keluar frame (section-nya
- * `overflow-hidden`). Spasi biasa tetap menyediakan peluang wrap antar kata.
+ * Dua aturan pemecahan baris yang saling melengkapi:
+ *
+ * 1. Tiap KATA dibungkus `whitespace-nowrap`. Huruf per-karakter tadi tetap
+ *    `inline-block`, dan tanpa pembungkus ini browser boleh memotong di
+ *    tengah kata ("SMK Telek | omunikasi") karena setiap huruf = satu
+ *    atomic inline.
+ * 2. Spasi antar kata dirender sebagai text node biasa, BUKAN NBSP
+ *    ("\u00A0"). NBSP membuat "SMK Telekomunikasi" jadi satu token yang
+ *    tidak bisa dipecah → di layar 360–412px judul meluber keluar frame
+ *    (section-nya `overflow-hidden`). Spasi biasa tetap menyediakan peluang
+ *    wrap antar kata.
  */
 function AnimatedTitle({
   text,
@@ -28,21 +35,26 @@ function AnimatedTitle({
   text: string;
   prefix: string;
 }) {
+  const words = text.split(" ").filter((word) => word.length > 0);
+
   return (
     <>
-      {text.split("").map((ch, i) =>
-        ch === " " ? (
-          <Fragment key={`${prefix}-${i}`}>{" "}</Fragment>
-        ) : (
-          <span
-            key={`${prefix}-${i}`}
-            data-hero-letter
-            className="inline-block will-change-transform"
-          >
-            {ch}
+      {words.map((word, w) => (
+        <Fragment key={`${prefix}-${w}`}>
+          {w > 0 ? " " : null}
+          <span className="whitespace-nowrap">
+            {word.split("").map((ch, i) => (
+              <span
+                key={`${prefix}-${w}-${i}`}
+                data-hero-letter
+                className="inline-block will-change-transform"
+              >
+                {ch}
+              </span>
+            ))}
           </span>
-        )
-      )}
+        </Fragment>
+      ))}
     </>
   );
 }
