@@ -28,6 +28,8 @@ const SITE_PREFIXES = [
   "/jurusan",
   "/privacy-policy",
   "/terms-of-service",
+  // Halaman profil guru — punya Navbar situs (bukan route portal).
+  "/guru-karyawan",
 ];
 
 function isSitePath(pathname: string): boolean {
