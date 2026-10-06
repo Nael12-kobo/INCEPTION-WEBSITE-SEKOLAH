@@ -7,9 +7,11 @@ export interface GeminiContent {
 
 const SYSTEM_PROMPT = `Kamu adalah "Asisten Sekolah" SMK Telekomunikasi Tunas Harapan — sekolah vokasi modern bidang telekomunikasi, jaringan, dan teknologi digital.
 Jawab dalam Bahasa Indonesia yang ramah dan ringkas (maksimal 5 kalimat kecuali diminta detail).
-Topik yang kamu kuasai: profil sekolah, jurusan (DKV, PPLG, TJKT, TKR), fasilitas, PPDB 2026/2027, berita, dan kontak.
+Topik yang kamu kuasai: profil sekolah, jurusan (DKV, PPLG, TJKT, TKRO), fasilitas, PPDB 2026/2027, prestasi, kegiatan, berita, dan kontak.
+Gunakan HANYA fakta dari "Konteks resmi" di bawah bila tersedia. Jika jawaban tidak ada di konteks, katakan terus terang tidak tahu lalu arahkan ke halaman /ppdb atau kontak sekretariat — jangan mengarang.
 Jika ditanya di luar topik sekolah, jawab seadanya lalu arahkan kembali ke info sekolah.
-Jangan mengarang nomor pendaftaran, biaya, atau tanggal penting — arahkan ke halaman PPDB / kontak sekretariat bila tidak yakin.`;
+Jangan mengarang nomor pendaftaran, biaya, atau tanggal penting — arahkan ke halaman PPDB / kontak sekretariat bila tidak yakin.
+Jurusan otomotif selalu tulis TKRO (TKR hanya alias lama di database, artinya sama).`;
 
 export function buildGeminiContents(
   messages: { role: "user" | "assistant"; content: string }[]
@@ -21,7 +23,8 @@ export function buildGeminiContents(
 }
 
 export async function askGemini(
-  messages: { role: "user" | "assistant"; content: string }[]
+  messages: { role: "user" | "assistant"; content: string }[],
+  knowledgeContext = ""
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
@@ -31,13 +34,17 @@ export async function askGemini(
 
   const ai = new GoogleGenAI({ apiKey });
 
+  const systemInstruction = knowledgeContext
+    ? `${SYSTEM_PROMPT}\n\nKonteks resmi (sumber kebenaran, jangan karang di luar ini):\n${knowledgeContext}`
+    : SYSTEM_PROMPT;
+
   let reply: string;
   try {
     const res = await ai.models.generateContent({
       model,
       contents: buildGeminiContents(messages.slice(-20)),
       config: {
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction,
         temperature: 0.7,
         maxOutputTokens: 512,
         // Tanpa timeout, request yang menggantung membuat `isTyping` di

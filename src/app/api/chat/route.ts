@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { askGemini } from "@/lib/gemini";
+import { getKnowledgeContext } from "@/lib/knowledge";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 interface IncomingMessage {
@@ -107,7 +108,17 @@ export async function POST(request: Request) {
 
   let reply: string;
   try {
-    reply = await askGemini(messages);
+    // Retrieval keyword: ambil 2-3 file knowledge paling relevan dengan
+    // pesan terakhir agar Gemini menjawab dari fakta situs. Gagal baca
+    // file tidak boleh menggagalkan chat → fallback string kosong.
+    let knowledge = "";
+    try {
+      const lastUser = messages[messages.length - 1]?.content ?? "";
+      knowledge = getKnowledgeContext(lastUser).context;
+    } catch {
+      knowledge = "";
+    }
+    reply = await askGemini(messages, knowledge);
   } catch (error) {
     console.error("[/api/chat] Gemini gagal:", error);
     const msg =
