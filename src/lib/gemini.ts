@@ -22,43 +22,94 @@ export function buildGeminiContents(
   }));
 }
 
+function isTransientGeminiError(error: unknown): boolean {
+  const status = Number((error as { status?: number })?.status ?? 0);
+  const name = error instanceof Error ? error.name : "";
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    status === 408 ||
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    name === "AbortError" ||
+    /timeout|timed out|high demand|temporarily unavailable|unavailable/i.test(message)
+  );
+}
+
+async function generateWithGemini(
+  apiKey: string,
+  model: string,
+  messages: { role: "user" | "assistant"; content: string }[],
+  systemInstruction: string
+): Promise<string> {
+  const ai = new GoogleGenAI({ apiKey });
+  const res = await ai.models.generateContent({
+    model,
+    contents: buildGeminiContents(messages.slice(-20)),
+    config: {
+      systemInstruction,
+      temperature: 0.7,
+      maxOutputTokens: 512,
+      httpOptions: { timeout: 30_000 },
+    },
+  });
+  const reply = (res.text ?? "").trim();
+  if (!reply) throw new Error("Gemini mengembalikan respons kosong.");
+  return reply;
+}
+
 export async function askGemini(
   messages: { role: "user" | "assistant"; content: string }[],
   knowledgeContext = ""
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+  const fallbackModel =
+    process.env.GEMINI_FALLBACK_MODEL || "gemini-3.1-flash-lite";
+  const fallbackApiKey = process.env.GEMINI_FALLBACK_API_KEY || apiKey;
+
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY belum diisi di .env");
   }
-
-  const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = knowledgeContext
     ? `${SYSTEM_PROMPT}\n\nKonteks resmi (sumber kebenaran, jangan karang di luar ini):\n${knowledgeContext}`
     : SYSTEM_PROMPT;
 
-  let reply: string;
   try {
-    const res = await ai.models.generateContent({
-      model,
-      contents: buildGeminiContents(messages.slice(-20)),
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-        maxOutputTokens: 512,
-        // Tanpa timeout, request yang menggantung membuat `isTyping` di
-        // client terkunci (tombol kirim & input disabled) sampai user
-        // reload halaman.
-        httpOptions: { timeout: 30_000 },
-      },
-    });
-    reply = (res.text ?? "").trim();
-  } catch (e) {
-    const status = (e as { status?: number })?.status;
-    const msg = e instanceof Error ? e.message : "unknown error";
-    throw new Error(`Gemini error${status ? ` ${status}` : ""}: ${msg.slice(0, 300)}`);
+    return await generateWithGemini(apiKey, model, messages, systemInstruction);
+  } catch (primaryError) {
+    if (!isTransientGeminiError(primaryError)) {
+      const status = (primaryError as { status?: number })?.status;
+      const msg =
+        primaryError instanceof Error ? primaryError.message : "unknown error";
+      throw new Error(
+        `Gemini error${status ? ` ${status}` : ""}: ${msg.slice(0, 300)}`
+      );
+    }
+
+    console.warn(
+      `[Gemini] primary model ${model} gagal sementara; mencoba fallback ${fallbackModel}`
+    );
+
+    try {
+      return await generateWithGemini(
+        fallbackApiKey,
+        fallbackModel,
+        messages,
+        systemInstruction
+      );
+    } catch (fallbackError) {
+      const status = (fallbackError as { status?: number })?.status;
+      const msg =
+        fallbackError instanceof Error
+          ? fallbackError.message
+          : "unknown error";
+      throw new Error(
+        `Gemini fallback error${status ? ` ${status}` : ""}: ${msg.slice(0, 300)}`
+      );
+    }
   }
-  if (!reply) throw new Error("Gemini mengembalikan respons kosong.");
-  return reply;
 }
