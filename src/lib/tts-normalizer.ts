@@ -59,6 +59,14 @@ function normalizeYearMatch(match: string): string {
   return spellYear(a) + " sampai " + spellYear(b);
 }
 
+function normalizePlainNumbers(text: string): string {
+  return text.replace(/\b\d{1,2}\b/g, (match) => {
+    const value = Number(match);
+    if (!Number.isInteger(value) || value < 0 || value > 99) return match;
+    return spellSmallNumber(value);
+  });
+}
+
 export function normalizeForSpeech(input: string): string {
   let text = input
     .normalize("NFKC")
@@ -72,6 +80,8 @@ export function normalizeForSpeech(input: string): string {
     .replace(/\b(?:19|20)\d{2}\b/g, (m) => spellYear(Number(m)))
     .replace(/\s+/g, " ")
     .trim();
+
+  text = normalizePlainNumbers(text);
 
   for (const [key, pronunciation] of Object.entries(ACRONYM_PRONUNCIATIONS)) {
     text = text.replace(new RegExp("\\b" + key + "\\b", "gi"), pronunciation);
