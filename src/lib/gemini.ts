@@ -68,11 +68,13 @@ export async function askGemini(
   const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   const fallbackModel =
     process.env.GEMINI_FALLBACK_MODEL || "gemini-3.1-flash-lite";
-  const fallbackApiKey = process.env.GEMINI_FALLBACK_API_KEY || apiKey;
 
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY belum diisi di .env");
   }
+
+  const fallbackApiKey =
+    process.env.GEMINI_FALLBACK_API_KEY ?? apiKey;
 
   const systemInstruction = knowledgeContext
     ? `${SYSTEM_PROMPT}\n\nKonteks resmi (sumber kebenaran, jangan karang di luar ini):\n${knowledgeContext}`
