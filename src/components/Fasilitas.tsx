@@ -157,23 +157,27 @@ export function Fasilitas() {
         </Card>
 
         {/* Galeri dokumentasi fasilitas — foto asli dari folder dokumentasi */}
+        {/* tilt-scene: perspective untuk tilt 3D kartu (data-tilt),
+            glare + tilt-nya dijalankan useTiltHover section ini. */}
         <div
           data-scrub-item
-          className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+          className="tilt-scene mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
         >
           {galeri.map((g) => (
             <figure
               key={g.src}
-              className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shadow-sm ring-1 ring-white/60"
+              data-tilt
+              className="glass glass-glare relative aspect-[4/3] overflow-hidden rounded-2xl"
             >
               <Image
                 src={g.src}
                 alt={g.alt}
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover"
               />
-              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3 pt-8 text-xs font-semibold text-white">
+              {/* z-10: caption harus di atas pseudo-element glare (::after) */}
+              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3 pt-8 text-xs font-semibold text-white">
                 {g.label}
               </figcaption>
             </figure>
