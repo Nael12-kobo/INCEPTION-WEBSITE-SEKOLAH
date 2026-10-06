@@ -54,7 +54,9 @@ interface VrmViewerProps {
  * - Auto-frame bounding box agar karakter selalu masuk frame.
  * - Offset global (prop globalOffset: offsetX/offsetY/rotationYOffset/
  *   zoomOffset) ditulis ke wrapper Group parent — tak tercampur prosedural.
- * - Entrance .vrma opsional sekali-putar + frustumCulled=false anti-culling.
+ * - Entrance .vrma sekali-putar → crossfade 0.4s → idle.vrma loop;
+ *   saat clip aktif prosedural badan mati (clip pegang penuh), blink +
+ *   mulut prosedural tetap jalan di atasnya + frustumCulled=false.
  * - Error asli ditampilkan (bukan pesan generik) agar mudah diagnosis.
  * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden.
  */
@@ -509,8 +511,16 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
           setStatus("ready");
         }
 
-        // ---- Entrance .vrma (opsional, sekali-putar) ----
+        // ---- Entrance (sekali) + Idle (loop) .vrma — opsional ----
         // File tak ada/invalid → warn + lanjut prosedural seperti biasa.
+        // State: entrance --crossfade 0.4s--> idle. Tanpa idle, entrance
+        // clamp lalu prosedural ambil alih. Tanpa keduanya, full prosedural.
+        // Slot talk.vrma menyusul: idle tetap loop saat speaking + mulut
+        // prosedural (lihat bawah); tinggal tambah talkAction + crossfade.
+        let activeClip: "entrance" | "idle" | "none" = "none";
+        const setActiveClip = (s: typeof activeClip) => {
+          activeClip = s;
+        };
         if (!isCancelled()) {
           try {
             const { VRMAnimationLoaderPlugin, createVRMAnimationClip } = await import(
@@ -521,34 +531,69 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
               animLoader.register(
                 (parser: unknown) => new VRMAnimationLoaderPlugin(parser as never)
               );
-              const animGltf = await animLoader.loadAsync(
-                "/models/animation/entrance.vrma"
-              );
-              if (!isCancelled()) {
-                const anims = (
-                  animGltf.userData as {
-                    vrmAnimations?: import("@pixiv/three-vrm-animation").VRMAnimation[];
+              const loadClip = async (path: string) => {
+                try {
+                  const animGltf = await animLoader.loadAsync(path);
+                  const anims = (
+                    animGltf.userData as {
+                      vrmAnimations?: import("@pixiv/three-vrm-animation").VRMAnimation[];
+                    }
+                  ).vrmAnimations;
+                  const first = anims?.[0];
+                  if (!first) {
+                    console.warn(`[VrmViewer] ${path} dilewati (bukan .vrma valid).`);
+                    return null;
                   }
-                ).vrmAnimations;
-                const first = anims?.[0];
-                if (first) {
-                  const clip = createVRMAnimationClip(first, vrm);
-                  mixer = new THREE.AnimationMixer(vrm.scene);
-                  mixerRoot = vrm.scene;
-                  const action = mixer.clipAction(clip);
-                  action.setLoop(THREE.LoopOnce, 1);
-                  action.clampWhenFinished = true;
-                  action.play();
-                } else {
-                  console.warn(
-                    "[VrmViewer] entrance dilewati (bukan .vrma valid)."
-                  );
+                  return createVRMAnimationClip(first, vrm);
+                } catch (e) {
+                  console.warn(`[VrmViewer] ${path} dilewati:`, e);
+                  return null;
+                }
+              };
+              const [entranceClip, idleClip] = await Promise.all([
+                loadClip("/models/animation/entrance.vrma"),
+                loadClip("/models/animation/idle.vrma"),
+              ]);
+              if (!isCancelled() && (entranceClip || idleClip)) {
+                mixer = new THREE.AnimationMixer(vrm.scene);
+                mixerRoot = vrm.scene;
+                const entranceAction = entranceClip
+                  ? mixer.clipAction(entranceClip)
+                  : null;
+                const idleAction = idleClip ? mixer.clipAction(idleClip) : null;
+                if (entranceAction) {
+                  entranceAction.setLoop(THREE.LoopOnce, 1);
+                  entranceAction.clampWhenFinished = true;
+                }
+                if (idleAction) {
+                  idleAction.setLoop(THREE.LoopRepeat, Infinity);
+                }
+                const onFinished = (e: { action: unknown }) => {
+                  if (isCancelled()) return;
+                  if (e.action === entranceAction) {
+                    if (idleAction && entranceAction) {
+                      setActiveClip("idle");
+                      idleAction.reset().play();
+                      entranceAction.crossFadeTo(idleAction, 0.4, false);
+                    } else {
+                      // Entrance tanpa idle: kembalikan ke prosedural.
+                      setActiveClip("none");
+                    }
+                  }
+                };
+                mixer.addEventListener("finished", onFinished as never);
+                if (entranceAction) {
+                  setActiveClip("entrance");
+                  entranceAction.reset().play();
+                } else if (idleAction) {
+                  setActiveClip("idle");
+                  idleAction.reset().play();
                 }
               }
             }
           } catch (animError) {
             if (!isCancelled()) {
-              console.warn("[VrmViewer] entrance dilewati:", animError);
+              console.warn("[VrmViewer] animasi .vrma dilewati:", animError);
             }
           }
         }
@@ -604,13 +649,24 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
           const g = globalOffsetRef.current;
           rig.position.set(g?.offsetX ?? 0, g?.offsetY ?? 0, 0);
           rig.rotation.y = MathUtils.degToRad(g?.rotationYOffset ?? 0);
-          vrm.scene.position.y = baseY + offY + Math.sin(t * 1.4) * 0.02;
-          vrm.scene.position.x = baseX + offX + Math.sin(t * 0.4) * 0.008;
-          vrm.scene.position.z = baseZ;
-          vrm.scene.rotation.y = MathUtils.degToRad(0);
+          const clipActive = activeClip !== "none";
+          if (clipActive) {
+            // Clip (.vrma) pegang PENUH badan + tulang: tanpa breathing,
+            // sway, chest, head prosedural agar tidak double-transform.
+            // Hanya placement statis (auto-frame + offset framing).
+            vrm.scene.position.y = baseY + offY;
+            vrm.scene.position.x = baseX + offX;
+            vrm.scene.position.z = baseZ;
+            vrm.scene.rotation.y = MathUtils.degToRad(0);
+          } else {
+            vrm.scene.position.y = baseY + offY + Math.sin(t * 1.4) * 0.02;
+            vrm.scene.position.x = baseX + offX + Math.sin(t * 0.4) * 0.008;
+            vrm.scene.position.z = baseZ;
+            vrm.scene.rotation.y = MathUtils.degToRad(0);
+          }
           const isSpeakingNow = speakingRef.current || audioSpeakingRef.current;
 
-          if (vrm.humanoid) {
+          if (!clipActive && vrm.humanoid) {
             const chest = vrm.humanoid.getNormalizedBoneNode("chest");
             if (chest) chest.rotation.x = isSpeakingNow
               ? Math.sin(t * 1.8) * 0.035
