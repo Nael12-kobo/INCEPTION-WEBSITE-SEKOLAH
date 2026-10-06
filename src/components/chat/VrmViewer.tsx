@@ -801,11 +801,15 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       
       {status === "loading" && (
         <div className="absolute inset-0 flex items-center justify-center bg-white">
-          <img
-            src="/animated/loading.gif"
-            alt="Memuat karakter 3D..."
+          <video
+            src="/animated/loading.webm"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-label="Memuat karakter 3D..."
             className="h-60 w-60 object-contain md:h-100 md:w-100"
-            draggable={false}
           />
         </div>
       )}
