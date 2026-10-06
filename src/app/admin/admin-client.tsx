@@ -26,10 +26,13 @@ interface PpdbRegistration {
   email: string;
   status: string;
   majorFirst: string;
+  majorSecond?: string;
+  notes?: string;
   createdAt: Date;
 }
 
 const PPDB_STATUSES = ["PENDING", "CONTACTED", "REGISTERED", "REJECTED"] as const;
+const PPDB_MAJORS = ["DKV", "PPLG", "TJKT", "TKR"] as const;
 
 interface AdminClientProps {
   currentUser: { id: string; name: string | null; email: string | null; role: string };
@@ -141,6 +144,87 @@ export function AdminClient({
       setPpdbRegistrations((prev) => prev.filter((r) => r.id !== id));
     } catch (error: unknown) {
       alert(error instanceof Error ? error.message : "Failed to delete registration");
+    }
+  };
+
+  /**
+   * Edit cepat pendaftaran PPDB (jurusan 1, jurusan 2, nama, email, notes, status).
+   * Pakai window.prompt/confirm agar tidak butuh dialog UI baru — cukup fungsional
+   * untuk admin panel dan menghilangkan error TS2552 "handleEditRegistration undefined".
+   */
+  const handleEditRegistration = async (reg: PpdbRegistration) => {
+    if (!isAdmin(role)) return;
+
+    const next: Record<string, string> = {};
+
+    const major1 = window.prompt(
+      `Jurusan 1 (${PPDB_MAJORS.join(", ")})\nSaat ini: ${reg.majorFirst}`,
+      reg.majorFirst
+    );
+    if (major1 === null) return;
+    if (major1.trim() && !(PPDB_MAJORS as readonly string[]).includes(major1.trim().toUpperCase())) {
+      alert(`Jurusan 1 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`);
+      return;
+    }
+    if (major1.trim()) next.majorFirst = major1.trim().toUpperCase();
+
+    const major2 = window.prompt(
+      `Jurusan 2 (${PPDB_MAJORS.join(", ")})\nSaat ini: ${reg.majorSecond ?? "-"}`,
+      reg.majorSecond ?? ""
+    );
+    if (major2 === null) return;
+    if (major2.trim() && !(PPDB_MAJORS as readonly string[]).includes(major2.trim().toUpperCase())) {
+      alert(`Jurusan 2 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`);
+      return;
+    }
+    if (major2.trim()) next.majorSecond = major2.trim().toUpperCase();
+
+    const fullName = window.prompt(`Nama lengkap\nSaat ini: ${reg.fullName}`, reg.fullName);
+    if (fullName === null) return;
+    if (fullName.trim() && fullName.trim().length >= 2) next.fullName = fullName.trim();
+
+    const email = window.prompt(`Email\nSaat ini: ${reg.email}`, reg.email);
+    if (email === null) return;
+    if (email.trim()) next.email = email.trim();
+
+    const notes = window.prompt(`Notes admin\nSaat ini: ${reg.notes ?? "-"}`, reg.notes ?? "");
+    if (notes === null) return;
+    if (notes.trim()) next.notes = notes.trim();
+    else if (reg.notes && !notes.trim()) next.notes = "";
+
+    const status = window.prompt(
+      `Status (${PPDB_STATUSES.join(", ")})\nSaat ini: ${reg.status}`,
+      reg.status
+    );
+    if (status === null) return;
+    if (status.trim() && !(PPDB_STATUSES as readonly string[]).includes(status.trim().toUpperCase())) {
+      alert(`Status tidak valid. Pilih: ${PPDB_STATUSES.join(", ")}`);
+      return;
+    }
+    if (status.trim()) next.status = status.trim().toUpperCase();
+
+    if (Object.keys(next).length === 0) {
+      alert("Tidak ada perubahan yang disimpan.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/ppdb/${reg.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal update pendaftaran");
+      }
+      const data = (await res.json()) as { registration: PpdbRegistration };
+      setPpdbRegistrations((prev) =>
+        prev.map((r) => (r.id === reg.id ? { ...r, ...data.registration } : r))
+      );
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Gagal update pendaftaran");
+      await refreshPpdb();
     }
   };
 
