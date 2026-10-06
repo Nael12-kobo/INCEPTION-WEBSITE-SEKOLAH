@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeForSpeech } from "@/lib/tts-normalizer";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid JSON body." }, { status: 400 });
   }
 
-  const text = typeof body.text === "string" ? body.text.trim() : "";
-  if (!text) {
+  const rawText = typeof body.text === "string" ? body.text.trim() : "";
+  if (!rawText) {
     return NextResponse.json({ message: "Teks TTS kosong." }, { status: 400 });
+  }
+
+  const text = normalizeForSpeech(rawText);
+  if (!text) {
+    return NextResponse.json({ message: "Teks TTS kosong setelah normalisasi." }, { status: 400 });
   }
 
   const payload: Record<string, unknown> = {
