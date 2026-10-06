@@ -1,7 +1,7 @@
 # 🎓 Website SMK Telekomunikasi Tunas Harapan
 
 Website resmi **SMK Telekomunikasi Tunas Harapan** — situs profil sekolah
-untuk publik (calon siswa & orang tua) plus portal akademik bagi siswa, guru,
+untuk publik (calon siswa & orang tua & Masyarakat) plus portal akademik bagi siswa, guru,
 dan administrator. Dibangun dengan Next.js (App Router), TypeScript, dan
 Tailwind CSS.
 
