@@ -173,6 +173,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const next = (prev: ChatMessage[]) => [...prev, userMsg];
       setMessages(next);
       setIsTyping(true);
+      // Hentikan audio jawaban sebelumnya sebelum giliran baru dimulai.
+      window.dispatchEvent(new Event("nara:stop-audio"));
       unlockSpeech();
 
       const seq = ++seqRef.current;

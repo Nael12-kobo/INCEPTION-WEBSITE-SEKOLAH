@@ -334,6 +334,7 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
     };
 
     window.addEventListener("nara:unlock-audio", onUnlockAudio);
+    window.addEventListener("nara:stop-audio", stopCurrentAudio);
     window.addEventListener("nara:audio", onAudio);
     window.addEventListener("nara:audio-stream", onAudioStream);
     // Node mount dicapture di awal effect agar cleanup tidak membaca
