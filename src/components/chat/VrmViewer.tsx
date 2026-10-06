@@ -809,7 +809,7 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
             playsInline
             preload="auto"
             aria-label="Memuat karakter 3D..."
-            className="h-60 w-60 object-contain md:h-100 md:w-100"
+            className="h-60 w-60 translate-y-[-60%] object-contain md:h-100 md:w-100 md:translate-y-0"
           />
         </div>
       )}
