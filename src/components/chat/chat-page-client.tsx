@@ -211,7 +211,11 @@ export function ChatPageClient() {
         <section
           className={cn(
             "absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t border-white/60",
-            "bg-gradient-to-t from-white via-white/90 to-white/40 backdrop-blur-2xl",
+            // Semi-transparan (frosted glass) di mobile: gradient putih 55–75%
+            // + blur supaya karakter 3D di belakang panel masih terlihat samar.
+            // Bubble pesan sendiri opaque (bg-white / gradasi biru) jadi teks
+            // tetap kontras; baris input punya lapisan bg-white/60 sendiri.
+            "bg-gradient-to-t from-white/75 via-white/65 to-white/55 backdrop-blur-2xl",
             "shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] transition-[height] duration-300",
             // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
             "pb-[env(safe-area-inset-bottom)]",
