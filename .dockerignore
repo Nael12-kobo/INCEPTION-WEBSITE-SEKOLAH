@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+.next
+out
+build
+dist
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# VRM / models besar (jika ada di public, tapi biasanya CDN)
+public/models
+public/**/*.vrm
+public/**/*.glb
+public/**/*.gltf
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+.trae
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+
+# Cache / temp
+.turbo
+.cache
+.tmp
+temp
+coverage
+*.tsbuildinfo
+next-env.d.ts.bak
