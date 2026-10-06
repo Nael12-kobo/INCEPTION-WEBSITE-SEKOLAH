@@ -36,9 +36,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const speechText = `[warm, cheerful, energetic, friendly Indonesian conversational tone] ${text}`;
   const fish = new FishAudioClient({ apiKey });
   const textStream = (async function* () {
-    yield text.slice(0, 5000);
+    yield speechText.slice(0, 5000);
   })();
 
   try {
@@ -51,8 +52,12 @@ export async function POST(request: Request) {
         format: "mp3",
         sample_rate: 44100,
         latency: "balanced",
-        temperature: 0.65,
-        top_p: 0.7,
+        temperature: 0.6,
+        top_p: 0.75,
+        prosody: {
+          speed: 1.06,
+          volume: 1.05,
+        },
       },
       textStream,
       model as never
