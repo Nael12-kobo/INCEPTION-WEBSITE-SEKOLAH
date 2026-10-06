@@ -39,7 +39,9 @@ export async function POST(request: Request) {
   const isExcited =
     text.includes("!") ||
     /\b(wah|mantap|keren|bagus|selamat|senang|yuk|ayo|tertarik)\b/i.test(text);
-  const direction = isExcited ? "[excited]" : "[warm, cheerful]";
+  const direction = isExcited
+    ? "[natural conversational speech, spontaneous and expressive, friendly Indonesian, varied intonation, natural pauses, not like a narration]"
+    : "[natural conversational speech, relaxed and expressive, friendly Indonesian, varied intonation, natural pauses, not like a narration]";
   const speechText = `${direction} ${text}`;
   const fish = new FishAudioClient({ apiKey });
   const textStream = (async function* () {
@@ -56,11 +58,11 @@ export async function POST(request: Request) {
         format: "mp3",
         sample_rate: 44100,
         latency: "balanced",
-        temperature: 0.6,
-        top_p: 0.8,
+        temperature: 0.72,
+        top_p: 0.9,
         prosody: {
-          speed: 1.1,
-          volume: 1.08,
+          speed: 1.03,
+          volume: 1.03,
         },
       },
       textStream,
