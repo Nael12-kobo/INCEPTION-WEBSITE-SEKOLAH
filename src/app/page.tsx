@@ -7,8 +7,13 @@ import { Berita } from "@/components/Berita";
 import { CtaPpdb } from "@/components/CtaPpdb";
 import { Footer } from "@/components/Footer";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
+import { ambilBerita } from "@/lib/blog";
 
-export default function Home() {
+export default async function Home() {
+  // Berita terbaru dari situs resmi sekolah — di-cache 1 jam oleh Next,
+  // dan diam-diam mengembalikan [] kalau situsnya lagi tidak bisa diakses.
+  const berita = await ambilBerita(9);
+
   return (
     <div className="relative flex min-h-dvh flex-col  font-sans text-slate-900">
       <HomeBackdrop />
@@ -18,7 +23,7 @@ export default function Home() {
         <Profil />
         <Jurusan />
         <Fasilitas />
-        <Berita />
+        <Berita posts={berita} />
         <CtaPpdb />
       </main>
       <Footer />
