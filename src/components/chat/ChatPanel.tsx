@@ -19,7 +19,13 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
     <div
       className={cn(
         "flex-1 space-y-4 overflow-y-auto subtle-scroll",
-        compact ? "p-4" : "p-4 sm:p-6"
+        compact ? "p-4" : "p-4 sm:p-6",
+        // Fade-out tepi atas saat compact (panel mobile): pesan yang
+        // ke-scroll ke atas memudar halus ~56px, bukan terpotong mendadak.
+        // Mask menyatu dengan scroll container (tanpa overlay yang
+        // menutup area sentuh). Prefix -webkit- wajib untuk Safari iOS.
+        compact &&
+          "[mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)]"
       )}
     >
       {messages.map((message) => (
@@ -107,7 +113,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
   };
 
   return (
-    <div className="border-t border-white/40 bg-white/60 p-3 backdrop-blur-xl sm:p-4">
+    <div className="border-t border-white/20 bg-white/20 p-3 backdrop-blur-xl sm:p-4">
       <div className="flex gap-2">
         <Input
           placeholder="Ketik pesan Anda..."

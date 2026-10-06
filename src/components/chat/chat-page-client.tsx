@@ -210,13 +210,17 @@ export function ChatPageClient() {
             (kurang dari satu balasan). */}
         <section
           className={cn(
-            "absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t border-white/60",
-            // Semi-transparan (frosted glass) di mobile: gradient putih 55–75%
-            // + blur supaya karakter 3D di belakang panel masih terlihat samar.
+            "absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t",
+            // Collapsed (45%): kaca hampir bening — gradient putih 25–5%
+            // + blur supaya karakter 3D di belakang panel terlihat jelas.
+            // Expanded (88%): putih opaque penuh, blur dilepas (tak berguna
+            // di atas bg solid + hemat GPU mobile saat panel fullscreen).
             // Bubble pesan sendiri opaque (bg-white / gradasi biru) jadi teks
-            // tetap kontras; baris input punya lapisan bg-white/60 sendiri.
-            "bg-gradient-to-t from-white/75 via-white/65 to-white/55 backdrop-blur-2xl",
-            "shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] transition-[height] duration-300",
+            // tetap kontras; baris input punya lapisan bg-white/20 sendiri.
+            expanded
+              ? "border-white bg-white shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
+              : "border-white/30 bg-gradient-to-t from-white/25 via-white/15 to-white/5 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
+            "transition-[height] duration-300",
             // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
             "pb-[env(safe-area-inset-bottom)]",
             expanded ? "h-[88%]" : "h-[45%]"
@@ -230,12 +234,12 @@ export function ChatPageClient() {
           >
             <ChevronUp
               className={cn(
-                "h-5 w-5 text-slate-400 transition-transform",
+                "h-5 w-5 text-slate-500 drop-shadow-sm transition-transform",
                 expanded && "rotate-180"
               )}
             />
-            <span className="h-1 w-12 rounded-full bg-slate-300" />
-            <span className="mt-0.5 text-[10px] font-medium text-slate-500">
+            <span className="h-1 w-12 rounded-full bg-slate-400/80" />
+            <span className="mt-0.5 text-[10px] font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]">
               {expanded ? "Ketuk untuk mengecilkan" : "Ketuk untuk memperbesar"}
             </span>
           </button>
