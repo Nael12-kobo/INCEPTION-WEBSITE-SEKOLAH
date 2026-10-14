@@ -11,6 +11,7 @@ import { AccountSection } from "@/components/dashboard/account-section";
 import { ProgramsSection } from "@/components/dashboard/programs-section";
 import { SessionProvider } from "next-auth/react";
 import { UserRole, isAdmin as checkIsAdminRole } from "@/lib/roles";
+import { isStudentStatus } from "@/lib/ppdb";
 import type { BarChartDatum } from "@/components/ui/bar-chart";
 import type { DonutSegment } from "@/components/ui/donut-chart";
 
@@ -111,6 +112,17 @@ export default async function DashboardPage() {
         status: true,
         majorFirst: true,
         majorSecond: true,
+        // Lengkap untuk checklist persyaratan di kartu pendaftaran.
+        fullName: true,
+        email: true,
+        gender: true,
+        birthPlace: true,
+        birthDate: true,
+        previousSchool: true,
+        address: true,
+        phone: true,
+        parentName: true,
+        parentPhone: true,
       },
     }),
     prisma.user.count(),
@@ -220,9 +232,15 @@ export default async function DashboardPage() {
     createdAt: log.createdAt.toISOString(),
   }));
 
+  const isStudent = isStudentStatus(ppdb?.status);
+
   return (
     <SessionProvider session={session}>
-      <DashboardShell user={dashboardUser} activities={activities}>
+      <DashboardShell
+        user={dashboardUser}
+        activities={activities}
+        isStudent={isStudent}
+      >
         <DashboardOverview
           userName={dashboardUser.name}
           todayLabel={nowInWib}
@@ -252,9 +270,20 @@ export default async function DashboardPage() {
                 status: ppdb.status,
                 majorFirst: ppdb.majorFirst,
                 majorSecond: ppdb.majorSecond,
+                fullName: ppdb.fullName,
+                email: ppdb.email,
+                gender: ppdb.gender,
+                birthPlace: ppdb.birthPlace,
+                birthDate: ppdb.birthDate.toISOString(),
+                previousSchool: ppdb.previousSchool,
+                address: ppdb.address,
+                phone: ppdb.phone,
+                parentName: ppdb.parentName,
+                parentPhone: ppdb.parentPhone,
               }
               : null
           }
+          userEmail={dashboardUser.email}
         />
         <AccountSection user={dashboardUser} />
         <ProgramsSection />

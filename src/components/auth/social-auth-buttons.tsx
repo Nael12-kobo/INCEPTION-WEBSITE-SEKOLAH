@@ -4,6 +4,7 @@ import * as React from "react";
 import { signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AuthDivider } from "@/components/auth/form-controls";
 import { useAuthLanguage } from "@/components/auth/language-provider";
 
 /* Ikon resmi (brand mark) — simple-icons, inline agar tidak perlu dependency baru. */
@@ -31,15 +32,40 @@ function GitHubIcon({ className }: { className?: string }) {
 
 type Provider = "google" | "github";
 
+const KNOWN_PROVIDERS: readonly Provider[] = ["google", "github"];
+
 /**
  * Pasang tombol Google & GitHub.
- * Memanggil signIn() dari next-auth/react → redirect ke provider.
- * Loading per-tombol, disabled saat request berjalan, error inline.
+ * - Daftar provider aktif diambil dari /api/auth/providers, jadi tombol hanya
+ *   tampil bila credential OAuth-nya benar-benar terisi di .env (lihat
+ *   src/lib/auth.ts). Kalau tidak ada provider aktif, komponen ini — termasuk
+ *   divider-nya — tidak dirender sama sekali.
+ * - Memanggil signIn() dari next-auth/react → redirect ke provider.
+ * - Loading per-tombol, disabled saat request berjalan, error inline.
  */
 export function SocialAuthButtons({ className }: { className?: string }) {
   const { t } = useAuthLanguage();
   const [pending, setPending] = React.useState<Provider | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [available, setAvailable] = React.useState<Provider[] | null>(null);
+
+  // Ambil daftar provider yang terdaftar di server (hanya yang ber-credential).
+  React.useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/providers")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: Record<string, { id?: string }> | null) => {
+        if (!alive) return;
+        const ids = data ? Object.keys(data) : [];
+        setAvailable(KNOWN_PROVIDERS.filter((p) => ids.includes(p)));
+      })
+      .catch(() => {
+        if (alive) setAvailable([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleSignIn = async (provider: Provider) => {
     setError(null);
@@ -54,54 +80,68 @@ export function SocialAuthButtons({ className }: { className?: string }) {
     }
   };
 
+  // Selagi memuat: jangan kedip render tombol lalu menghilang.
+  if (available === null || available.length === 0) return null;
+
   const disabled = pending !== null;
 
   return (
     <div className={cn("space-y-2.5", className)}>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => handleSignIn("google")}
-          disabled={disabled}
-          aria-busy={pending === "google"}
-          className={cn(
-            "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
-            "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
-            "transition-[background-color,border-color,transform,box-shadow] duration-200",
-            "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",
-            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/15",
-            "disabled:pointer-events-none disabled:opacity-55"
-          )}
-        >
-          {pending === "google" ? (
-            <Loader2 className="h-4.5 w-4.5 animate-spin text-sky-600" aria-hidden />
-          ) : (
-            <GoogleIcon />
-          )}
-          <span>{pending === "google" ? t("googleLoading") : t("google")}</span>
-        </button>
+      <AuthDivider label={t("divider")} />
 
-        <button
-          type="button"
-          onClick={() => handleSignIn("github")}
-          disabled={disabled}
-          aria-busy={pending === "github"}
-          className={cn(
-            "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
-            "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
-            "transition-[background-color,border-color,transform,box-shadow] duration-200",
-            "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",
-            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/15",
-            "disabled:pointer-events-none disabled:opacity-55"
-          )}
-        >
-          {pending === "github" ? (
-            <Loader2 className="h-4.5 w-4.5 animate-spin text-sky-600" aria-hidden />
-          ) : (
-            <GitHubIcon />
-          )}
-          <span>{pending === "github" ? t("githubLoading") : t("github")}</span>
-        </button>
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-2.5",
+          available.length > 1 && "sm:grid-cols-2"
+        )}
+      >
+        {available.includes("google") && (
+          <button
+            type="button"
+            onClick={() => handleSignIn("google")}
+            disabled={disabled}
+            aria-busy={pending === "google"}
+            className={cn(
+              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
+              "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
+              "transition-[background-color,border-color,transform,box-shadow] duration-200",
+              "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",
+              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/15",
+              "disabled:pointer-events-none disabled:opacity-55"
+            )}
+          >
+            {pending === "google" ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin text-sky-600" aria-hidden />
+            ) : (
+              <GoogleIcon />
+            )}
+            <span>{pending === "google" ? t("googleLoading") : t("google")}</span>
+          </button>
+        )}
+
+        {available.includes("github") && (
+          <button
+            type="button"
+            onClick={() => handleSignIn("github")}
+            disabled={disabled}
+            aria-busy={pending === "github"}
+            className={cn(
+              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
+              "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
+              "transition-[background-color,border-color,transform,box-shadow] duration-200",
+              "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",
+              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/15",
+              "disabled:pointer-events-none disabled:opacity-55"
+            )}
+          >
+            {pending === "github" ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin text-sky-600" aria-hidden />
+            ) : (
+              <GitHubIcon />
+            )}
+            <span>{pending === "github" ? t("githubLoading") : t("github")}</span>
+          </button>
+        )}
       </div>
 
       {error ? (

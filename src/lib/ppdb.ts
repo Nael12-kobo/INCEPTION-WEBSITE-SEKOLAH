@@ -117,6 +117,50 @@ export type PpdbValidation =
   | { ok: true; data: PpdbValues }
   | { ok: false; errors: Record<string, string> };
 
+/**
+ * Penanda "sudah jadi siswa": daftar ulang PPDB selesai.
+ * Dipakai dashboard (kartu checklist) dan shell (buka menu "Siswa").
+ */
+export function isStudentStatus(status: string | null | undefined): boolean {
+  return status === "REGISTERED";
+}
+
+/** Grup persyaratan isi formulir — dipakai checklist di dashboard. */
+export type PpdbRequirementGroup = {
+  key: string;
+  title: string;
+  fields: (keyof PpdbValues)[];
+};
+
+/** Urutannya sengaja sama dengan langkah-langkah di `ppdb-form.tsx`. */
+export const PPDB_REQUIREMENT_GROUPS: PpdbRequirementGroup[] = [
+  {
+    key: "identity",
+    title: "Data Diri",
+    fields: ["fullName", "gender", "birthPlace", "birthDate"],
+  },
+  {
+    key: "address",
+    title: "Alamat & Kontak",
+    fields: ["email", "phone", "previousSchool", "address"],
+  },
+  {
+    key: "major",
+    title: "Pilihan Jurusan",
+    fields: ["majorFirst", "majorSecond"],
+  },
+  {
+    key: "parent",
+    title: "Data Orang Tua",
+    fields: ["parentName", "parentPhone"],
+  },
+];
+
+export const PPDB_REQUIREMENT_TOTAL = PPDB_REQUIREMENT_GROUPS.reduce(
+  (total, group) => total + group.fields.length,
+  0
+);
+
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
 function ageInYears(date: Date): number {

@@ -77,6 +77,25 @@ const id = {
   "error.credentials": "Email atau kata sandi salah.",
   "error.generic": "Terjadi kesalahan. Coba lagi.",
 
+  "errorPage.heading": "Login bermasalah",
+  "errorPage.backToLogin": "Coba login lagi",
+  "errorPage.home": "Kembali ke beranda",
+  "errorPage.configuration":
+    "Konfigurasi login sedang bermasalah di sisi server. Silakan coba lagi beberapa saat, atau login dengan email & kata sandi.",
+  "errorPage.accessDenied":
+    "Akun Anda tidak memiliki akses. Hubungi sekolah bila menurut Anda ini keliru.",
+  "errorPage.verification":
+    "Tautan verifikasi tidak valid atau sudah kedaluwarsa. Minta tautan baru melalui halaman lupa kata sandi.",
+  "errorPage.notLinked":
+    "Email ini sudah terhubung ke akun lain. Coba login dengan metode yang dulu Anda gunakan.",
+  "errorPage.oauth":
+    "Login melalui penyedia eksternal gagal. Silakan coba lagi, atau gunakan email & kata sandi.",
+  "errorPage.credentials": "Email atau kata sandi salah. Periksa lalu coba lagi.",
+  "errorPage.sessionRequired":
+    "Sesi Anda berakhir. Silakan login kembali untuk melanjutkan.",
+  "errorPage.generic":
+    "Terjadi kesalahan saat memproses login. Silakan coba lagi.",
+
   "panel.quote":
     "“Sekolah vokasi modern — mencetak lulusan siap kerja, siap kuliah, dan siap berwirausaha.”",
   "panel.caption": "SMK Telekomunikasi Tunas Harapan",
@@ -151,6 +170,25 @@ const en: Record<keyof typeof id, string> = {
   "error.terms": "You must agree to the terms & conditions.",
   "error.credentials": "Incorrect email or password.",
   "error.generic": "Something went wrong. Please try again.",
+
+  "errorPage.heading": "Sign-in problem",
+  "errorPage.backToLogin": "Try signing in again",
+  "errorPage.home": "Back to home",
+  "errorPage.configuration":
+    "The sign-in configuration is temporarily broken on the server. Please try again shortly, or sign in with email & password.",
+  "errorPage.accessDenied":
+    "Your account doesn't have access. Contact the school if you believe this is a mistake.",
+  "errorPage.verification":
+    "This verification link is invalid or has expired. Request a new one via the forgot-password page.",
+  "errorPage.notLinked":
+    "This email is already linked to another account. Try signing in with the method you used before.",
+  "errorPage.oauth":
+    "Signing in via the external provider failed. Please try again, or use email & password.",
+  "errorPage.credentials": "Incorrect email or password. Check and try again.",
+  "errorPage.sessionRequired":
+    "Your session has expired. Please sign in again to continue.",
+  "errorPage.generic":
+    "Something went wrong while processing the sign-in. Please try again.",
 
   "panel.quote":
     "“A modern vocational school — graduating students ready to work, study, and build their own business.”",

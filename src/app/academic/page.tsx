@@ -6,6 +6,7 @@ import {
   type DashboardUser,
 } from "@/components/dashboard/dashboard-shell";
 import { AcademicClient } from "@/components/academic/academic-client";
+import { isStudentStatus } from "@/lib/ppdb";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata = {
@@ -30,7 +31,15 @@ export default async function AcademicPage() {
   const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, image: true, role: true, emailVerified: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      emailVerified: true,
+      ppdbRegistration: { select: { status: true } },
+    },
   });
 
   if (!user) redirect("/auth/login?callbackUrl=/academic");
@@ -63,7 +72,11 @@ export default async function AcademicPage() {
 
   return (
     <SessionProvider session={session}>
-      <DashboardShell user={dashboardUser} activities={activities}>
+      <DashboardShell
+        user={dashboardUser}
+        activities={activities}
+        isStudent={isStudentStatus(user.ppdbRegistration?.status)}
+      >
         <AcademicClient userName={dashboardUser.name} />
       </DashboardShell>
     </SessionProvider>

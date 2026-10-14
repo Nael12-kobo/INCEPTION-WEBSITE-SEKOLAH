@@ -18,24 +18,37 @@ import { clientIp, rateLimit, resetRateLimit } from "@/lib/rate-limit";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   adapter: PrismaAdapter(prisma),
+  /**
+   * Provider OAuth hanya didaftarkan bila credential-nya benar-benar terisi.
+   * Mendaftarkan provider dengan clientId kosong membuat tombol login tetap
+   * tampil tapi selalu gagal (redirect ke provider tanpa client_id).
+   */
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID || "",
-      clientSecret: process.env.AUTH_GOOGLE_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID || "",
-      clientSecret: process.env.AUTH_GITHUB_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-    }),
+    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            allowDangerousEmailAccountLinking: true,
+            authorization: {
+              params: {
+                prompt: "consent",
+                access_type: "offline",
+                response_type: "code",
+              },
+            },
+          }),
+        ]
+      : []),
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+      ? [
+          GitHub({
+            clientId: process.env.AUTH_GITHUB_ID,
+            clientSecret: process.env.AUTH_GITHUB_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     Credentials({
       credentials: {
         email: { label: "Email" },

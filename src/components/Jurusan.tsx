@@ -54,7 +54,7 @@ export function Jurusan() {
             Program Keahlian
           </Badge>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Tiga jurusan unggulan telekomunikasi
+            Empat Program Keahlian Unggulan
           </h2>
           <p className="mt-3 text-slate-600">
             Kurikulum berbasis industri dengan sertifikasi kompetensi dan kelas praktik intensif.

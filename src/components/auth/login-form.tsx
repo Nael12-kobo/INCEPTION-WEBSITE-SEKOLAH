@@ -10,7 +10,6 @@ import {
   AuthInput,
   PasswordInput,
   AuthCheckbox,
-  AuthDivider,
 } from "@/components/auth/form-controls";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { useAuthLanguage } from "@/components/auth/language-provider";
@@ -218,8 +217,7 @@ export function LoginForm() {
         )}
       </Button>
 
-      <AuthDivider label={t("divider")} />
-
+      {/* Divider + tombol sosial hanya muncul bila ada provider OAuth aktif. */}
       <SocialAuthButtons />
 
       <p className="text-center text-sm text-slate-500">

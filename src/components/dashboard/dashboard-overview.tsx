@@ -14,6 +14,7 @@ import {
   Shield,
   UserRound,
   CheckCircle2,
+  Circle,
 } from "lucide-react";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,12 @@ import { DonutChart, type DonutSegment } from "@/components/ui/donut-chart";
 import { useAnimeReveal } from "@/hooks/useAnimeReveal";
 import { useSession } from "next-auth/react";
 import { isAdmin as checkIsAdmin } from "@/lib/roles";
+import {
+  FIELD_LABELS,
+  PPDB_REQUIREMENT_GROUPS,
+  PPDB_REQUIREMENT_TOTAL,
+  EMAIL_RE,
+} from "@/lib/ppdb";
 import { cn } from "@/lib/utils";
 
 function timeAgoShort(iso: string): string {
@@ -115,10 +122,23 @@ export type DashboardPpdb = {
   status: string;
   majorFirst: string;
   majorSecond: string;
+  /** Field lengkap untuk checklist persyaratan (terisi setelah daftar). */
+  fullName?: string;
+  email?: string;
+  gender?: string;
+  birthPlace?: string;
+  birthDate?: string;
+  previousSchool?: string;
+  address?: string;
+  phone?: string;
+  parentName?: string;
+  parentPhone?: string;
 } | null;
 
 export interface DashboardOverviewProps {
   userName: string;
+  /** Email akun — dipakai untuk pre-check checklist saat belum mendaftar. */
+  userEmail?: string;
   todayLabel: string;
   hour: number;
   role?: string;
@@ -134,6 +154,7 @@ export interface DashboardOverviewProps {
 
 export function DashboardOverview({
   userName,
+  userEmail = "",
   todayLabel,
   hour,
   role,
@@ -150,6 +171,36 @@ export function DashboardOverview({
   const { data: session } = useSession();
   const [firstName] = userName.trim().split(/\s+/) || ["Sahabat"];
   const isAdmin = checkIsAdmin(role) || checkIsAdmin(session?.user?.role);
+
+  /**
+   * Kelengkapan 12 data persyaratan.
+   * - Sudah daftar → isi record PPDB.
+   * - Belum daftar → pratinjau dari akun (nama & email sudah terisi saat daftar).
+   */
+  const readiness = React.useMemo(() => {
+    const ready = new Set<string>();
+    if (ppdb) {
+      for (const group of PPDB_REQUIREMENT_GROUPS) {
+        for (const field of group.fields) {
+          const value = ppdb[field];
+          if (value != null && String(value).trim() !== "") ready.add(field);
+        }
+      }
+    } else {
+      if (userName.trim().length >= 3) ready.add("fullName");
+      if (EMAIL_RE.test(userEmail.trim())) ready.add("email");
+    }
+    return ready;
+  }, [ppdb, userName, userEmail]);
+
+  const readyCount = PPDB_REQUIREMENT_GROUPS.reduce(
+    (total, group) =>
+      total + group.fields.filter((field) => readiness.has(field)).length,
+    0
+  );
+  const readinessPercent = Math.round(
+    (readyCount / PPDB_REQUIREMENT_TOTAL) * 100
+  );
 
   return (
     <section id="ringkasan" ref={ref} className="scroll-mt-24 space-y-6">
@@ -405,17 +456,21 @@ export function DashboardOverview({
       )}
 
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
-        <Card className="bg-white lg:col-span-3">
+        <Card id="pendaftaran" className="bg-white lg:col-span-3 scroll-mt-24">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
-              <CardTitle className="font-h4">Status Pendaftaran Anda</CardTitle>
+              <CardTitle className="font-h4">
+                {ppdb ? "Status Pendaftaran Anda" : "Siapkan Pendaftaran PPDB"}
+              </CardTitle>
               <CardDescription className="mt-1">
-                Data diambil langsung dari formulir PPDB.
+                {ppdb
+                  ? "Data diambil langsung dari formulir PPDB."
+                  : "Daftar akun baru saja — 12 data berikut perlu disiapkan untuk formulir PPDB."}
               </CardDescription>
             </div>
             <Badge variant="secondary">PPDB</Badge>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {ppdb ? (
               <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
@@ -435,22 +490,88 @@ export function DashboardOverview({
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 p-3.5">
-                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+              <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-3.5">
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-amber-800">
-                    Belum mendaftar
+                  <p className="text-sm font-semibold text-sky-800">
+                    Anda belum mengisi formulir PPDB
                   </p>
-                  <p className="text-xs text-amber-700/80">
-                    Isi formulir PPDB untuk mendapatkan nomor pendaftaran dan jadwal
-                    tes.
+                  <p className="text-xs text-sky-700/80">
+                    Centang semua data di bawah ini, lalu isi formulirnya. Nama dan
+                    email otomatis terisi dari akun Anda.
                   </p>
                 </div>
               </div>
             )}
+
+            {/* Progress kelengkapan data */}
+            <div>
+              <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                <span>Kelengkapan data</span>
+                <span className="tabular-nums text-slate-700">
+                  {readyCount} dari {PPDB_REQUIREMENT_TOTAL} siap
+                </span>
+              </div>
+              <div
+                className="mt-1.5 h-2 overflow-hidden rounded-full bg-sky-100"
+                role="progressbar"
+                aria-valuenow={readyCount}
+                aria-valuemin={0}
+                aria-valuemax={PPDB_REQUIREMENT_TOTAL}
+                aria-label="Kelengkapan data pendaftaran"
+              >
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-[width] duration-500 ease-out"
+                  style={{ width: `${readinessPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Checklist per grup — label sama dengan FIELD_LABELS di form PPDB */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {PPDB_REQUIREMENT_GROUPS.map((group) => (
+                <div
+                  key={group.key}
+                  className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5"
+                >
+                  <p className="font-caption text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    {group.title}
+                  </p>
+                  <ul className="mt-2 space-y-1.5">
+                    {group.fields.map((field) => {
+                      const ready = readiness.has(field);
+                      return (
+                        <li key={field} className="flex items-center gap-2 text-sm">
+                          {ready ? (
+                            <CheckCircle2
+                              className="h-4 w-4 shrink-0 text-emerald-500"
+                              aria-hidden
+                            />
+                          ) : (
+                            <Circle
+                              className="h-4 w-4 shrink-0 text-slate-300"
+                              aria-hidden
+                            />
+                          )}
+                          <span
+                            className={cn(
+                              "truncate",
+                              ready ? "text-slate-700" : "text-slate-400"
+                            )}
+                          >
+                            {FIELD_LABELS[field] ?? field}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
             <Button asChild variant="outline" size="sm" className="w-full">
               <Link href="/ppdb">
-                {ppdb ? "Lihat formulir" : "Isi formulir sekarang"}
+                {ppdb ? "Lihat Detail Pendaftaran" : "Isi Formulir PPDB"}
                 <ArrowRight aria-hidden />
               </Link>
             </Button>

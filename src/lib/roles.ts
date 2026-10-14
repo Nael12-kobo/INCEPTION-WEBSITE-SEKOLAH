@@ -45,6 +45,7 @@ export const ROLE_META: Record<
 export type Permission =
   | "portal.dashboard"
   | "portal.account.view"
+  | "student.access"
   | "ppdb.register"
   | "ppdb.view_own"
   | "admin.access"
@@ -64,6 +65,8 @@ export type Permission =
 export const PERMISSION_LABELS: Record<Permission, string> = {
   "portal.dashboard": "Akses dashboard personal",
   "portal.account.view": "Lihat profil akun sendiri",
+  "student.access":
+    "Akses menu siswa (jadwal peserta, nilai, absensi, tugas, kartu ujian)",
   "ppdb.register": "Mendaftar PPDB",
   "ppdb.view_own": "Lihat status PPDB sendiri",
   "admin.access": "Masuk panel admin",
@@ -86,12 +89,14 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   [UserRole.USER]: [
     "portal.dashboard",
     "portal.account.view",
+    "student.access",
     "ppdb.register",
     "ppdb.view_own",
   ],
   [UserRole.ADMIN]: [
     "portal.dashboard",
     "portal.account.view",
+    "student.access",
     "ppdb.view_own",
     // Admin tidak mendaftar PPDB sebagai calon siswa
     "admin.access",
@@ -108,6 +113,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   [UserRole.SUPER_ADMIN]: [
     "portal.dashboard",
     "portal.account.view",
+    "student.access",
     "ppdb.view_own",
     "admin.access",
     "admin.overview",
@@ -161,6 +167,22 @@ export const ROLE_ACCESS_MATRIX: AccessMatrixRow[] = [
       [UserRole.USER]: "yes",
       [UserRole.ADMIN]: "yes",
       [UserRole.SUPER_ADMIN]: "yes",
+    },
+  },
+  {
+    id: "student-menu",
+    category: "Portal Siswa",
+    action: "Menu siswa aktif",
+    detail: "Jadwal peserta, nilai/rapor, absensi, tugas, kartu ujian",
+    access: {
+      [UserRole.USER]: "limited",
+      [UserRole.ADMIN]: "limited",
+      [UserRole.SUPER_ADMIN]: "limited",
+    },
+    note: {
+      [UserRole.USER]: "Terbuka setelah status PPDB REGISTERED (daftar ulang selesai)",
+      [UserRole.ADMIN]: "Hanya jika tercatat pernah lulus PPDB",
+      [UserRole.SUPER_ADMIN]: "Hanya jika tercatat pernah lulus PPDB",
     },
   },
   {

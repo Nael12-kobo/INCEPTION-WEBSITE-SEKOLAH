@@ -6,10 +6,16 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
+  Award,
   BarChart3,
   CalendarDays,
+  CalendarRange,
+  ClipboardCheck,
   GraduationCap,
+  IdCard,
   LayoutDashboard,
+  ListTodo,
+  Lock,
   Megaphone,
   Menu,
   Network,
@@ -26,6 +32,7 @@ import {
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   Sheet,
   SheetContent,
@@ -53,11 +60,15 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
+  /** Hanya siswa aktif (status PPDB REGISTERED) — selain itu dikunci. */
+  studentOnly?: boolean;
 };
 
 type NavSection = {
   title: string;
   badge?: string;
+  /** Section-nya sendiri yang ditandai, badge-nya dihitung dari `isStudent`. */
+  studentOnly?: boolean;
   items: NavItem[];
 };
 
@@ -80,6 +91,18 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Siswa",
+    studentOnly: true,
+    badge: "AKTIF SETELAH DAFTAR ULANG",
+    items: [
+      { href: "/student/schedule", label: "Jadwal Peserta", icon: CalendarRange, studentOnly: true },
+      { href: "/student/grades", label: "Nilai / Rapor", icon: Award, studentOnly: true },
+      { href: "/student/attendance", label: "Absensi", icon: ClipboardCheck, studentOnly: true },
+      { href: "/student/tasks", label: "Tugas", icon: ListTodo, studentOnly: true },
+      { href: "/student/exam-card", label: "Kartu Ujian", icon: IdCard, studentOnly: true },
+    ],
+  },
+  {
     title: "Akun",
     items: [
       { href: "/profile", label: "Profil Saya", icon: UserRound },
@@ -94,6 +117,15 @@ const navSections: NavSection[] = [
     ],
   },
 ];
+
+/** Judul breadcrumb untuk rute /student/* — harus sama dengan folder di src/app/student/. */
+const STUDENT_PAGE_TITLES: Record<string, string> = {
+  schedule: "Jadwal Peserta",
+  grades: "Nilai / Rapor",
+  attendance: "Absensi",
+  tasks: "Tugas",
+  "exam-card": "Kartu Ujian",
+};
 
 export type DashboardUser = {
   name: string;
@@ -209,6 +241,35 @@ function NavLinkItem({
   );
 }
 
+/**
+ * Menu siswa yang belum aktif (status PPDB bukan REGISTERED).
+ * Tampil redup dengan ikon gembok; klik memberi tahu cara membukanya,
+ * bukan berpindah halaman.
+ */
+function LockedNavItem({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+  const toast = useToast();
+  const Icon = item.icon;
+  return (
+    <button
+      type="button"
+      aria-disabled="true"
+      title="Khusus siswa aktif — terbuka setelah daftar ulang PPDB selesai"
+      onClick={() => {
+        toast.warning(
+          "Menu ini khusus siswa aktif. Selesaikan daftar ulang PPDB (status REGISTERED) untuk membukanya.",
+          { duration: 5000 }
+        );
+        onClick?.();
+      }}
+      className="flex w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-all hover:bg-slate-50"
+    >
+      <Icon className="h-4 w-4 text-slate-300" aria-hidden />
+      <span className="flex-1 text-left">{item.label}</span>
+      <Lock className="h-3.5 w-3.5 text-slate-300" aria-hidden />
+    </button>
+  );
+}
+
 const ACTIVITY_META: Record<string, { icon: React.ComponentType<{ className?: string }>; tone: string }> = {
   PPDB_REGISTERED: { icon: MegaphoneIcon, tone: "bg-emerald-50 text-emerald-600" },
   ACCOUNT_REGISTERED: { icon: UserCheck, tone: "bg-sky-50 text-sky-600" },
@@ -314,10 +375,13 @@ function NotificationBell({ activities }: { activities: DashboardActivityItem[] 
 export function DashboardShell({
   user,
   activities = [],
+  isStudent = false,
   children,
 }: {
   user: DashboardUser;
   activities?: DashboardActivityItem[];
+  /** True bila status PPDB = REGISTERED (daftar ulang selesai). */
+  isStudent?: boolean;
   children: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -378,18 +442,28 @@ export function DashboardShell({
         (item) => !item.adminOnly || isAdmin
       );
       if (filteredItems.length === 0) return null;
+      // Section "Siswa": badge berubah ikut status keanggotaan.
+      const badge = section.studentOnly
+        ? isStudent
+          ? undefined
+          : "TERKUNCI"
+        : section.badge;
       return (
         <div key={section.title} className="py-3 first:pt-0 last:pb-0">
-          <NavSectionHeader title={section.title} badge={section.badge} />
+          <NavSectionHeader title={section.title} badge={badge} />
           <div className="space-y-1">
-            {filteredItems.map((item) => (
-              <NavLinkItem
-                key={item.href}
-                item={item}
-                active={isNavActive(item.href, pathname, fragment.replace("#", ""))}
-                onClick={onNavigate}
-              />
-            ))}
+            {filteredItems.map((item) =>
+              item.studentOnly && !isStudent ? (
+                <LockedNavItem key={item.href} item={item} onClick={onNavigate} />
+              ) : (
+                <NavLinkItem
+                  key={item.href}
+                  item={item}
+                  active={isNavActive(item.href, pathname, fragment.replace("#", ""))}
+                  onClick={onNavigate}
+                />
+              )
+            )}
           </div>
         </div>
       );
@@ -503,6 +577,20 @@ export function DashboardShell({
                   <span className="font-semibold text-slate-900">Akun</span>
                   <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                   <span className="font-medium text-slate-500">Pengaturan</span>
+                </>
+              ) : pathname.startsWith("/student") ? (
+                <>
+                  <span className="font-semibold text-slate-900">Siswa</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="font-medium text-slate-500">
+                    {(() => {
+                      const segment = pathname.split("/").pop() ?? "";
+                      return (
+                        STUDENT_PAGE_TITLES[segment] ??
+                        segment.charAt(0).toUpperCase() + segment.slice(1)
+                      );
+                    })()}
+                  </span>
                 </>
               ) : pathname === "/admin" ? (
                 <>
