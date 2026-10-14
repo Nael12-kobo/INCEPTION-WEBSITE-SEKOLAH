@@ -33,7 +33,7 @@ export function GuruKaryawanGrid() {
             data-tilt
             className="glass glass-glare overflow-hidden rounded-2xl"
           >
-            <div className="relative aspect-square w-full bg-white/60">
+            <div className="relative aspect-square w-full bg-card/60">
               <Image
                 src={p.src}
                 alt={p.nama ? `Foto ${p.nama}` : "Foto guru dan karyawan"}

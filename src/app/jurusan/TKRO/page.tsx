@@ -109,7 +109,7 @@ export default function TKROPage() {
 
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-sm mb-6">
+              <div className="inline-flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2 text-sm mb-6">
                 <Car className="size-4" />
                 Program Keahlian
               </div>
@@ -146,7 +146,7 @@ export default function TKROPage() {
       </section>
 
       {/* Tentang Jurusan */}
-      <section className="py-16 md:py-20 bg-white dark:bg-gray-900">
+      <section className="py-16 md:py-20 bg-card dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div>
@@ -214,7 +214,7 @@ export default function TKROPage() {
             {kompetensi.map((item, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow border dark:border-gray-700"
+                className="bg-card dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow border dark:border-gray-700"
               >
                 <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
                   <span className="text-lg font-bold">{index + 1}</span>
@@ -232,7 +232,7 @@ export default function TKROPage() {
       </section>
 
       {/* Prospek Karir */}
-      <section className="py-16 md:py-20 bg-white dark:bg-gray-900">
+      <section className="py-16 md:py-20 bg-card dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
@@ -246,7 +246,7 @@ export default function TKROPage() {
             {karir.map((item, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-6 border dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 transition-colors"
+                className="bg-gradient-to-br from-gray-50 to-card dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-6 border dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 transition-colors"
               >
                 <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4">
                   {item.icon}
@@ -277,14 +277,14 @@ export default function TKROPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/asisten"
-                className="inline-flex items-center justify-center gap-2 bg-white text-orange-700 font-semibold px-8 py-3 rounded-full hover:bg-orange-50 transition-colors shadow-lg"
+                className="inline-flex items-center justify-center gap-2 bg-card text-orange-700 font-semibold px-8 py-3 rounded-full hover:bg-orange-50 transition-colors shadow-lg"
               >
                 Tanya AI Asisten
                 <ChevronRight className="size-5" />
               </Link>
               <Link
                 href="/#jurusan"
-                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white font-semibold px-8 py-3 rounded-full hover:bg-white/10 transition-colors"
+                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white font-semibold px-8 py-3 rounded-full hover:bg-card/10 transition-colors"
               >
                 Lihat Jurusan Lain
               </Link>

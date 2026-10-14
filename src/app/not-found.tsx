@@ -20,13 +20,13 @@ export default function NotFound() {
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Link
           href="/"
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
+          className="inline-flex h-11 items-center justify-center rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-neutral-700"
         >
           Kembali ke beranda
         </Link>
         <Link
           href="/ppdb"
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-card px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
         >
           Info PPDB
         </Link>

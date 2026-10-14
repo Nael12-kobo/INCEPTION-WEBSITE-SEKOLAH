@@ -72,7 +72,7 @@ function ChatBubbleInner() {
           <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 p-4 text-white">
             <div className="flex items-center justify-between">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card/20 backdrop-blur-sm">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
@@ -93,7 +93,7 @@ function ChatBubbleInner() {
                   onClick={goFullscreen}
                   aria-label="Buka fullscreen"
                   title="Fullscreen"
-                  className="h-9 w-9 text-white hover:bg-white/20 sm:h-8 sm:w-8"
+                  className="h-9 w-9 text-white hover:bg-card/20 sm:h-8 sm:w-8"
                 >
                   <Maximize2 className="h-4 w-4" />
                 </Button>
@@ -103,7 +103,7 @@ function ChatBubbleInner() {
                   onClick={() => setIsOpen(false)}
                   aria-label="Tutup chat"
                   title="Tutup"
-                  className="h-9 w-9 text-white hover:bg-white/20 sm:h-8 sm:w-8"
+                  className="h-9 w-9 text-white hover:bg-card/20 sm:h-8 sm:w-8"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -114,7 +114,7 @@ function ChatBubbleInner() {
           {/* Area pesan — dulu `h-[350px]` tetap: di HP landscape
               (tinggi ~375px) total dialog melebihi viewport dan
               terpotong. Dibatasi 50dvh supaya selalu muat. */}
-          <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-white">
+          <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-card">
             <ChatMessages compact />
           </div>
 

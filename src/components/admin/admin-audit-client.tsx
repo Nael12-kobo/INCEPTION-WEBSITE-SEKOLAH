@@ -120,7 +120,7 @@ export function AdminAuditClient({ initialRows }: { initialRows: AuditRow[] }) {
               />
             </div>
             {/* flex-wrap: 4 tombol ≈ 290px > 280px konten card di HP 360px. */}
-            <div className="flex flex-wrap rounded-xl border border-slate-200 bg-white p-0.5">
+            <div className="flex flex-wrap rounded-xl border border-slate-200 bg-card p-0.5">
               {FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -129,7 +129,7 @@ export function AdminAuditClient({ initialRows }: { initialRows: AuditRow[] }) {
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
                     targetFilter === opt.value
-                      ? "bg-violet-600 text-white"
+                      ? "bg-violet text-violet-foreground"
                       : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                   )}
                 >

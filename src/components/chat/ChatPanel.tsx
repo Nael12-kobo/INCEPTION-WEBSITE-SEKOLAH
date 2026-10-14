@@ -60,7 +60,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                 "break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
                 message.role === "user"
                   ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-                  : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+                  : "rounded-bl-md border border-slate-200 bg-card text-slate-800"
               )}
             >
               {message.text}
@@ -82,7 +82,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
             <Bot className="h-4 w-4" />
           </div>
-          <div className="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="rounded-2xl rounded-bl-md border border-slate-200 bg-card px-4 py-3 shadow-sm">
             <div className="flex gap-1">
               <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
               <span
@@ -117,7 +117,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
   };
 
   return (
-    <div className="border-t border-white/20 bg-white/20 p-3 backdrop-blur-xl sm:p-4">
+    <div className="border-t border-white/20 bg-card/20 p-3 backdrop-blur-xl sm:p-4">
       <div className="flex gap-2">
         <Input
           placeholder="Ketik pesan Anda..."
@@ -131,7 +131,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
               submit();
             }
           }}
-          className="flex-1 rounded-xl border-slate-200 bg-white/80 focus:border-blue-500"
+          className="flex-1 rounded-xl border-slate-200 bg-card/80 focus:border-blue-500"
         />
         <Button
           onClick={submit}

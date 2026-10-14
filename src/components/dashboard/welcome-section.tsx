@@ -96,7 +96,7 @@ export function WelcomeSection({
         />
         <div className="relative flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-xl">
-            <Badge className="border-white/25 bg-white/15 text-white backdrop-blur">
+            <Badge className="border-white/25 bg-card/15 text-white backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               Portal Siswa
             </Badge>
@@ -111,7 +111,7 @@ export function WelcomeSection({
               <Button
                 variant="outline"
                 asChild
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/40"
+                className="border-white/30 bg-card/10 text-white hover:bg-card/20 hover:border-white/40"
               >
                 <a href="#agenda">
                   Lihat agenda
@@ -120,7 +120,7 @@ export function WelcomeSection({
               </Button>
               <Button
                 asChild
-                className="bg-white text-sky-700 shadow-sm hover:bg-sky-50"
+                className="bg-card text-sky-700 shadow-sm hover:bg-sky-50"
               >
                 <a href="#ppdb">Info PPDB</a>
               </Button>
@@ -128,7 +128,7 @@ export function WelcomeSection({
           </div>
 
           {/* Kartu tanggal */}
-          <div className="rounded-2xl border border-white/25 bg-white/10 px-5 py-4 backdrop-blur">
+          <div className="rounded-2xl border border-white/25 bg-card/10 px-5 py-4 backdrop-blur">
             <p className="text-xs font-medium uppercase tracking-wider text-sky-100">
               Hari ini
             </p>
@@ -147,7 +147,7 @@ export function WelcomeSection({
         <Card
           id="agenda"
           data-reveal-item
-          className="scroll-mt-24 bg-white lg:col-span-3"
+          className="scroll-mt-24 bg-card lg:col-span-3"
         >
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
@@ -181,7 +181,7 @@ export function WelcomeSection({
         </Card>
 
         {/* Pengumuman */}
-        <Card data-reveal-item className="bg-white lg:col-span-2">
+        <Card data-reveal-item className="bg-card lg:col-span-2">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Pengumuman</CardTitle>

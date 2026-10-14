@@ -110,7 +110,7 @@ function UserEditForm({
             value={role}
             onChange={(e) => setRole(e.target.value)}
             disabled={!canEditRole}
-            className="sm:col-span-3 flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            className="sm:col-span-3 flex h-10 w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
           >
             {(canEditRole ? accessibleRoles : [user.role]).map((r) => (
               <option key={r} value={r}>

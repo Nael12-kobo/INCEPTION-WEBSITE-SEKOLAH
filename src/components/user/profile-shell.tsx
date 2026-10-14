@@ -163,7 +163,7 @@ export function ProfileShell({
   return (
     <ToastProvider>
       <div className="flex min-h-dvh bg-sky-50/60">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-slate-200 bg-card lg:flex">
           {/* Brand = tautan ke situs publik. Wajib karena Navbar global
               tidak dirender di /profile (lihat SiteChrome). */}
           <Link
@@ -205,7 +205,7 @@ export function ProfileShell({
         </aside>
 
         <div className="flex min-h-dvh w-full min-w-0 flex-1 flex-col lg:pl-72">
-          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-md sm:px-6">
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-card/80 px-4 backdrop-blur-md sm:px-6">
             <div className="flex items-center gap-2">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
@@ -297,7 +297,7 @@ export function ProfileShell({
             {children}
           </main>
 
-          <footer className="border-t border-slate-200 bg-white/60 py-5 text-center text-xs text-slate-400">
+          <footer className="border-t border-slate-200 bg-card/60 py-5 text-center text-xs text-slate-400">
             © {new Date().getFullYear()} SMK Telekomunikasi Tunas Harapan — Portal
             internal.
           </footer>

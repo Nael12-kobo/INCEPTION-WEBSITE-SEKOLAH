@@ -800,7 +800,7 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
       <div ref={mountRef} className="absolute inset-0" />
       
       {status === "loading" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white">
+        <div className="absolute inset-0 flex items-center justify-center bg-card">
           <video
             src="/animated/loading.webm"
             autoPlay

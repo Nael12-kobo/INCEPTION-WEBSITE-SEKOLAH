@@ -145,7 +145,16 @@
   --space-22: 5.5rem;  /* 88px */
 }
 
-/* Dark mode tokens — placeholder, toggle UI optional */
+/* ------------------------------------------------------------------ *
+ * Dark mode tokens.
+ *
+ * Trik utama: alih-alih menambah kelas `dark:` di ratusan file, SELURUH
+ * skala warna di-remap di sini. `text-slate-900` (teks utama) misalnya
+ * otomatis jadi #f8fafc di mode gelap karena --slate-900 dibalik.
+ * Konsekuensinya elemen yang memang harus gelap/terang di kedua mode
+ * (sidebar admin, footer, tombol not-found) memakai skala `neutral`
+ * / `black` built-in Tailwind yang TIDAK ikut di-remap.
+ * ------------------------------------------------------------------ */
 .dark {
   --background: #020617;
   --foreground: #f8fafc;
@@ -162,14 +171,99 @@
   --accent: #075985;
   --accent-foreground: #e0f2fe;
   --destructive: #fb7185;
-  --destructive-foreground: #881337;
+  --destructive-foreground: #4c0519;
   --border: #1e293b;
   --input: #1e293b;
   --ring: #38bdf8;
+  --success: #34d399;
+  --success-foreground: #022c22;
+  --warning: #fbbf24;
+  --warning-foreground: #451a03;
+  --info: #38bdf8;
+  --info-foreground: #082f49;
+  --violet: #a78bfa;
+  --violet-foreground: #2e1065;
   --shadow-1: 0 1px 2px 0 rgb(2 6 23 / 0.5), 0 1px 1px 0 rgb(2 6 23 / 0.3);
   --shadow-2: 0 4px 10px -2px rgb(2 6 23 / 0.6), 0 2px 4px -2px rgb(2 6 23 / 0.4);
   --shadow-3: 0 10px 20px -5px rgb(2 6 23 / 0.7), 0 4px 8px -4px rgb(2 6 23 / 0.5);
   --shadow-4: 0 20px 40px -10px rgb(2 6 23 / 0.8), 0 8px 16px -8px rgb(2 6 23 / 0.6);
+
+  --surface-1: linear-gradient(to bottom, #0f172a, #0a1220);
+  --surface-2: linear-gradient(to bottom, #0f172a, #071120);
+
+  /* Netral slate — dibalik (50 = paling gelap … 900 = paling terang).
+     Nilai 400–500 digeser agar teks samar tetap terbaca di latar gelap. */
+  --slate-50: #020617;
+  --slate-100: #0f172a;
+  --slate-200: #1e293b;
+  --slate-300: #334155;
+  --slate-400: #64748b;
+  --slate-500: #94a3b8;
+  --slate-600: #cbd5e1;
+  --slate-700: #e2e8f0;
+  --slate-800: #f1f5f9;
+  --slate-900: #f8fafc;
+  --slate-950: #ffffff;
+
+  /* Sky (brand) — 50–300 jadi nuansa gelap, 400–900 naik ke terang */
+  --sky-50: #082f49;
+  --sky-100: #0c4a6e;
+  --sky-200: #075985;
+  --sky-300: #0369a1;
+  --sky-400: #0284c7;
+  --sky-500: #0ea5e9;
+  --sky-600: #38bdf8;
+  --sky-700: #7dd3fc;
+  --sky-800: #bae6fd;
+  --sky-900: #e0f2fe;
+
+  /* Emerald — dibalik penuh */
+  --emerald-50: #022c22;
+  --emerald-100: #064e3b;
+  --emerald-200: #065f46;
+  --emerald-300: #047857;
+  --emerald-400: #059669;
+  --emerald-500: #10b981;
+  --emerald-600: #34d399;
+  --emerald-700: #6ee7b7;
+  --emerald-800: #a7f3d0;
+  --emerald-900: #d1fae5;
+
+  /* Amber — dibalik penuh */
+  --amber-50: #451a03;
+  --amber-100: #78350f;
+  --amber-200: #92400e;
+  --amber-300: #b45309;
+  --amber-400: #d97706;
+  --amber-500: #f59e0b;
+  --amber-600: #fbbf24;
+  --amber-700: #fcd34d;
+  --amber-800: #fde68a;
+  --amber-900: #fef3c7;
+
+  /* Rose — dibalik penuh */
+  --rose-50: #4c0519;
+  --rose-100: #881337;
+  --rose-200: #9f1239;
+  --rose-300: #be123c;
+  --rose-400: #e11d48;
+  --rose-500: #f43f5e;
+  --rose-600: #fb7185;
+  --rose-700: #fda4af;
+  --rose-800: #fecdd3;
+  --rose-900: #ffe4e6;
+
+  /* Violet — dibalik penuh */
+  --violet-50: #2e1065;
+  --violet-100: #4c1d95;
+  --violet-200: #5b21b6;
+  --violet-300: #6d28d9;
+  --violet-400: #7c3aed;
+  --violet-500: #8b5cf6;
+  --violet-600: #a78bfa;
+  --violet-700: #c4b5fd;
+  --violet-800: #ddd6fe;
+  --violet-900: #ede9fe;
 }
 
 @theme inline {
@@ -294,7 +388,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
     font-size: var(--font-body);
     line-height: var(--leading-body);
@@ -408,6 +502,30 @@
   .glass-hover:hover {
     border-color: rgb(125 211 252 / 0.5);
     box-shadow: 0 12px 30px -8px rgb(2 132 199 / 0.2), 0 0 0 1px rgb(125 211 252 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.85);
+  }
+
+  /* Varian gelap glassmorphism — latar transparan gelap, glow biru redup */
+  .dark .glass {
+    background: linear-gradient(135deg, rgb(15 23 42 / 0.72), rgb(2 6 23 / 0.45));
+    border-color: rgb(51 65 85 / 0.55);
+    box-shadow: 0 8px 32px -8px rgb(2 6 23 / 0.6), inset 0 1px 0 rgb(148 163 184 / 0.12);
+  }
+  .dark .glass-strong {
+    background: linear-gradient(135deg, rgb(15 23 42 / 0.88), rgb(12 26 44 / 0.6));
+    border-color: rgb(51 65 85 / 0.65);
+    box-shadow: 0 12px 40px -10px rgb(2 6 23 / 0.7), inset 0 1px 0 rgb(148 163 184 / 0.15);
+  }
+  .dark .glass-chip {
+    background: rgb(15 23 42 / 0.6);
+    border-color: rgb(51 65 85 / 0.55);
+    box-shadow: 0 4px 16px -6px rgb(2 6 23 / 0.5), inset 0 1px 0 rgb(148 163 184 / 0.1);
+  }
+  .dark .glass-hover:hover {
+    border-color: rgb(56 189 248 / 0.4);
+    box-shadow: 0 12px 30px -8px rgb(2 6 23 / 0.6), 0 0 0 1px rgb(56 189 248 / 0.25), inset 0 1px 0 rgb(148 163 184 / 0.15);
+  }
+  .dark .glass-glare::after {
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(148 163 184 / 0.14), transparent 65%);
   }
 
   /* Entrance anime.js — matikan transition sementara agar tiap frame

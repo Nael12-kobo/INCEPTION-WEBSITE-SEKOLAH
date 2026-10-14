@@ -97,7 +97,7 @@ export default function JurusanPage() {
                 <Link
                   key={j.nama}
                   href={j.href}
-                  className={`group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all border dark:border-gray-700 ${colors.border}`}
+                  className={`group bg-card dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all border dark:border-gray-700 ${colors.border}`}
                 >
                   <div className="flex items-start gap-4">
                     <div
@@ -128,7 +128,7 @@ export default function JurusanPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-20 bg-white dark:bg-gray-950">
+      <section className="py-16 md:py-20 bg-card dark:bg-gray-950">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
             Masih Bingung Memilih?

@@ -38,7 +38,7 @@ export interface DataTableProps<T> {
 }
 
 const checkboxVariants = cva(
-  "h-4 w-4 shrink-0 cursor-pointer rounded-md border-2 border-slate-300 bg-white text-sky-600 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+  "h-4 w-4 shrink-0 cursor-pointer rounded-md border-2 border-slate-300 bg-card text-sky-600 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       state: {
@@ -107,7 +107,7 @@ function Checkbox({
         </svg>
       </span>
       <span className="dash pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity">
-        <span className="block h-0.5 w-2 rounded-full bg-white" />
+        <span className="block h-0.5 w-2 rounded-full bg-card" />
       </span>
     </label>
   );
@@ -282,7 +282,7 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "elevation-1 overflow-hidden rounded-3xl border border-sky-100 bg-white",
+        "elevation-1 overflow-hidden rounded-3xl border border-sky-100 bg-card",
         className
       )}
     >
@@ -467,7 +467,7 @@ export function DataTable<T>({
                 setCurrentPage(1);
               }}
               disabled={loading}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-body text-xs font-medium text-slate-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400/60 focus:ring-offset-1 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 bg-card px-2.5 py-1.5 font-body text-xs font-medium text-slate-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400/60 focus:ring-offset-1 disabled:opacity-50"
             >
               {pageSizeOptions.map((n) => (
                 <option key={n} value={n}>

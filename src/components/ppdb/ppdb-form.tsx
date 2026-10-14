@@ -208,7 +208,7 @@ export function PpdbForm({
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-xl shadow-sky-100/60"
+      className="overflow-hidden rounded-3xl border border-sky-100 bg-card shadow-xl shadow-sky-100/60"
     >
       {/* Stepper */}
       <div className="border-b border-sky-100 bg-sky-50/60 px-5 py-5 sm:px-7">
@@ -253,7 +253,7 @@ export function PpdbForm({
                     "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                     active && "bg-sky-600 text-white shadow-sm shadow-sky-200",
                     done && "bg-emerald-100 text-emerald-700 hover:bg-emerald-200",
-                    !active && !done && "bg-white text-slate-400 ring-1 ring-sky-100"
+                    !active && !done && "bg-card text-slate-400 ring-1 ring-sky-100"
                   )}
                 >
                   {done ? (
@@ -545,11 +545,11 @@ function SuccessCard({
   fullName: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-xl shadow-emerald-100/60">
+    <div className="overflow-hidden rounded-3xl border border-emerald-200 bg-card shadow-xl shadow-emerald-100/60">
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 px-6 py-10 text-center text-white sm:px-10">
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-sky opacity-40 [mask-image:radial-gradient(ellipse_60%_80%_at_50%_50%,black,transparent)]" />
         <div className="relative">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/30">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-card/20 ring-1 ring-white/30">
             <CheckCircle2 className="h-7 w-7" aria-hidden />
           </span>
           <h2 className="mt-4 text-2xl font-extrabold tracking-tight">
@@ -560,7 +560,7 @@ function SuccessCard({
               ? "Data Anda sudah tersimpan sebelumnya. Nomor pendaftaran tetap berlaku."
               : `Terima kasih, ${fullName.split(" ")[0] || "calon siswa"}. Simpan nomor pendaftaran Anda.`}
           </p>
-          <p className="mt-5 inline-flex flex-col items-center rounded-2xl bg-white/15 px-6 py-3 ring-1 ring-white/30 backdrop-blur">
+          <p className="mt-5 inline-flex flex-col items-center rounded-2xl bg-card/15 px-6 py-3 ring-1 ring-white/30 backdrop-blur">
             <span className="text-[11px] font-medium uppercase tracking-widest text-emerald-50">
               Nomor pendaftaran
             </span>

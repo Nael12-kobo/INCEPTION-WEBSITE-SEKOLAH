@@ -201,7 +201,7 @@ export function UserProfileClient({
   return (
     <div className="space-y-6">
       {/* Account Info Card */}
-      <Card className="overflow-hidden bg-white">
+      <Card className="overflow-hidden bg-card">
         <div className="h-2.5 bg-linear-to-r from-sky-400 via-sky-500 to-cyan-400" />
         <CardHeader className="flex-row items-start justify-between space-y-0">
           <div>
@@ -283,7 +283,7 @@ export function UserProfileClient({
 
       {/* PPDB Info Card */}
       {ppdb ? (
-        <Card className="overflow-hidden bg-white">
+        <Card className="overflow-hidden bg-card">
           <div className="h-2.5 bg-linear-to-r from-emerald-400 via-emerald-500 to-teal-400" />
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
@@ -325,7 +325,7 @@ export function UserProfileClient({
           </CardContent>
         </Card>
       ) : (
-        <Card className="overflow-hidden bg-white">
+        <Card className="overflow-hidden bg-card">
           <div className="h-2.5 bg-cyan-400" />
           <CardHeader>
             <CardTitle className="text-base">Data PPDB</CardTitle>

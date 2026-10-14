@@ -30,7 +30,7 @@ const chipVariants = cva(
     variants: {
       tone: {
         default:
-          "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700",
+          "border-slate-200 bg-card text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700",
         sky: "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:border-sky-300",
         emerald:
           "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300",
@@ -164,7 +164,7 @@ export function FilterBar({
             value={searchValue}
             onChange={handleChange}
             placeholder={searchPlaceholder}
-            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 font-body text-sm text-slate-800 shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:ring-offset-0"
+            className="block w-full rounded-xl border border-slate-200 bg-card py-2.5 pl-10 pr-10 font-body text-sm text-slate-800 shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:ring-offset-0"
           />
           {searchValue.length > 0 && (
             <button

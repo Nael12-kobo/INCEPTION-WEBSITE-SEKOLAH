@@ -311,7 +311,7 @@ function ToastItem({
           type="button"
           onClick={() => onDismiss(toast.id)}
           aria-label="Tutup notifikasi"
-          className="shrink-0 rounded-md p-1 text-slate-400 transition-colors hover:bg-white/60 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+          className="shrink-0 rounded-md p-1 text-slate-400 transition-colors hover:bg-card/60 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
         >
           <X className="h-4 w-4" strokeWidth={2.25} />
         </button>

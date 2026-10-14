@@ -74,7 +74,7 @@ function BeritaImage({ src, alt }: { src: string; alt: string }) {
 
 function BeritaPlaceholder() {
   return (
-    <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-sky-100 via-white to-indigo-100">
+    <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-sky-100 via-card to-indigo-100">
       <Newspaper className="h-8 w-8 text-sky-300" aria-hidden />
     </div>
   );

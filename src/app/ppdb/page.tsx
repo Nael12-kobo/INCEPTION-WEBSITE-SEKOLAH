@@ -41,7 +41,7 @@ export default async function PpdbPage() {
 
   return (
     <div className="min-h-dvh bg-sky-50/60">
-      <header className="sticky top-0 z-30 border-b border-sky-100 bg-white/85 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-sky-100 bg-card/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <AuthLogo width={34} height={34} />
@@ -91,7 +91,7 @@ export default async function PpdbPage() {
             {JURUSAN_OPTIONS.map((j, i) => (
               <div
                 key={j.value}
-                className="flex gap-4 rounded-2xl border border-sky-100 bg-white p-5 transition-shadow hover:shadow-lg hover:shadow-sky-100"
+                className="flex gap-4 rounded-2xl border border-sky-100 bg-card p-5 transition-shadow hover:shadow-lg hover:shadow-sky-100"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white">
                   {i + 1}
@@ -125,7 +125,7 @@ export default async function PpdbPage() {
               nomor WhatsApp Anda.
             </p>
 
-            <div className="mt-6 rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+            <div className="mt-6 rounded-3xl border border-sky-100 bg-card p-6 shadow-sm">
               <h3 className="text-base font-extrabold text-slate-900">
                 {isLoggedIn ? "Sudah siap mengisi?" : "Belum punya akun?"}
               </h3>
@@ -161,7 +161,7 @@ export default async function PpdbPage() {
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-sky-100 bg-white p-6">
+              <div className="rounded-3xl border border-sky-100 bg-card p-6">
                 <h3 className="text-base font-extrabold text-slate-900">
                   Datang langsung
                 </h3>
@@ -192,7 +192,7 @@ export default async function PpdbPage() {
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24">
-            <div className="rounded-3xl border border-sky-100 bg-white p-6">
+            <div className="rounded-3xl border border-sky-100 bg-card p-6">
               <h3 className="text-base font-extrabold text-slate-900">
                 Alur pendaftaran
               </h3>
@@ -208,7 +208,7 @@ export default async function PpdbPage() {
               </ol>
             </div>
 
-            <div className="rounded-3xl border border-sky-100 bg-white p-6">
+            <div className="rounded-3xl border border-sky-100 bg-card p-6">
               <h3 className="text-base font-extrabold text-slate-900">
                 Tahapan setelah ACC
               </h3>
@@ -241,7 +241,7 @@ export default async function PpdbPage() {
               </ol>
             </div>
 
-            <div className="rounded-3xl border border-sky-100 bg-white p-6">
+            <div className="rounded-3xl border border-sky-100 bg-card p-6">
               <h3 className="text-base font-extrabold text-slate-900">
                 Butuh bantuan?
               </h3>
@@ -256,7 +256,7 @@ export default async function PpdbPage() {
         </section>
       </main>
 
-      <footer className="border-t border-sky-100 bg-white/60 py-8 text-center text-xs text-slate-400">
+      <footer className="border-t border-sky-100 bg-card/60 py-8 text-center text-xs text-slate-400">
         <p className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-4 sm:px-6">
           <MapPin className="h-3.5 w-3.5" aria-hidden />
           SMK Telekomunikasi Tunas Harapan · <Address /> · Telp. (0298) 313040

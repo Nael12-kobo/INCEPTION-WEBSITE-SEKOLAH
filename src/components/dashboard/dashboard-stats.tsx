@@ -64,7 +64,7 @@ export function DashboardStats({ ppdb }: { ppdb?: DashboardPpdb }) {
         {statistik.map((s) => (
           <div
             key={s.label}
-            className="rounded-3xl border border-sky-100 bg-white p-5 text-center transition-shadow hover:shadow-lg hover:shadow-sky-100"
+            className="rounded-3xl border border-sky-100 bg-card p-5 text-center transition-shadow hover:shadow-lg hover:shadow-sky-100"
           >
             <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
               <s.icon className="h-5 w-5" aria-hidden />
@@ -80,7 +80,7 @@ export function DashboardStats({ ppdb }: { ppdb?: DashboardPpdb }) {
 
       {/* Aktivitas akun + fasilitas */}
       <div className="mt-6 grid gap-5 lg:grid-cols-5">
-        <Card data-reveal-item className="bg-white lg:col-span-3">
+        <Card data-reveal-item className="bg-card lg:col-span-3">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Status pendaftaran Anda</CardTitle>
@@ -126,7 +126,7 @@ export function DashboardStats({ ppdb }: { ppdb?: DashboardPpdb }) {
           </CardContent>
         </Card>
 
-        <Card data-reveal-item className="bg-white lg:col-span-2">
+        <Card data-reveal-item className="bg-card lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Layanan & fasilitas</CardTitle>
             <CardDescription>Akses yang tersedia untuk siswa.</CardDescription>
@@ -138,7 +138,7 @@ export function DashboardStats({ ppdb }: { ppdb?: DashboardPpdb }) {
                   key={f.label}
                   className="flex items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-3"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-sky-600 ring-1 ring-sky-100">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-sky-600 ring-1 ring-sky-100">
                     <f.icon className="h-4 w-4" aria-hidden />
                   </span>
                   <div className="min-w-0">

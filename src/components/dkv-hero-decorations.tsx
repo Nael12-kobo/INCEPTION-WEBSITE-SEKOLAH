@@ -35,9 +35,9 @@ const shapes: {
   { type: "ring",     size: 70, top: "5%",  right: "20%", color: "border-white",    duration: 15, delay: 0.4, rotateStart: 0 },
   { type: "ring",     size: 50, top: "50%", left: "2%",   color: "border-cyan-200",  duration: 11, delay: 1.6, rotateStart: 30 },
   // Crosses
-  { type: "cross",    size: 35, top: "40%", right: "5%",  color: "bg-white",        duration: 8,  delay: 0.9, rotateStart: 0 },
+  { type: "cross",    size: 35, top: "40%", right: "5%",  color: "bg-card",        duration: 8,  delay: 0.9, rotateStart: 0 },
   { type: "cross",    size: 28, top: "85%", left: "15%",  color: "bg-yellow-200",   duration: 13, delay: 2.8, rotateStart: 45 },
-  { type: "cross",    size: 32, top: "18%", left: "50%",  color: "bg-white",        duration: 10, delay: 1.3, rotateStart: 20 },
+  { type: "cross",    size: 32, top: "18%", left: "50%",  color: "bg-card",        duration: 10, delay: 1.3, rotateStart: 20 },
 ];
 
 // Shape renderer

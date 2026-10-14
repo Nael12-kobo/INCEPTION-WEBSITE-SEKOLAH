@@ -85,7 +85,7 @@ export function AcademicClient({ userName }: { userName: string }) {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-700 via-sky-700 to-blue-800 p-8 text-white shadow-xl shadow-sky-950/20 sm:p-10">
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
-            <Badge className="border-white/30 bg-white/20 text-white backdrop-blur-md">
+            <Badge className="border-white/30 bg-card/20 text-white backdrop-blur-md">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
               Sistem Informasi Akademik Terpadu (SIAKAD)
             </Badge>
@@ -96,7 +96,7 @@ export function AcademicClient({ userName }: { userName: string }) {
               Akses cepat jadwal tatap muka di lab, monitoring capaian IPK & transkrip nilai, modul e-learning resmi, serta kalender sertifikasi industri.
             </p>
           </div>
-          <div className="flex flex-col items-center rounded-2xl border border-white/20 bg-white/10 p-5 text-center backdrop-blur-md">
+          <div className="flex flex-col items-center rounded-2xl border border-white/20 bg-card/10 p-5 text-center backdrop-blur-md">
             <span className="text-xs uppercase tracking-widest text-sky-200">Indeks Prestasi Kumulatif</span>
             <span className="mt-1 text-4xl font-extrabold text-white">3.92</span>
             <span className="mt-1 inline-flex items-center gap-1 text-xs text-emerald-300 font-medium">
@@ -146,8 +146,8 @@ export function AcademicClient({ userName }: { userName: string }) {
           onClick={() => setActiveTab("jadwal")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "jadwal"
-              ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-              : "bg-white text-slate-600 hover:bg-sky-50"
+              ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
+              : "bg-card text-slate-600 hover:bg-sky-50"
           }`}
         >
           <Calendar className="h-4 w-4" />
@@ -157,8 +157,8 @@ export function AcademicClient({ userName }: { userName: string }) {
           onClick={() => setActiveTab("nilai")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "nilai"
-              ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-              : "bg-white text-slate-600 hover:bg-sky-50"
+              ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
+              : "bg-card text-slate-600 hover:bg-sky-50"
           }`}
         >
           <Trophy className="h-4 w-4" />
@@ -168,8 +168,8 @@ export function AcademicClient({ userName }: { userName: string }) {
           onClick={() => setActiveTab("materi")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "materi"
-              ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-              : "bg-white text-slate-600 hover:bg-sky-50"
+              ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
+              : "bg-card text-slate-600 hover:bg-sky-50"
           }`}
         >
           <BookOpen className="h-4 w-4" />
@@ -179,8 +179,8 @@ export function AcademicClient({ userName }: { userName: string }) {
           onClick={() => setActiveTab("ujian")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "ujian"
-              ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-              : "bg-white text-slate-600 hover:bg-sky-50"
+              ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
+              : "bg-card text-slate-600 hover:bg-sky-50"
           }`}
         >
           <FileText className="h-4 w-4" />
@@ -200,7 +200,7 @@ export function AcademicClient({ userName }: { userName: string }) {
                   className={`rounded-lg px-3.5 py-1.5 min-h-9 text-xs font-semibold transition-colors ${
                     selectedDay === day
                       ? "bg-sky-700 text-white shadow-sm"
-                      : "bg-white text-slate-600 hover:bg-slate-100 ring-1 ring-slate-200"
+                      : "bg-card text-slate-600 hover:bg-slate-100 ring-1 ring-slate-200"
                   }`}
                 >
                   {day}
@@ -213,14 +213,14 @@ export function AcademicClient({ userName }: { userName: string }) {
                 placeholder="Cari mapel, guru, atau lab..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-white"
+                className="pl-9 bg-card"
               />
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredSchedule.map((item) => (
-              <Card key={item.id} className="relative overflow-hidden bg-white border-slate-200/80 hover:shadow-lg hover:border-sky-300 transition-all">
+              <Card key={item.id} className="relative overflow-hidden bg-card border-slate-200/80 hover:shadow-lg hover:border-sky-300 transition-all">
                 <div className="h-2 w-full bg-gradient-to-r from-sky-500 to-indigo-500" />
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -254,7 +254,7 @@ export function AcademicClient({ userName }: { userName: string }) {
 
       {/* TAB 2: REKAP NILAI */}
       {activeTab === "nilai" && (
-        <Card className="bg-white border-slate-200">
+        <Card className="bg-card border-slate-200">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -308,7 +308,7 @@ export function AcademicClient({ userName }: { userName: string }) {
       {activeTab === "materi" && (
         <div className="grid gap-4 md:grid-cols-2">
           {MODULES.map((mod, idx) => (
-            <Card key={idx} className="bg-white border-slate-200 hover:shadow-md transition-shadow">
+            <Card key={idx} className="bg-card border-slate-200 hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
@@ -336,7 +336,7 @@ export function AcademicClient({ userName }: { userName: string }) {
       {activeTab === "ujian" && (
         <div className="space-y-4">
           {EXAMS.map((exam, i) => (
-            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 gap-4 shadow-sm">
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl border border-slate-200 bg-card p-5 gap-4 shadow-sm">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Badge className="bg-indigo-600 text-white">{exam.status}</Badge>

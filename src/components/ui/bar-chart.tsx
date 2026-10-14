@@ -217,7 +217,7 @@ export function BarChart({
 
         {hoveredIdx !== null && tooltipPos && data[hoveredIdx] && (
           <div
-            className="pointer-events-none absolute z-10 elevation-3 rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm"
+            className="pointer-events-none absolute z-10 elevation-3 rounded-xl border border-slate-100 bg-card px-3 py-2 shadow-sm"
             style={{
               left: tooltipPos.x,
               top: tooltipPos.y - 10,

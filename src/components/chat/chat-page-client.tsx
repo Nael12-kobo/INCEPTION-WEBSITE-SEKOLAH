@@ -122,13 +122,13 @@ export function ChatPageClient() {
       {isDesktop && (
       <>
         <div className="absolute left-6 top-6 flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="bg-white/70 backdrop-blur-xl">
+          <Button asChild variant="outline" size="sm" className="bg-card/70 backdrop-blur-xl">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" /> Beranda
             </Link>
           </Button>
         </div>
-        <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 bg-white/60 p-4 backdrop-blur-xl">
+        <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 bg-card/60 p-4 backdrop-blur-xl">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
             <Bot className="h-4 w-4 text-blue-600" /> Nana AI
           </p>
@@ -138,7 +138,7 @@ export function ChatPageClient() {
         </div>
 
         {/* Kanan — panel chat translucent */}
-        <aside className="absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-white/50 bg-white/60 backdrop-blur-2xl">
+        <aside className="absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-white/50 bg-card/60 backdrop-blur-2xl">
           <DesktopHeader
             onHistory={() => setShowHistory((v) => !v)}
             onNew={() => {
@@ -170,7 +170,7 @@ export function ChatPageClient() {
         {/* Top bar melayang */}
         {/* top aman di bawah status bar iPhone (viewportFit=cover; env=0 di HP lain). */}
         <div className="absolute left-4 right-4 top-[calc(env(safe-area-inset-top)+1rem)] flex items-center justify-between">
-          <Button asChild variant="outline" size="sm" className="h-11 bg-white/70 backdrop-blur-xl sm:h-8">
+          <Button asChild variant="outline" size="sm" className="h-11 bg-card/70 backdrop-blur-xl sm:h-8">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" /> Kembali
             </Link>
@@ -180,7 +180,7 @@ export function ChatPageClient() {
               variant="outline"
               size="icon-sm"
               aria-label="Riwayat"
-              className="h-11 w-11 bg-white/70 backdrop-blur-xl"
+              className="h-11 w-11 bg-card/70 backdrop-blur-xl"
               onClick={() => {
                 setShowHistory((v) => !v);
                 if (!showHistory) void fetchHistory();
@@ -191,7 +191,7 @@ export function ChatPageClient() {
             <Button
               variant="outline"
               size="icon-sm"
-              className="h-11 w-11 bg-white/70 backdrop-blur-xl"
+              className="h-11 w-11 bg-card/70 backdrop-blur-xl"
               onClick={() => setExpanded((v) => !v)}
               aria-label={expanded ? "Kecilkan chat" : "Fullscreen chat"}
             >
@@ -211,11 +211,11 @@ export function ChatPageClient() {
             // + blur supaya karakter 3D di belakang panel terlihat jelas.
             // Expanded (88%): putih opaque penuh, blur dilepas (tak berguna
             // di atas bg solid + hemat GPU mobile saat panel fullscreen).
-            // Bubble pesan sendiri opaque (bg-white / gradasi biru) jadi teks
-            // tetap kontras; baris input punya lapisan bg-white/20 sendiri.
+            // Bubble pesan sendiri opaque (bg-card / gradasi biru) jadi teks
+            // tetap kontras; baris input punya lapisan bg-card/20 sendiri.
             expanded
-              ? "border-white bg-white shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
-              : "border-white/30 bg-gradient-to-t from-white/25 via-white/15 to-white/5 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
+              ? "border-white bg-card shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
+              : "border-white/30 bg-gradient-to-t from-card/25 via-card/15 to-card/5 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
             "transition-[height] duration-300",
             // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
             "pb-[env(safe-area-inset-bottom)]",
@@ -317,7 +317,7 @@ function HistoryDrawer({
   return (
     <div
       className={cn(
-        "border-white/50 bg-white/85 backdrop-blur-2xl",
+        "border-white/50 bg-card/85 backdrop-blur-2xl",
         floating
           ? "absolute inset-x-4 top-16 z-10 max-h-[60%] overflow-hidden rounded-2xl border shadow-2xl"
           : "absolute inset-x-0 top-0 z-10 max-h-[50%] overflow-hidden rounded-b-2xl border-b shadow-xl"

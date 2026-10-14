@@ -45,6 +45,7 @@ import {
   UserDropdown,
   type UserDropdownItem,
 } from "@/components/ui/user-dropdown";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import { isAdmin as checkIsAdmin, formatRoleLabel } from "@/lib/roles";
 
@@ -324,7 +325,7 @@ function NotificationBell({ activities }: { activities: DashboardActivityItem[] 
       </Button>
 
       {open && (
-        <div className="animate-fade-in elevation-4 absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-6rem)] rounded-2xl bg-white border border-slate-200 p-0 overflow-hidden z-50">
+        <div className="animate-fade-in elevation-4 absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-6rem)] rounded-2xl bg-card border border-slate-200 p-0 overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <h4 className="font-h4 text-slate-900">Aktivitas Terbaru</h4>
           </div>
@@ -485,7 +486,7 @@ export function DashboardShell({
   return (
     <ToastProvider>
       <div className="flex min-h-dvh bg-sky-50/60">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-slate-200 bg-card lg:flex">
           {/* Brand = tautan ke situs publik. Wajib karena Navbar global
               tidak dirender di /dashboard (lihat SiteChrome), jadi tanpa
               link ini pengguna tidak punya jalan kembali ke beranda. */}
@@ -510,7 +511,7 @@ export function DashboardShell({
         </aside>
 
         <div className="flex min-h-dvh w-full min-w-0 flex-1 flex-col lg:pl-72">
-          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-md sm:px-6">
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-card/80 px-4 backdrop-blur-md sm:px-6">
             <div className="flex items-center gap-2">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
@@ -538,6 +539,12 @@ export function DashboardShell({
                     {renderNavLinks(() => setMenuOpen(false))}
                   </nav>
                   <div className="mt-auto border-t border-slate-100 pt-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-600">
+                        Mode tampilan
+                      </span>
+                      <ThemeToggle />
+                    </div>
                     {userBlock}
                     <div className="mt-3">
                       <UserDropdown
@@ -611,6 +618,7 @@ export function DashboardShell({
           </div>
 
           <div className="flex items-center gap-2">
+              <ThemeToggle />
               <NotificationBell activities={activities} />
               <UserDropdown
                 user={{
@@ -631,7 +639,7 @@ export function DashboardShell({
             {children}
           </main>
 
-          <footer className="border-t border-slate-200 bg-white/60 py-5 text-center text-xs text-slate-400">
+          <footer className="border-t border-slate-200 bg-card/60 py-5 text-center text-xs text-slate-400">
             © {new Date().getFullYear()} SMK Telekomunikasi Tunas Harapan — Portal
             internal.
           </footer>

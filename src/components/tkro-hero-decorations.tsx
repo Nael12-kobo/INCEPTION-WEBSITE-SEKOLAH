@@ -171,7 +171,7 @@ function Piston({ piston }: { piston: (typeof pistons)[0] }) {
       />
       {/* Piston head - moves up and down */}
       <div
-        className="absolute left-[5px] bg-white/40 rounded-sm"
+        className="absolute left-[5px] bg-card/40 rounded-sm"
         style={{
           width: piston.width,
           height: 10,
@@ -180,7 +180,7 @@ function Piston({ piston }: { piston: (typeof pistons)[0] }) {
       />
       {/* Connecting rod */}
       <div
-        className="absolute bg-white/20"
+        className="absolute bg-card/20"
         style={{
           left: piston.width / 2,
           width: 3,

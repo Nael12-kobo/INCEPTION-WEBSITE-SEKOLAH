@@ -4,20 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] motion-safe:transform-gpu [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] motion-safe:transform-gpu [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground [box-shadow:var(--shadow-2)] shadow-sky-200/50 hover:bg-sky-600 hover:[box-shadow:var(--shadow-3)]",
+          "bg-primary text-primary-foreground [box-shadow:var(--shadow-2)] shadow-sky-200/50 hover:bg-sky-700 hover:[box-shadow:var(--shadow-3)]",
         destructive:
-          "bg-rose-600 text-white [box-shadow:var(--shadow-2)] shadow-rose-200/50 hover:bg-rose-700 hover:[box-shadow:var(--shadow-3)]",
+          "bg-destructive text-destructive-foreground [box-shadow:var(--shadow-2)] shadow-rose-200/50 hover:bg-rose-400 hover:[box-shadow:var(--shadow-3)]",
         success:
-          "bg-emerald-600 text-white [box-shadow:var(--shadow-2)] shadow-emerald-200/50 hover:bg-emerald-700 hover:[box-shadow:var(--shadow-3)]",
+          "bg-success text-success-foreground [box-shadow:var(--shadow-2)] shadow-emerald-200/50 hover:bg-emerald-400 hover:[box-shadow:var(--shadow-3)]",
         warning:
           "bg-amber-500 text-white [box-shadow:var(--shadow-2)] shadow-amber-200/50 hover:bg-amber-600 hover:[box-shadow:var(--shadow-3)]",
         outline:
-          "border border-slate-200 bg-white text-slate-900 [box-shadow:var(--shadow-1)] hover:bg-slate-50 hover:border-slate-300",
+          "border border-slate-200 bg-card text-slate-900 [box-shadow:var(--shadow-1)] hover:bg-slate-50 hover:border-slate-300",
         secondary:
           "bg-slate-100 text-slate-800 [box-shadow:var(--shadow-1)] hover:bg-slate-200",
         ghost:

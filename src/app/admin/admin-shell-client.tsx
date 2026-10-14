@@ -35,6 +35,7 @@ import {
   type UserDropdownUser,
 } from "@/components/ui/user-dropdown";
 import { ToastProvider, useToast, type ToastApi } from "@/components/ui/toast";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
@@ -199,7 +200,7 @@ function NotificationBell({
       {open && (
         // max-w-[75vw]: bell tidak di pojok kanan header, jadi w-80 bisa keluar
         // layar di HP 360px — batasi agar tepi kirinya tetap terlihat.
-        <div className="animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-80 max-w-[75vw] overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="animate-fade-in elevation-4 absolute right-0 top-full z-50 mt-2 w-80 max-w-[75vw] overflow-hidden rounded-2xl border border-slate-200 bg-card">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h4 className="font-h4 text-sm text-slate-900">Aktivitas Terbaru</h4>
             {isSuperAdmin && (
@@ -299,10 +300,10 @@ function SidebarContent({
         className={cn(
           "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors mx-2 mb-0.5",
           isActive
-            ? "bg-sky-600 text-white shadow-lg shadow-sky-900/30"
+            ? "bg-primary text-primary-foreground shadow-lg shadow-black/30"
             : disabled
-              ? "text-slate-300/60 hover:bg-slate-800/40 cursor-not-allowed"
-              : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              ? "text-neutral-300/60 hover:bg-neutral-800/40 cursor-not-allowed"
+              : "text-neutral-300 hover:bg-neutral-800 hover:text-white"
         )}
         aria-current={isActive ? "page" : undefined}
       >
@@ -346,7 +347,7 @@ function SidebarContent({
 
   return (
     <>
-      <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-slate-800 px-5">
+      <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-neutral-800 px-5">
         <AuthLogo width={34} height={34} />
         <span className="leading-tight">
           <span className="block text-sm font-bold text-white">Admin Panel</span>
@@ -368,7 +369,7 @@ function SidebarContent({
         {sistemItems.map(renderNavItem)}
       </nav>
 
-      <div className="border-t border-slate-800 px-4 py-3">
+      <div className="border-t border-neutral-800 px-4 py-3">
         <div className="flex items-center gap-3">{userBlock}</div>
       </div>
     </>
@@ -416,14 +417,14 @@ function AdminShellInner({
 
   return (
     <div className="flex min-h-dvh bg-slate-50">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-slate-900 text-slate-100 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-neutral-900 text-neutral-100 lg:flex">
         <SidebarContent user={currentUser} currentPath={pathname} toast={toast} />
       </aside>
 
       <div className="flex min-h-dvh w-full min-w-0 flex-1 flex-col lg:pl-64">
         {/* top-[env(safe-area-inset-top)]: viewportFit=cover → header harus
             turun di bawah status bar iPhone (env=0 di perangkat lain). */}
-        <header className="sticky top-[env(safe-area-inset-top)] z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 backdrop-blur px-4 sm:px-6">
+        <header className="sticky top-[env(safe-area-inset-top)] z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-card/90 backdrop-blur px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
@@ -439,7 +440,7 @@ function AdminShellInner({
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="flex flex-col max-w-[85vw] bg-slate-900 text-slate-100 border-slate-800 p-0"
+                className="flex flex-col max-w-[85vw] bg-neutral-900 text-neutral-100 border-neutral-800 p-0"
               >
                 <SheetHeader className="p-0">
                   <SheetTitle className="sr-only">Menu Admin</SheetTitle>
@@ -484,6 +485,7 @@ function AdminShellInner({
               </Link>
             </Button>
             <NotificationBell activities={activities} isSuperAdmin={viewerIsSuperAdmin} />
+            <ThemeToggle />
             <UserDropdown
               user={dropdownUser}
               onLogout={handleLogout}
@@ -517,7 +519,7 @@ function AdminShellInner({
           </div>
         </main>
 
-        <footer className="border-t border-slate-200 bg-white/60 py-4 text-center text-xs text-slate-400">
+        <footer className="border-t border-slate-200 bg-card/60 py-4 text-center text-xs text-slate-400">
           © 2026 SMK Telekomunikasi Tunas Harapan — Admin Panel
         </footer>
       </div>

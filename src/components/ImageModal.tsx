@@ -38,14 +38,14 @@ export function ImageModal({
       onClick={onClose}
     >
       <div
-        className="relative mx-auto flex max-h-[90vh] max-w-6xl w-full flex-col gap-6 overflow-hidden rounded-2xl bg-white p-6 shadow-2xl md:flex-row"
+        className="relative mx-auto flex max-h-[90vh] max-w-6xl w-full flex-col gap-6 overflow-hidden rounded-2xl bg-card p-6 shadow-2xl md:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         <Button
           onClick={onClose}
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 z-10 h-10 w-10 rounded-full bg-white/90 shadow-lg hover:bg-white"
+          className="absolute right-4 top-4 z-10 h-10 w-10 rounded-full bg-card/90 shadow-lg hover:bg-card"
           aria-label="Tutup"
         >
           <X className="h-5 w-5" />

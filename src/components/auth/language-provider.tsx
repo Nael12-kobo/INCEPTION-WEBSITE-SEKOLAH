@@ -86,7 +86,7 @@ export function LanguageToggle({ className }: { className?: string }) {
       onClick={toggleLocale}
       aria-label={`Switch language, current: ${locale === "id" ? "Indonesia" : "English"}`}
       className={cn(
-        "inline-flex h-9 items-center gap-1.5 rounded-full border border-sky-200/80 bg-white/80 px-3 text-xs font-semibold text-slate-600",
+        "inline-flex h-9 items-center gap-1.5 rounded-full border border-sky-200/80 bg-card/80 px-3 text-xs font-semibold text-slate-600",
         "shadow-sm shadow-sky-100/60 backdrop-blur transition-colors hover:border-sky-300 hover:text-sky-700",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60",
         className

@@ -25,7 +25,7 @@ export function CtaPpdb() {
         >
           <div aria-hidden className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-grid-sky opacity-40 [mask-image:radial-gradient(ellipse_60%_80%_at_50%_50%,black,transparent)]" />
-            <div className="orb-float absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/20 blur-2xl" />
+            <div className="orb-float absolute -left-16 -top-16 h-56 w-56 rounded-full bg-card/20 blur-2xl" />
             <div className="orb-float-delayed absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-sky-900/25 blur-2xl" />
           </div>
           <div className="relative">
@@ -41,7 +41,7 @@ export function CtaPpdb() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <span data-magnetic className="inline-flex">
-                <Button size="lg" variant="secondary" asChild className="bg-white/95 text-sky-800 shadow-lg shadow-sky-900/20 hover:bg-white">
+                <Button size="lg" variant="secondary" asChild className="bg-card/95 text-sky-800 shadow-lg shadow-sky-900/20 hover:bg-card">
                   <Link href="/ppdb">
                     Isi Formulir PPDB
                     <ArrowRight />
@@ -53,7 +53,7 @@ export function CtaPpdb() {
                   size="lg"
                   variant="outline"
                   asChild
-                  className="border-white/50 bg-white/15 text-white backdrop-blur hover:bg-white/25 hover:text-white"
+                  className="border-white/50 bg-card/15 text-white backdrop-blur hover:bg-card/25 hover:text-white"
                 >
                   <Link href="#profil">Hubungi Panitia</Link>
                 </Button>
@@ -64,9 +64,9 @@ export function CtaPpdb() {
                 <div
                   key={s.title}
                   data-magnetic
-                  className="rounded-2xl border border-white/30 bg-white/15 p-4 backdrop-blur-xl transition-colors hover:bg-white/25"
+                  className="rounded-2xl border border-white/30 bg-card/15 p-4 backdrop-blur-xl transition-colors hover:bg-card/25"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/25 text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-card/25 text-white">
                     <s.icon className="h-4 w-4" />
                   </span>
                   <p className="mt-3 text-sm font-bold text-white">

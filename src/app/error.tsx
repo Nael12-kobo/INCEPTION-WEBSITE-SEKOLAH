@@ -55,13 +55,13 @@ export default function RootError({
         <button
           type="button"
           onClick={retry}
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
+          className="inline-flex h-11 items-center justify-center rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-neutral-700"
         >
           Coba lagi
         </button>
         <Link
           href="/"
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-card px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
         >
           Kembali ke beranda
         </Link>

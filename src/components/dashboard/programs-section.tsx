@@ -74,7 +74,7 @@ export function ProgramsSection() {
           <Card
             key={j.singkatan}
             data-reveal-item
-            className="group flex flex-col bg-white transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-100"
+            className="group flex flex-col bg-card transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-100"
           >
             <CardHeader>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-sm shadow-sky-200">
@@ -120,7 +120,7 @@ export function ProgramsSection() {
             <Card
               key={b.judul}
               data-reveal-item
-              className="flex flex-col bg-white transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-100"
+              className="flex flex-col bg-card transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-100"
             >
               <div className="h-2.5 rounded-t-3xl bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400" />
               <CardHeader>
@@ -150,7 +150,7 @@ export function ProgramsSection() {
           />
           <div className="relative flex flex-wrap items-center justify-between gap-6">
             <div className="max-w-lg">
-              <Badge className="border-white/25 bg-white/15 text-white backdrop-blur">
+              <Badge className="border-white/25 bg-card/15 text-white backdrop-blur">
                 <Megaphone className="h-3.5 w-3.5" aria-hidden />
                 PPDB 2026/2027
               </Badge>
@@ -162,7 +162,7 @@ export function ProgramsSection() {
                 gelombang pertama mendapat prioritas beasiswa.
               </p>
             </div>
-            <Button size="lg" asChild className="bg-white text-sky-700 shadow-sm hover:bg-sky-50">
+            <Button size="lg" asChild className="bg-card text-sky-700 shadow-sm hover:bg-sky-50">
               <Link href="/ppdb">Buka formulir PPDB</Link>
             </Button>
           </div>

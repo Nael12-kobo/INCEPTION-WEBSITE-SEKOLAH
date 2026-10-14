@@ -242,7 +242,7 @@ export function DashboardOverview({
         />
         <div className="relative flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-xl">
-            <Badge className="border-white/25 bg-white/15 text-white backdrop-blur">
+            <Badge className="border-white/25 bg-card/15 text-white backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               Portal Siswa
             </Badge>
@@ -257,20 +257,20 @@ export function DashboardOverview({
               <Button
                 variant="outline"
                 asChild
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/40"
+                className="border-white/30 bg-card/10 text-white hover:bg-card/20 hover:border-white/40"
               >
                 <a href="#agenda">
                   Lihat agenda
                   <ArrowRight aria-hidden />
                 </a>
               </Button>
-              <Button asChild className="bg-white text-sky-700 shadow-sm hover:bg-sky-50">
+              <Button asChild className="bg-card text-sky-700 shadow-sm hover:bg-sky-50">
                 <Link href="/ppdb">Info PPDB</Link>
               </Button>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/25 bg-white/10 px-5 py-4 backdrop-blur">
+          <div className="rounded-2xl border border-white/25 bg-card/10 px-5 py-4 backdrop-blur">
             <p className="text-xs font-medium uppercase tracking-wider text-sky-100">
               Hari ini
             </p>
@@ -320,7 +320,7 @@ export function DashboardOverview({
       </div>
 
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
-        <Card className="bg-white lg:col-span-3">
+        <Card className="bg-card lg:col-span-3">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="font-h4">Pendaftaran PPDB 7 Hari Terakhir</CardTitle>
@@ -342,7 +342,7 @@ export function DashboardOverview({
           </CardContent>
         </Card>
 
-        <Card className="bg-white lg:col-span-2">
+        <Card className="bg-card lg:col-span-2">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="font-h4">Distribusi Jurusan PPDB</CardTitle>
@@ -367,7 +367,7 @@ export function DashboardOverview({
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
         <Card
           id="agenda"
-          className="bg-white lg:col-span-3 scroll-mt-24"
+          className="bg-card lg:col-span-3 scroll-mt-24"
         >
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
@@ -400,7 +400,7 @@ export function DashboardOverview({
           </CardContent>
         </Card>
 
-        <Card className="bg-white lg:col-span-2">
+        <Card className="bg-card lg:col-span-2">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="font-h4">Pengumuman</CardTitle>
@@ -415,7 +415,7 @@ export function DashboardOverview({
               {pengumuman.map((p) => (
                 <li
                   key={p.judul}
-                  className="rounded-xl border border-slate-200 bg-white p-3 hover:bg-sky-50/50 transition-colors"
+                  className="rounded-xl border border-slate-200 bg-card p-3 hover:bg-sky-50/50 transition-colors"
                 >
                   <Badge variant="outline" className="text-[10px]">
                     {p.badge}
@@ -458,13 +458,13 @@ export function DashboardOverview({
                   <li
                     key={act.id}
                     className={cn(
-                      "flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-white/60 transition-colors",
+                      "flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-card/60 transition-colors",
                     )}
                   >
                     <span className="w-16 shrink-0 font-caption text-xs font-medium text-violet-600 tabular-nums">
                       {timeAgoShort(act.createdAt)}
                     </span>
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-violet-600 ring-1 ring-violet-200">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-violet-600 ring-1 ring-violet-200">
                       <UserRound className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -484,7 +484,7 @@ export function DashboardOverview({
       )}
 
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
-        <Card id="pendaftaran" className="bg-white lg:col-span-3 scroll-mt-24">
+        <Card id="pendaftaran" className="bg-card lg:col-span-3 scroll-mt-24">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle className="font-h4">

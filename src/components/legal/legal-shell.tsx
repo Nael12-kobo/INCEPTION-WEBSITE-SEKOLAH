@@ -49,7 +49,7 @@ export function LegalShell({
       {/* Isi */}
       <section className="flex-1 bg-gray-50 py-12 dark:bg-gray-900 md:py-16">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-[240px_1fr]">
-          <aside className="h-max rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800 lg:sticky lg:top-24">
+          <aside className="h-max rounded-2xl border border-gray-200 bg-card p-5 dark:border-gray-700 dark:bg-gray-800 lg:sticky lg:top-24">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
               Daftar Isi
             </h2>
@@ -67,14 +67,14 @@ export function LegalShell({
             </ol>
           </aside>
 
-          <article className="min-w-0 space-y-9 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 md:p-8">
+          <article className="min-w-0 space-y-9 rounded-2xl border border-gray-200 bg-card p-6 dark:border-gray-700 dark:bg-gray-800 md:p-8">
             {children}
           </article>
         </div>
       </section>
 
       {/* Kembali ke beranda */}
-      <section className="bg-white py-12 dark:bg-gray-950">
+      <section className="bg-card py-12 dark:bg-gray-950">
         <div className="mx-auto max-w-6xl px-6 text-center">
           <Link
             href="/"

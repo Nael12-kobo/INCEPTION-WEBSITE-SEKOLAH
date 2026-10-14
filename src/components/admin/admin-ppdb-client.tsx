@@ -320,7 +320,7 @@ export function AdminPpdbClient({
                             value={r.status}
                             disabled={statusUpdating === r.id}
                             onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                            className="h-10 sm:h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
+                            className="h-10 sm:h-8 rounded-lg border border-slate-200 bg-card px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
                           >
                             {PPDB_STATUSES.map((s) => (
                               <option key={s} value={s}>
@@ -434,7 +434,7 @@ export function AdminPpdbClient({
               value={accText}
               onChange={(e) => setAccText(e.target.value)}
               placeholder="Tulis pengumuman hasil ACC…"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400/60"
+              className="w-full rounded-xl border border-slate-200 bg-card px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400/60"
             />
             {accError ? (
               <p role="alert" className="text-sm font-medium text-rose-600">

@@ -34,12 +34,12 @@ export function PpdbHero() {
       >
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-grid-sky opacity-40 [mask-image:radial-gradient(ellipse_60%_80%_at_50%_20%,black,transparent)]" />
-          <div className="absolute -left-16 -top-20 h-64 w-64 rounded-full bg-white/15 blur-3xl" />
+          <div className="absolute -left-16 -top-20 h-64 w-64 rounded-full bg-card/15 blur-3xl" />
           <div className="absolute -bottom-24 -right-12 h-72 w-72 rounded-full bg-sky-900/25 blur-3xl" />
         </div>
 
         <div className="relative text-center">
-          <Badge className="max-w-full text-left border-white/25 bg-white/15 text-white backdrop-blur">
+          <Badge className="max-w-full text-left border-white/25 bg-card/15 text-white backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             PPDB {PPDB_YEAR} — {PPDB_PHASE} — Bebas Zonasi
           </Badge>
@@ -55,9 +55,9 @@ export function PpdbHero() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="flex gap-3 rounded-2xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur"
+                className="flex gap-3 rounded-2xl bg-card/12 p-4 ring-1 ring-white/25 backdrop-blur"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/20 text-white">
                   <f.icon className="h-5 w-5" aria-hidden />
                 </span>
                 <div className="min-w-0">

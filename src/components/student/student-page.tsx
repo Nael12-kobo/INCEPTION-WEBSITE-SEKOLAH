@@ -109,7 +109,7 @@ export async function StudentPage({
     <SessionProvider session={session}>
       <DashboardShell user={dashboardUser} isStudent>
         <section className="space-y-6">
-          <header className="rounded-3xl border border-sky-100 bg-white p-6 sm:p-7">
+          <header className="rounded-3xl border border-sky-100 bg-card p-6 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
@@ -136,7 +136,7 @@ export async function StudentPage({
             </div>
           </header>
 
-          <Card className="bg-white">
+          <Card className="bg-card">
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
                 <CardTitle className="font-h4">{title}</CardTitle>
@@ -146,7 +146,7 @@ export async function StudentPage({
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-12 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-200">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-slate-400 ring-1 ring-slate-200">
                   <Construction className="h-6 w-6" aria-hidden />
                 </span>
                 <p className="mt-4 text-sm font-semibold text-slate-700">

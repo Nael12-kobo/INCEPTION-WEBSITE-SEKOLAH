@@ -48,7 +48,7 @@ export function AccountSection({ user }: { user: DashboardUser }) {
 
   return (
     <section id="akun" className="mt-10 scroll-mt-24">
-      <Card className="overflow-hidden bg-white">
+      <Card className="overflow-hidden bg-card">
         <div className="h-2.5 bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400" />
         <CardHeader className="flex-row items-start justify-between space-y-0">
           <div>

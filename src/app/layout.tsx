@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/SiteChrome";
 import { ChatProvider } from "@/components/chat/chat-store";
+import {
+  ThemeProvider,
+  themeInitScript,
+} from "@/components/theme/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,11 +42,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
+      // Class `.dark` ditulis script di <head> sebelum hydration.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <ChatProvider>
-          <SiteChrome>{children}</SiteChrome>
-        </ChatProvider>
+        <ThemeProvider>
+          <ChatProvider>
+            <SiteChrome>{children}</SiteChrome>
+          </ChatProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

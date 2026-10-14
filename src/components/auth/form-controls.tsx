@@ -38,7 +38,7 @@ export const AuthInput = React.forwardRef<
           aria-describedby={error ? `${id}-error` : undefined}
           className={cn(
             // text-base di HP mencegah auto-zoom iOS saat fokus (input <16px).
-            "h-11 w-full rounded-xl border bg-white px-3.5 text-base text-slate-900 placeholder:text-slate-400 sm:text-sm",
+            "h-11 w-full rounded-xl border bg-card px-3.5 text-base text-slate-900 placeholder:text-slate-400 sm:text-sm",
             "shadow-sm shadow-sky-50 transition-[border-color,box-shadow] duration-200",
             "focus:outline-none focus:ring-4 focus:ring-sky-500/10",
             icon && "pl-10",
@@ -125,9 +125,9 @@ export function AuthCheckbox({
         <span
           aria-hidden
           className={cn(
-            "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border bg-white",
+            "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border bg-card",
             "transition-[background-color,border-color,box-shadow] duration-150",
-            "border-sky-300 peer-checked:border-sky-600 peer-checked:bg-sky-600",
+            "border-sky-300 peer-checked:border-primary peer-checked:bg-primary",
             "peer-hover:border-sky-400 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
             "peer-focus-visible:ring-4 peer-focus-visible:ring-sky-500/15",
             error && "border-rose-300"
@@ -136,7 +136,7 @@ export function AuthCheckbox({
           <svg
             viewBox="0 0 16 16"
             fill="none"
-            className="h-3 w-3 text-white transition-opacity duration-150"
+            className="h-3 w-3 text-primary-foreground transition-opacity duration-150"
           >
             <path
               d="M3.5 8.5l3 3 6-7"

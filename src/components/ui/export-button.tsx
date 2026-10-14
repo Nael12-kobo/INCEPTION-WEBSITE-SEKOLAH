@@ -154,7 +154,7 @@ export function ExportButton({
       {open && (
         <div
           role="menu"
-          className="animate-fade-in elevation-3 absolute right-0 top-full z-40 mt-2 w-48 origin-top-right overflow-hidden rounded-2xl border border-slate-100 bg-white py-1.5 shadow-lg"
+          className="animate-fade-in elevation-3 absolute right-0 top-full z-40 mt-2 w-48 origin-top-right overflow-hidden rounded-2xl border border-slate-100 bg-card py-1.5 shadow-lg"
         >
           <button
             type="button"

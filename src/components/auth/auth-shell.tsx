@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
 import { LanguageToggle } from "@/components/auth/language-provider";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 /**
  * Layout halaman auth: split panel premium.
@@ -19,7 +20,7 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-white lg:grid lg:grid-cols-[1fr_1.1fr] xl:grid-cols-[1.05fr_1fr]">
+    <div className="flex min-h-dvh flex-col bg-card lg:grid lg:grid-cols-[1fr_1.1fr] xl:grid-cols-[1.05fr_1fr]">
       {/* Panel kiri — desktop only */}
       <aside className="relative hidden overflow-hidden bg-sky-50 lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         {panel}
@@ -36,10 +37,13 @@ export function AuthShell({
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Beranda
           </Link>
-          <span className="flex items-center gap-2 lg:hidden">
-            <AuthLogo width={36} height={36} />
-            <LanguageToggle />
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-2 lg:hidden">
+              <AuthLogo width={36} height={36} />
+              <LanguageToggle />
+            </span>
+            <ThemeToggle />
+          </div>
         </header>
 
         <div className="flex flex-1 items-center justify-center py-10 sm:py-14 lg:py-8">

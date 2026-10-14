@@ -102,7 +102,7 @@ export function SocialAuthButtons({ className }: { className?: string }) {
             disabled={disabled}
             aria-busy={pending === "google"}
             className={cn(
-              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
+              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-card px-4",
               "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
               "transition-[background-color,border-color,transform,box-shadow] duration-200",
               "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",
@@ -126,7 +126,7 @@ export function SocialAuthButtons({ className }: { className?: string }) {
             disabled={disabled}
             aria-busy={pending === "github"}
             className={cn(
-              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-white px-4",
+              "inline-flex h-11 items-center justify-center gap-2.5 rounded-xl border border-sky-200/90 bg-card px-4",
               "text-sm font-semibold text-slate-700 shadow-sm shadow-sky-50",
               "transition-[background-color,border-color,transform,box-shadow] duration-200",
               "hover:border-sky-300 hover:bg-sky-50/70 active:scale-[0.98]",

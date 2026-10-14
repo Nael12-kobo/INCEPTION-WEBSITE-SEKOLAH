@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { GraduationCap, Menu, RadioTower } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -51,7 +52,7 @@ const mobileLinks = [
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-card/80 backdrop-blur-md">
       {/* gap-1 (bukan gap-4): saat 1024px muatan nav hampir penuh — gap cuma
           berpengaruh kalau sempit, saat lega justify-between tetap memisahkan
           grup dengan jarak yang sama. Dibutuhkan untuk muat button "Guru". */}
@@ -153,6 +154,7 @@ export function Navbar() {
           <Button variant="ghost" asChild>
             <Link href="/auth/login">Masuk</Link>
           </Button>
+          <ThemeToggle />
           <Button asChild>
             <Link href="#ppdb">PPDB 2026</Link>
           </Button>
@@ -220,6 +222,14 @@ export function Navbar() {
                     {l.label}
                   </Link>
                 ))}
+              </div>
+
+              {/* Mode tampilan — toggle terang/gelap/otomatis */}
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="text-sm font-medium text-slate-700">
+                  Mode tampilan
+                </span>
+                <ThemeToggle />
               </div>
 
               <Button asChild className="mt-4 w-full">

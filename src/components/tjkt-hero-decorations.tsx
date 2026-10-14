@@ -55,7 +55,7 @@ function NetworkNode({ node, index }: { node: (typeof nodes)[0]; index: number }
     >
       {/* Outer glow */}
       <div
-        className="absolute rounded-full bg-white/10"
+        className="absolute rounded-full bg-card/10"
         style={{
           width: node.size * 3,
           height: node.size * 3,
@@ -65,7 +65,7 @@ function NetworkNode({ node, index }: { node: (typeof nodes)[0]; index: number }
       />
       {/* Node core */}
       <div
-        className="rounded-full bg-white/30 border border-white/40"
+        className="rounded-full bg-card/30 border border-white/40"
         style={{ width: node.size, height: node.size }}
       />
     </div>

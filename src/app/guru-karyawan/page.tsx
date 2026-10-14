@@ -13,7 +13,7 @@ export default function GuruKaryawanPage() {
   return (
     <div className="min-h-dvh font-sans text-slate-900">
       {/* Header */}
-      <section className="border-b border-blue-100/70 bg-gradient-to-b from-sky-50 via-white to-slate-50">
+      <section className="border-b border-blue-100/70 bg-gradient-to-b from-sky-50 via-card to-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-14 text-center sm:px-6">
           <Badge variant="secondary" className="glass-chip border-white/60">
             Tenaga Pendidik

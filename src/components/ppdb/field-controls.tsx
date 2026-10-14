@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const baseField =
   // text-base di HP mencegah auto-zoom iOS saat fokus (input <16px).
-  "w-full rounded-xl border bg-white px-3.5 text-base text-slate-900 sm:text-sm shadow-sm shadow-sky-50 " +
+  "w-full rounded-xl border bg-card px-3.5 text-base text-slate-900 sm:text-sm shadow-sm shadow-sky-50 " +
   "transition-[border-color,box-shadow] duration-200 placeholder:text-slate-400 " +
   "focus:outline-none focus:ring-4 focus:ring-sky-500/10 disabled:cursor-not-allowed disabled:bg-slate-50";
 
@@ -233,8 +233,8 @@ export function PpdbPills<T extends string>({
                 checked
                   ? "border-sky-500 bg-sky-50/80 shadow-sm shadow-sky-100"
                   : error
-                    ? "border-rose-200 bg-white hover:border-rose-300"
-                    : "border-sky-200/90 bg-white hover:border-sky-300"
+                    ? "border-rose-200 bg-card hover:border-rose-300"
+                    : "border-sky-200/90 bg-card hover:border-sky-300"
               )}
             >
               <input
@@ -251,7 +251,7 @@ export function PpdbPills<T extends string>({
                   "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                   checked
                     ? "border-sky-600 bg-sky-600 text-white"
-                    : "border-sky-300 bg-white text-transparent group-hover:border-sky-400"
+                    : "border-sky-300 bg-card text-transparent group-hover:border-sky-400"
                 )}
               >
                 <Check className="h-3 w-3" strokeWidth={3.5} />
@@ -315,7 +315,7 @@ export function PpdbCheckbox({
         <span
           aria-hidden
           className={cn(
-            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border bg-white",
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border bg-card",
             "transition-[background-color,border-color,box-shadow] duration-150",
             "border-sky-300 peer-checked:border-sky-600 peer-checked:bg-sky-600",
             "peer-focus-visible:ring-4 peer-focus-visible:ring-sky-500/15",
