@@ -11,6 +11,10 @@ interface ImageModalProps {
   alt: string;
   title?: string;
   description?: string;
+  /** Jika diisi, panel kiri memutar video (mis. WebM fasilitas) bukan gambar. */
+  videoSrc?: string;
+  /** Poster video / fallback gambar. */
+  poster?: string;
 }
 
 export function ImageModal({
@@ -20,6 +24,8 @@ export function ImageModal({
   alt,
   title,
   description,
+  videoSrc,
+  poster,
 }: ImageModalProps) {
   if (!isOpen) return null;
 
@@ -46,11 +52,27 @@ export function ImageModal({
         </Button>
 
         <div className="relative flex-1 min-h-[300px] overflow-hidden rounded-xl bg-slate-100">
-          <img
-            src={src}
-            alt={alt}
-            className="h-full w-full object-contain"
-          />
+          {videoSrc ? (
+            <video
+              key={videoSrc}
+              className="h-full w-full object-contain"
+              controls
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={poster || src}
+              aria-label={alt}
+            >
+              <source src={videoSrc} type="video/webm" />
+            </video>
+          ) : (
+            <img
+              src={src}
+              alt={alt}
+              className="h-full w-full object-contain"
+            />
+          )}
         </div>
 
         {(title || description) && (
