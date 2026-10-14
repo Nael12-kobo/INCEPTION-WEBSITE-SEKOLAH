@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { BookOpen, FlaskConical, Trophy, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useTiltHover } from "@/hooks/useTiltHover";
 import { cn } from "@/lib/utils";
 import { ImageModal } from "@/components/ImageModal";
+import {
+  FasilitasVideoCard,
+  type FasilitasVideo,
+} from "@/components/FasilitasVideoCard";
 
 const tabs = [
   { id: "lab", label: "Lab & Praktik", icon: FlaskConical },
@@ -72,81 +76,134 @@ const data: Record<TabId, { title: string; desc: string; items: string[] }> = {
 };
 
 /**
- * Dokumentasi foto fasilitas (dari folder dokumentasi sekolah).
- * Semua foto 1599×1200 (rasio 4:3).
+ * Dokumentasi video fasilitas (WebM, di-scrub mengikuti posisi X cursor).
+ * - `src`: klip WebM di `/public/animated/facility/`.
+ * - `poster`: JPG lama di `/public/images/fasilitas/` sebagai poster + fallback.
+ * - `xmin` / `xmid` / `xmax`: patokan detik timeline untuk cursor
+ *   di tepi kiri / tengah (netral) / tepi kanan card.
+ *   Nilai di-clamp otomatis ke durasi aktual saat metadata siap.
  */
-const galeri: { src: string; label: string; alt: string; description: string }[] = [
+const galeri: FasilitasVideo[] = [
   {
-    src: "/images/fasilitas/perpustakaan.jpg",
+    src: "/animated/facility/perpustakaan.webm",
+    poster: "/images/fasilitas/perpustakaan.jpg",
     label: "Perpustakaan",
     alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
-    description: "Perpustakaan lengkap dengan koleksi buku, jurnal, dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa."
+    description: "Perpustakaan lengkap dengan koleksi buku, jurnal, dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/tefa.jpg",
+    src: "/animated/facility/tefa.webm",
+    poster: "/images/fasilitas/tefa.jpg",
     label: "Teaching Factory",
     alt: "Teaching Factory (TEFA)",
-    description: "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi."
+    description: "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi.",
+    xmin: 2.9,
+    xmid: 1.5,
+    xmax: 0,
   },
   {
-    src: "/images/fasilitas/gedung-tkj.jpg",
+    src: "/animated/facility/gedung-tkj.webm",
+    poster: "/images/fasilitas/gedung-tkj.jpg",
     label: "Gedung TKJ",
     alt: "Gedung Teknik Komputer dan Jaringan",
-    description: "Gedung khusus untuk program keahlian Teknik Komputer dan Jaringan dengan peralatan modern."
+    description: "Gedung khusus untuk program keahlian Teknik Komputer dan Jaringan dengan peralatan modern.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/tkj-lab.jpg",
+    src: "/animated/facility/tkj-lab.webm",
+    poster: "/images/fasilitas/tkj-lab.jpg",
     label: "Lab TKJ",
     alt: "Laboratorium Teknik Komputer dan Jaringan",
-    description: "Laboratorium TKJ dilengkapi dengan perangkat jaringan Cisco, Mikrotik, dan server untuk praktik konfigurasi jaringan."
+    description: "Laboratorium TKJ dilengkapi dengan perangkat jaringan Cisco, Mikrotik, dan server untuk praktik konfigurasi jaringan.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/tkro-1.jpg",
+    src: "/animated/facility/tkro-1.webm",
+    poster: "/images/fasilitas/tkro-1.jpg",
     label: "Bengkel TKRO 1",
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
-    description: "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan."
+    description: "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/tkro-2.jpg",
+    src: "/animated/facility/tkro-2.webm",
+    poster: "/images/fasilitas/tkro-2.jpg",
     label: "Bengkel TKRO 2",
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
-    description: "Bengkel TKRO 2 sebagai pelengkap fasilitas praktik untuk menampung lebih banyak siswa."
+    description: "Bengkel TKRO 2 sebagai pelengkap fasilitas praktik untuk menampung lebih banyak siswa.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/uks.jpg",
+    src: "/animated/facility/uks.webm",
+    poster: "/images/fasilitas/uks.jpg",
     label: "UKS",
     alt: "Unit Kesehatan Sekolah",
-    description: "Unit Kesehatan Sekolah yang siap melayani siswa untuk pertolongan pertama dan pemeriksaan kesehatan dasar."
+    description: "Unit Kesehatan Sekolah yang siap melayani siswa untuk pertolongan pertama dan pemeriksaan kesehatan dasar.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/uks-2.jpg",
-    label: "UKS 2",
-    alt: "Unit Kesehatan Sekolah",
-    description: "Fasilitas UKS tambahan dengan peralatan medis untuk menunjang kesehatan siswa."
+    src: "/animated/facility/humas.webm",
+    poster: "/images/fasilitas/humas.jpg",
+    label: "Humas",
+    alt: "Unit Humas Sekolah",
+    description: "Unit Humas Sekolah yang bertugas dalam komunikasi dan promosi kegiatan sekolah.",
+    xmin: 1.4,
+    xmid: 0.9,
+    xmax: 0
+    ,
   },
   {
-    src: "/images/fasilitas/dak.jpg",
+    src: "/animated/facility/dak.webm",
+    poster: "/images/fasilitas/dak.jpg",
     label: "DAK",
     alt: "Ruang DAK sekolah",
-    description: "Ruang DAK yang difungsikan sebagai ruang belajar pada jurusan DKV atau Multi Media di lengkapi dengan fasilitas multimedia yang lengkap."
+    description: "Ruang DAK yang difungsikan sebagai ruang belajar pada jurusan DKV atau Multi Media di lengkapi dengan fasilitas multimedia yang lengkap.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/dak-2.jpg",
+    src: "/animated/facility/dak-2.webm",
+    poster: "/images/fasilitas/dak-2.jpg",
     label: "DAK 2",
     alt: "Ruang DAK sekolah",
-    description: "Ruang DAK 2 sebagai ruang belajar tambahan dengan desain modern untuk mendukung pembelajaran berbasis teknologi."
+    description: "Ruang DAK 2 sebagai ruang belajar tambahan dengan desain modern untuk mendukung pembelajaran berbasis teknologi.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/dak-3.jpg",
+    src: "/animated/facility/dak-3.webm",
+    poster: "/images/fasilitas/dak-3.jpg",
     label: "DAK 3",
     alt: "Ruang DAK sekolah",
-    description: "Ruang DAK 3  sebagai ruang belajar tambahan yang dilengkapi dengan AC dan proyektor."
+    description: "Ruang DAK 3  sebagai ruang belajar tambahan yang dilengkapi dengan AC dan proyektor.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
   {
-    src: "/images/fasilitas/dak-studio.jpg",
+    src: "/animated/facility/dak-studio.webm",
+    poster: "/images/fasilitas/dak-studio.jpg",
     label: "DAK Studio",
     alt: "Studio DAK sekolah",
-    description: "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah."
+    description: "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
   },
 ];
 
@@ -156,6 +213,8 @@ export function Fasilitas() {
   const [active, setActive] = useState<TabId>("lab");
   const content = data[active];
   const [selectedImage, setSelectedImage] = useState<typeof galeri[0] | null>(null);
+  // Mobile (< lg): modal cukup JPG — webm tidak di-fetch sama sekali.
+  const isDesktop = useIsDesktop();
 
   return (
     <section id="fasilitas" ref={ref} className="bg-transparent">
@@ -217,7 +276,7 @@ export function Fasilitas() {
           </CardContent>
         </Card>
 
-        {/* Galeri dokumentasi fasilitas — foto asli dari folder dokumentasi */}
+        {/* Galeri video fasilitas — WebM di-scrub mengikuti posisi X cursor */}
         {/* tilt-scene: perspective untuk tilt 3D kartu (data-tilt),
             glare + tilt-nya dijalankan useTiltHover section ini. */}
         <div
@@ -225,31 +284,11 @@ export function Fasilitas() {
           className="tilt-scene mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
         >
           {galeri.map((g) => (
-            <figure
+            <FasilitasVideoCard
               key={g.src}
-              data-tilt
-              className="glass glass-glare relative aspect-[4/3] overflow-hidden rounded-2xl group"
-            >
-              <div
-                className="absolute inset-0 z-20 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedImage(g);
-                }}
-                title="Klik untuk memperbesar"
-              />
-              <Image
-                src={g.src}
-                alt={g.alt}
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              {/* z-10: caption harus di atas pseudo-element glare (::after) */}
-              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3 pt-8 text-xs font-semibold text-white">
-                {g.label}
-              </figcaption>
-            </figure>
+              item={g}
+              onOpen={() => setSelectedImage(g)}
+            />
           ))}
         </div>
       </div>
@@ -257,10 +296,12 @@ export function Fasilitas() {
       <ImageModal
         isOpen={selectedImage !== null}
         onClose={() => setSelectedImage(null)}
-        src={selectedImage?.src || ""}
+        src={selectedImage?.poster || ""}
         alt={selectedImage?.alt || ""}
         title={selectedImage?.label}
         description={selectedImage?.description}
+        videoSrc={isDesktop ? selectedImage?.src : undefined}
+        poster={selectedImage?.poster}
       />
     </section>
   );
