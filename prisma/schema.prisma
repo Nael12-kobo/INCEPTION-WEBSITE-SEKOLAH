@@ -117,6 +117,7 @@ enum PpdbJurusan {
 enum PpdbStatus {
   PENDING
   CONTACTED
+  APPROVED
   REGISTERED
   REJECTED
 }
@@ -144,6 +145,8 @@ model PpdbRegistration {
   parentName    String
   parentPhone   String
   notes         String?
+  /// Teks pengumuman dari admin saat ACC (tampil di dashboard siswa status APPROVED).
+  announcement  String?
   status        PpdbStatus @default(PENDING)
   waSentAt      DateTime?
   createdAt     DateTime @default(now())

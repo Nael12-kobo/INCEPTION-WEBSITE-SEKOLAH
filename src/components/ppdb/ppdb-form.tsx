@@ -71,7 +71,21 @@ type SubmitState =
   | { status: "done"; registrationNo: string; waUrl: string; alreadyRegistered: boolean; whatsappDelivered: boolean; emailDelivered: boolean }
   | { status: "error"; message: string; errors: Record<string, string> };
 
-export function PpdbForm({ defaultEmail }: { defaultEmail: string }) {
+export function PpdbForm({
+  defaultEmail,
+  onSubmitted,
+  variant = "page",
+}: {
+  defaultEmail: string;
+  /**
+   * Dipanggil setelah submit sukses. Bila disediakan (pemakaian di dashboard),
+   * pemanggil yang menangani efek samping (toast + refresh) — scroll ke atas
+   * halaman dilewati karena form berada di dalam kartu.
+   */
+  onSubmitted?: (registrationNo: string) => void;
+  /** "page" = halaman /ppdb utuh; "dashboard" = form di dalam kartu dashboard. */
+  variant?: "page" | "dashboard";
+}) {
   const [step, setStep] = React.useState(0);
   const [values, setValues] = React.useState<PpdbValues>({
     ...INITIAL,
@@ -169,7 +183,13 @@ export function PpdbForm({ defaultEmail }: { defaultEmail: string }) {
         whatsappDelivered: Boolean(data.whatsappDelivered),
         emailDelivered: Boolean(data.emailDelivered),
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (onSubmitted) {
+        onSubmitted(data.registrationNo);
+        return;
+      }
+      if (variant === "page") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch {
       setState({ status: "error", message: "Koneksi terputus. Coba lagi.", errors: {} });
     }

@@ -3,7 +3,13 @@ import { requireAdmin, canManagePpdb } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 
-const VALID_STATUSES = ["PENDING", "CONTACTED", "REGISTERED", "REJECTED"] as const;
+const VALID_STATUSES = [
+  "PENDING",
+  "CONTACTED",
+  "APPROVED",
+  "REGISTERED",
+  "REJECTED",
+] as const;
 const VALID_MAJORS = ["DKV", "PPLG", "TJKT", "TKR"] as const;
 type PpdbStatus = (typeof VALID_STATUSES)[number];
 type PpdbJurusan = (typeof VALID_MAJORS)[number];
@@ -15,6 +21,7 @@ interface PpdbPatchInput {
   fullName?: unknown;
   email?: unknown;
   notes?: unknown;
+  announcement?: unknown;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -22,7 +29,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 /**
  * PATCH — update pendaftaran PPDB.
  * Admin & Super Admin bisa update: status, majorFirst, majorSecond, fullName,
- * email, notes. Setidaknya satu field harus dikirim.
+ * email, notes, announcement. Setidaknya satu field harus dikirim.
+ * Status APPROVED wajib disertai announcement (pengumuman ACC).
  */
 export async function PATCH(
   request: NextRequest,
@@ -121,6 +129,25 @@ export async function PATCH(
         );
       }
       data.notes = body.notes;
+    }
+
+    if (body.announcement !== undefined) {
+      if (typeof body.announcement !== "string") {
+        return NextResponse.json(
+          { error: "Invalid announcement (string)" },
+          { status: 400 }
+        );
+      }
+      data.announcement = body.announcement.trim();
+    }
+
+    // ACC: menyetujui pendaftaran wajib menyertakan pengumuman agar siswa
+    // tahu langkah daftar ulang berikutnya.
+    if (body.status === "APPROVED" && !data.announcement && !existing.announcement) {
+      return NextResponse.json(
+        { error: "Pengumuman wajib diisi saat ACC (field announcement)" },
+        { status: 400 }
+      );
     }
 
     if (Object.keys(data).length === 0) {

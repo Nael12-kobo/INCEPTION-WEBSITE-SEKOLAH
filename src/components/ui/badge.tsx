@@ -27,6 +27,8 @@ const badgeVariants = cva(
           "border-amber-200 bg-amber-50 text-amber-700 [&_span.status-dot]:bg-amber-500",
         "status-contacted":
           "border-sky-200 bg-sky-50 text-sky-700 [&_span.status-dot]:bg-sky-500",
+        "status-approved":
+          "border-teal-200 bg-teal-50 text-teal-700 [&_span.status-dot]:bg-teal-500",
         "status-registered":
           "border-emerald-200 bg-emerald-50 text-emerald-700 [&_span.status-dot]:bg-emerald-500",
         "status-rejected":
@@ -62,6 +64,7 @@ function StatusBadge({
   const map: Record<string, VariantProps<typeof badgeVariants>["variant"]> = {
     PENDING: "status-pending",
     CONTACTED: "status-contacted",
+    APPROVED: "status-approved",
     REGISTERED: "status-registered",
     REJECTED: "status-rejected",
   };

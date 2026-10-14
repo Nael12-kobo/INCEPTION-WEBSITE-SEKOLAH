@@ -112,6 +112,7 @@ export default async function DashboardPage() {
         status: true,
         majorFirst: true,
         majorSecond: true,
+        announcement: true,
         // Lengkap untuk checklist persyaratan di kartu pendaftaran.
         fullName: true,
         email: true,
@@ -270,6 +271,7 @@ export default async function DashboardPage() {
                 status: ppdb.status,
                 majorFirst: ppdb.majorFirst,
                 majorSecond: ppdb.majorSecond,
+                announcement: ppdb.announcement,
                 fullName: ppdb.fullName,
                 email: ppdb.email,
                 gender: ppdb.gender,

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Sparkles,
@@ -15,6 +16,8 @@ import {
   UserRound,
   CheckCircle2,
   Circle,
+  ChevronDown,
+  PartyPopper,
 } from "lucide-react";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +33,9 @@ import { BarChart, type BarChartDatum } from "@/components/ui/bar-chart";
 import { DonutChart, type DonutSegment } from "@/components/ui/donut-chart";
 import { useAnimeReveal } from "@/hooks/useAnimeReveal";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/toast";
 import { isAdmin as checkIsAdmin } from "@/lib/roles";
+import { PpdbForm } from "@/components/ppdb/ppdb-form";
 import {
   FIELD_LABELS,
   PPDB_REQUIREMENT_GROUPS,
@@ -111,17 +116,24 @@ export type AdminActivity = {
 };
 
 const PPDB_STATUS_LABELS: Record<string, string> = {
-  PENDING: "Menunggu jadwal tes",
+  PENDING: "Menunggu review admin",
   CONTACTED: "Sekretariat sudah menghubungi",
+  APPROVED: "Disetujui — boleh lanjut daftar ulang",
   REGISTERED: "Daftar ulang selesai",
   REJECTED: "Tidak lolos",
 };
+
+/** Teks default pengumuman ACC bila admin belum mengisi catatan. */
+const APPROVED_FALLBACK_ANNOUNCEMENT =
+  "Pendaftaran Anda disetujui. Silakan lanjutkan pendaftaran ulang dengan datang ke sekolah membawa berkas asli (rapor, KK, akta, pas foto).";
 
 export type DashboardPpdb = {
   registrationNo: string;
   status: string;
   majorFirst: string;
   majorSecond: string;
+  /** Pengumuman dari admin saat ACC (status APPROVED). */
+  announcement?: string | null;
   /** Field lengkap untuk checklist persyaratan (terisi setelah daftar). */
   fullName?: string;
   email?: string;
@@ -169,8 +181,24 @@ export function DashboardOverview({
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
+  const router = useRouter();
+  const toast = useToast();
   const [firstName] = userName.trim().split(/\s+/) || ["Sahabat"];
   const isAdmin = checkIsAdmin(role) || checkIsAdmin(session?.user?.role);
+
+  /** Form PPDB di-expand langsung di dalam kartu (tanpa pindah halaman). */
+  const [formOpen, setFormOpen] = React.useState(false);
+
+  const handleFormSubmitted = React.useCallback(
+    (registrationNo: string) => {
+      setFormOpen(false);
+      toast.success(
+        `Pendaftaran terkirim — nomor pendaftaran Anda ${registrationNo}.`
+      );
+      router.refresh();
+    },
+    [toast, router]
+  );
 
   /**
    * Kelengkapan 12 data persyaratan.
@@ -465,30 +493,57 @@ export function DashboardOverview({
               <CardDescription className="mt-1">
                 {ppdb
                   ? "Data diambil langsung dari formulir PPDB."
-                  : "Daftar akun baru saja — 12 data berikut perlu disiapkan untuk formulir PPDB."}
+                  : "Isi formulir langsung di sini —12 data berikut perlu disiapkan untuk formulir PPDB."}
               </CardDescription>
             </div>
             <Badge variant="secondary">PPDB</Badge>
           </CardHeader>
           <CardContent className="space-y-4">
             {ppdb ? (
-              <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-emerald-800">
-                      Terdaftar — {ppdb.registrationNo}
-                    </p>
-                    <StatusBadge status={ppdb.status} />
+              <>
+                {/* Pengumuman ACC — status APPROVED: lanjut daftar ulang */}
+                {ppdb.status === "APPROVED" && (
+                  <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 ring-1 ring-teal-200">
+                        <PartyPopper className="h-5 w-5" aria-hidden />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-extrabold text-teal-900">
+                          Selamat! Pendaftaran Anda disetujui
+                        </p>
+                        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-teal-800/90">
+                          {ppdb.announcement?.trim() || APPROVED_FALLBACK_ANNOUNCEMENT}
+                        </p>
+                      </div>
+                    </div>
+                    <Button asChild size="sm" className="mt-3.5">
+                      <Link href="/ppdb">
+                        Lanjutkan Pendaftaran Ulang
+                        <ArrowRight aria-hidden />
+                      </Link>
+                    </Button>
                   </div>
-                  <p className="mt-1 text-xs text-emerald-700/80">
-                    {PPDB_STATUS_LABELS[ppdb.status] ?? "Proses berjalan"}. Jurusan{" "}
-                    {ppdb.majorFirst}
-                    {ppdb.majorSecond ? ` / ${ppdb.majorSecond}` : ""}. Detail dikirim
-                    via WhatsApp.
-                  </p>
+                )}
+
+                <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-emerald-800">
+                        Terdaftar — {ppdb.registrationNo}
+                      </p>
+                      <StatusBadge status={ppdb.status} />
+                    </div>
+                    <p className="mt-1 text-xs text-emerald-700/80">
+                      {PPDB_STATUS_LABELS[ppdb.status] ?? "Proses berjalan"}. Jurusan{" "}
+                      {ppdb.majorFirst}
+                      {ppdb.majorSecond ? ` / ${ppdb.majorSecond}` : ""}. Detail dikirim
+                      via WhatsApp.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
               <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-3.5">
                 <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
@@ -497,8 +552,9 @@ export function DashboardOverview({
                     Anda belum mengisi formulir PPDB
                   </p>
                   <p className="text-xs text-sky-700/80">
-                    Centang semua data di bawah ini, lalu isi formulirnya. Nama dan
-                    email otomatis terisi dari akun Anda.
+                    Klik tombol &ldquo;Isi Formulir&rdquo; di bawah — formulir muncul
+                    langsung di halaman ini. Nama dan email otomatis terisi dari akun
+                    Anda.
                   </p>
                 </div>
               </div>
@@ -569,12 +625,47 @@ export function DashboardOverview({
               ))}
             </div>
 
-            <Button asChild variant="outline" size="sm" className="w-full">
-              <Link href="/ppdb">
-                {ppdb ? "Lihat Detail Pendaftaran" : "Isi Formulir PPDB"}
-                <ArrowRight aria-hidden />
-              </Link>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              disabled={!ppdb && formOpen}
+              onClick={() => {
+                if (ppdb) return; // status terdaftar: tidak ada form untuk dibuka
+                setFormOpen((o) => !o);
+              }}
+              aria-expanded={!ppdb ? formOpen : undefined}
+              aria-controls="ppdb-inline-form"
+            >
+              {ppdb ? (
+                <>
+                  Lihat Info PPDB
+                  <ArrowRight aria-hidden />
+                </>
+              ) : formOpen ? (
+                <>
+                  Tutup Formulir
+                  <ChevronDown className="rotate-180" aria-hidden />
+                </>
+              ) : (
+                <>
+                  Isi Formulir PPDB
+                  <ChevronDown aria-hidden />
+                </>
+              )}
             </Button>
+
+            {/* Form PPDB di-expand langsung di dalam kartu — satu halaman. */}
+            {!ppdb && formOpen ? (
+              <div id="ppdb-inline-form" className="pt-1">
+                <PpdbForm
+                  defaultEmail={userEmail}
+                  variant="dashboard"
+                  onSubmitted={handleFormSubmitted}
+                />
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </div>

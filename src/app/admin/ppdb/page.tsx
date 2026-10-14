@@ -26,6 +26,7 @@ export default async function AdminPpdbPage() {
       phone: true,
       majorFirst: true,
       status: true,
+      announcement: true,
       createdAt: true,
     },
     orderBy: { createdAt: "desc" },
@@ -39,12 +40,14 @@ export default async function AdminPpdbPage() {
     phone: r.phone,
     majorFirst: r.majorFirst,
     status: r.status,
+    announcement: r.announcement,
     createdAt: r.createdAt.toISOString(),
   }));
 
-  const statusCounts = {
+  const statusCounts: Record<string, number> = {
     PENDING: 0,
     CONTACTED: 0,
+    APPROVED: 0,
     REGISTERED: 0,
     REJECTED: 0,
   };

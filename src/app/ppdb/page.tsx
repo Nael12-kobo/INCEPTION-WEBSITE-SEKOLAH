@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { BadgeCheck, MapPin, MessageCircle, Phone } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, Phone, ArrowRight, LogIn } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuthLogo } from "@/components/auth/logo";
-import { PpdbForm } from "@/components/ppdb/ppdb-form";
 import { PpdbHero } from "@/components/ppdb/ppdb-hero";
 import {
   JURUSAN_OPTIONS,
@@ -37,11 +35,9 @@ const STEPS = [
 
 export default async function PpdbPage() {
   const session = await auth();
-  // Pendaftaran memakai akun sekolah yang sudah ada — calon siswa login dulu
-  // supaya data & nomor pendaftaran tertaut ke satu identitas.
-  if (!session?.user?.email) {
-    redirect("/auth/login?callbackUrl=/ppdb");
-  }
+  // Halaman ini kini murni informasi — formulir diisi dari dashboard.
+  // Tombol CTA menyesuaikan: sudah login → dashboard, belum → halaman masuk.
+  const isLoggedIn = Boolean(session?.user?.email);
 
   return (
     <div className="min-h-dvh bg-sky-50/60">
@@ -114,19 +110,84 @@ export default async function PpdbPage() {
           </div>
         </section>
 
-        {/* Formulir + informasi */}
+        {/* CTA pendaftaran — formulir diisi dari dashboard, bukan di halaman ini */}
         <section className="mt-12 grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:items-start">
           <div>
             <Badge>Formulir Pendaftaran</Badge>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900">
-              Isi data calon siswa
+              Isi formulir dari dashboard Anda
             </h2>
             <p className="mt-1.5 text-sm text-slate-500">
-              Isi sesuai akta kelahiran. Nomor pendaftaran otomatis dibuat server dan
-              notifikasi dikirim ke nomor WhatsApp Anda.
+              Formulir PPDB kini berada langsung di dashboard — satu halaman tanpa
+              perlu berpindah. Masuk dengan akun Anda, lalu klik
+              &ldquo;Isi Formulir PPDB&rdquo; pada kartu pendaftaran. Isi sesuai akta
+              kelahiran; nomor pendaftaran dibuat otomatis dan notifikasi dikirim ke
+              nomor WhatsApp Anda.
             </p>
-            <div className="mt-5">
-              <PpdbForm defaultEmail={session.user.email} />
+
+            <div className="mt-6 rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+              <h3 className="text-base font-extrabold text-slate-900">
+                {isLoggedIn ? "Sudah siap mengisi?" : "Belum punya akun?"}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                {isLoggedIn
+                  ? "Buka dashboard Anda dan mulai isi formulir pendaftaran — datanya tersimpan otomatis terhubung ke akun Anda."
+                  : "Daftar akun sekolah terlebih dahulu, lalu isi formulir PPDB dari dashboard. Satu akun hanya bisa mendaftar sekali."}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link href={isLoggedIn ? "/dashboard" : "/auth/register"}>
+                    {isLoggedIn ? (
+                      <>
+                        Buka Dashboard
+                        <ArrowRight aria-hidden />
+                      </>
+                    ) : (
+                      <>
+                        <LogIn aria-hidden />
+                        Daftar &amp; Masuk
+                      </>
+                    )}
+                  </Link>
+                </Button>
+                {!isLoggedIn && (
+                  <Button asChild variant="outline" size="lg">
+                    <Link href="/auth/login?callbackUrl=/dashboard">
+                      Sudah punya akun? Masuk
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border border-sky-100 bg-white p-6">
+                <h3 className="text-base font-extrabold text-slate-900">
+                  Datang langsung
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  <Address />
+                </p>
+                <a
+                  href="tel:+62298313040"
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:underline"
+                >
+                  <Phone className="h-4 w-4" aria-hidden />
+                  (0298) 313040
+                </a>
+              </div>
+              <div className="rounded-3xl border border-amber-200 bg-amber-50/70 p-6">
+                <h3 className="flex items-center gap-2 text-sm font-extrabold text-amber-900">
+                  <BadgeCheck className="h-4 w-4" aria-hidden />
+                  Sebelum mengirim
+                </h3>
+                <ul className="mt-3 space-y-2 text-xs leading-relaxed text-amber-900/80">
+                  <li>Formulir online hanya bukti pendaftaran.</li>
+                  <li>Daftar lengkap wajib diisi saat datang ke sekolah.</li>
+                  <li>Informasi tes dikirim via WhatsApp, alternatif SMS.</li>
+                  <li>Jangan pernah membagikan kata sandi kepada siapa pun.</li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -149,37 +210,47 @@ export default async function PpdbPage() {
 
             <div className="rounded-3xl border border-sky-100 bg-white p-6">
               <h3 className="text-base font-extrabold text-slate-900">
-                Datang langsung
+                Tahapan setelah ACC
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                <Address />
-              </p>
-              <a
-                href="tel:+62298313040"
-                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:underline"
-              >
-                <Phone className="h-4 w-4" aria-hidden />
-                (0298) 313040
-              </a>
+              <ol className="mt-4 space-y-3.5">
+                <li className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-extrabold text-teal-700">
+                    1
+                  </span>
+                  <p className="pt-0.5 text-sm leading-relaxed text-slate-600">
+                    Admin menyetujui pendaftaran Anda — pengumuman muncul di dashboard.
+                  </p>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-extrabold text-teal-700">
+                    2
+                  </span>
+                  <p className="pt-0.5 text-sm leading-relaxed text-slate-600">
+                    Klik &ldquo;Lanjutkan Pendaftaran Ulang&rdquo; di dashboard dan
+                    datang ke sekolah dengan berkas asli.
+                  </p>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-extrabold text-teal-700">
+                    3
+                  </span>
+                  <p className="pt-0.5 text-sm leading-relaxed text-slate-600">
+                    Lengkapi daftar ulang dan lunasi biaya pendidikan.
+                  </p>
+                </li>
+              </ol>
+            </div>
+
+            <div className="rounded-3xl border border-sky-100 bg-white p-6">
+              <h3 className="text-base font-extrabold text-slate-900">
+                Butuh bantuan?
+              </h3>
               <Button asChild variant="outline" className="mt-4 w-full">
                 <a href={WA_ADMIN_URL} target="_blank" rel="noopener noreferrer">
                   <MessageCircle aria-hidden />
                   Chat WhatsApp PPDB
                 </a>
               </Button>
-            </div>
-
-            <div className="rounded-3xl border border-amber-200 bg-amber-50/70 p-6">
-              <h3 className="flex items-center gap-2 text-sm font-extrabold text-amber-900">
-                <BadgeCheck className="h-4 w-4" aria-hidden />
-                Sebelum mengirim
-              </h3>
-              <ul className="mt-3 space-y-2 text-xs leading-relaxed text-amber-900/80">
-                <li>Formulir ini hanya bukti pendaftaran online.</li>
-                <li>Daftar lengkap wajib diisi saat datang ke sekolah.</li>
-                <li>Informasi tes dikirim via WhatsApp, alternatif SMS.</li>
-                <li>Jangan pernah membagikan kata sandi kepada siapa pun.</li>
-              </ul>
             </div>
           </aside>
         </section>
