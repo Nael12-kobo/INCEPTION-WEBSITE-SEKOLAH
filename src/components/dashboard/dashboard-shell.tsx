@@ -194,15 +194,24 @@ function isNavActive(href: string, pathname: string, fragment: string): boolean 
 function NavSectionHeader({
   title,
   badge,
+  badgeTone = "danger",
 }: {
   title: string;
   badge?: string;
+  badgeTone?: "danger" | "info";
 }) {
   return (
     <div className="flex items-center justify-between px-3 mb-1">
       <span className="font-overline text-slate-400">{title}</span>
       {badge && (
-        <span className="font-overline text-[9px] px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-600">
+        <span
+          className={cn(
+            "font-overline text-[9px] px-1.5 py-0.5 rounded-md",
+            badgeTone === "info"
+              ? "bg-sky-100 text-sky-700"
+              : "bg-rose-100 text-rose-600"
+          )}
+        >
           {badge}
         </span>
       )}
@@ -438,6 +447,13 @@ export function DashboardShell({
         icon: Shield,
         href: "/admin",
       });
+      // "Switch" cepat ke portal siswa dalam mode pratinjau.
+      items.push({
+        key: "student-preview",
+        label: "Portal Siswa (Pratinjau)",
+        icon: GraduationCap,
+        href: "/student/schedule",
+      });
     }
     return items;
   }, [isAdmin]);
@@ -448,18 +464,27 @@ export function DashboardShell({
         (item) => !item.adminOnly || isAdmin
       );
       if (filteredItems.length === 0) return null;
-      // Section "Siswa": badge berubah ikut status keanggotaan.
-      const badge = section.studentOnly
+      // Section "Siswa": badge berubah ikut status keanggotaan. Admin yang
+      // bukan siswa tetap boleh membuka itemnya sebagai PRATINJAU — halaman
+      // /student/* menampilkan mode pratinjau untuk admin.
+      const badging = section.studentOnly
         ? isStudent
           ? undefined
-          : "TERKUNCI"
+          : isAdmin
+            ? "PRATINJAU"
+            : "TERKUNCI"
         : section.badge;
+      const unlocked = isStudent || isAdmin;
       return (
         <div key={section.title} className="py-3 first:pt-0 last:pb-0">
-          <NavSectionHeader title={section.title} badge={badge} />
+          <NavSectionHeader
+            title={section.title}
+            badge={badging}
+            badgeTone={!isStudent && isAdmin ? "info" : "danger"}
+          />
           <div className="space-y-1">
             {filteredItems.map((item) =>
-              item.studentOnly && !isStudent ? (
+              item.studentOnly && !unlocked ? (
                 <LockedNavItem key={item.href} item={item} onClick={onNavigate} />
               ) : (
                 <NavLinkItem

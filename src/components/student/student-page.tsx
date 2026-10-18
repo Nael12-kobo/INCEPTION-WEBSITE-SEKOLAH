@@ -17,7 +17,7 @@ import {
   type DashboardUser,
 } from "@/components/dashboard/dashboard-shell";
 import { isStudentStatus, JurusanLabel } from "@/lib/ppdb";
-import { hasPermission } from "@/lib/roles";
+import { hasPermission, isAdmin as checkIsAdminRole } from "@/lib/roles";
 import type { JurusanValue } from "@/lib/ppdb";
 
 export const STUDENT_PAGES = [
@@ -52,6 +52,9 @@ function initialsFrom(name: string, email: string): string {
  * - Wajib login.
  * - Wajib punya permission `student.access`.
  * - Wajib berstatus siswa aktif (PPDB REGISTERED) — selain itu redirect.
+ * - Pengecualian: ADMIN/SUPER_ADMIN boleh membuka sebagai PRATINJAU (banner
+ *   "Mode pratinjau admin") untuk memeriksa tampilan yang dilihat siswa.
+ *   Halaman tidak pernah membuka data siswa tertentu lewat mode ini.
  *
  * Kontennya masih placeholder sampai skema data siswa (Bagian C) dibuat.
  */
@@ -84,8 +87,14 @@ export async function StudentPage({
   });
 
   if (!user) redirect(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+
+  // Admin boleh membuka sebagai pratinjau (bukan siswa asli) — lihat banner
+  // "Mode pratinjau admin" di bawah; status gembok sidebar ikut menyesuaikan.
+  const realStudent = isStudentStatus(user.ppdbRegistration?.status);
+  const adminPreview = !realStudent && checkIsAdminRole(user.role);
+
   if (!hasPermission(user.role, "student.access")) redirect("/dashboard");
-  if (!isStudentStatus(user.ppdbRegistration?.status)) redirect("/dashboard");
+  if (!realStudent && !adminPreview) redirect("/dashboard");
 
   const dashboardUser: DashboardUser = {
     name: user.name ?? user.email ?? "Pengguna",
@@ -107,7 +116,7 @@ export async function StudentPage({
 
   return (
     <SessionProvider session={session}>
-      <DashboardShell user={dashboardUser} isStudent>
+      <DashboardShell user={dashboardUser} isStudent={realStudent}>
         <section className="space-y-6">
           <header className="rounded-3xl border border-sky-100 bg-card p-6 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -125,7 +134,11 @@ export async function StudentPage({
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <Badge variant="success">Siswa aktif</Badge>
+                {adminPreview ? (
+                  <Badge variant="secondary">Pratinjau admin</Badge>
+                ) : (
+                  <Badge variant="success">Siswa aktif</Badge>
+                )}
                 {majorFirst && (
                   <span className="font-caption text-xs text-slate-400">
                     {JurusanLabel(majorFirst)}
@@ -135,6 +148,17 @@ export async function StudentPage({
               </div>
             </div>
           </header>
+
+          {adminPreview ? (
+            <div className="flex items-start gap-2 rounded-2xl border border-sky-200 bg-sky-50/70 px-4 py-3 text-xs font-medium text-sky-800">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span>
+                Mode pratinjau admin — begini tampilan halaman untuk siswa
+                aktif. Halaman ini tidak membuka data siswa tertentu; isinya
+                akan menyusul saat sekolah mulai mengisi data siswa.
+              </span>
+            </div>
+          ) : null}
 
           <Card className="bg-card">
             <CardHeader className="flex-row items-start justify-between space-y-0">
