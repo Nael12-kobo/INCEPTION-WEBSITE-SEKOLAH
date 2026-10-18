@@ -28,6 +28,23 @@ export default async function AdminPpdbPage() {
       status: true,
       announcement: true,
       createdAt: true,
+      user: {
+        select: {
+          id: true,
+          photoUpdatedAt: true,
+          ppdbDocuments: {
+            select: {
+              id: true,
+              kind: true,
+              fileName: true,
+              mime: true,
+              size: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -42,6 +59,16 @@ export default async function AdminPpdbPage() {
     status: r.status,
     announcement: r.announcement,
     createdAt: r.createdAt.toISOString(),
+    userId: r.user.id,
+    hasPhoto: Boolean(r.user.photoUpdatedAt),
+    documents: r.user.ppdbDocuments.map((d) => ({
+      id: d.id,
+      kind: d.kind,
+      fileName: d.fileName,
+      mime: d.mime,
+      size: d.size,
+      createdAt: d.createdAt.toISOString(),
+    })),
   }));
 
   const statusCounts: Record<string, number> = {

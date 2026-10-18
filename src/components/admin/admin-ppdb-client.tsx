@@ -9,6 +9,11 @@ import {
   BadgeCheck,
   Loader2,
   Megaphone,
+  Download,
+  Eye,
+  FileImage,
+  FileText,
+  FolderOpen,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +28,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExportButton } from "@/components/ui/export-button";
+import { cn } from "@/lib/utils";
+import {
+  PPDB_DOC_KINDS,
+  PPDB_DOC_META,
+  PPDB_DOC_TOTAL,
+  PPDB_PHOTO_META,
+} from "@/lib/ppdb-documents";
+
+/** Satu berkas kelengkapan PPDB yang diunggah siswa. */
+export type PpdbDocumentRow = {
+  id: string;
+  kind: string;
+  fileName: string;
+  mime: string;
+  size: number;
+  createdAt: string;
+};
 
 export type PpdbRow = {
   id: string;
@@ -35,6 +57,10 @@ export type PpdbRow = {
   /** Pengumuman ACC dari admin — tampil di dashboard siswa status APPROVED. */
   announcement: string | null;
   createdAt: string;
+  /** Akun siswa — dipakai untuk membuka foto & berkas di panel admin. */
+  userId: string;
+  hasPhoto: boolean;
+  documents: PpdbDocumentRow[];
 };
 
 const PPDB_STATUSES = [
@@ -51,6 +77,221 @@ function defaultAnnouncement(registrationNo: string) {
     `Selamat! Pendaftaran PPDB Anda (${registrationNo}) telah kami setujui. ` +
     "Silakan lanjutkan pendaftaran ulang dengan datang ke sekolah membawa berkas asli " +
     "(rapor, KK, akta kelahiran, pas foto) sesuai jadwal yang akan diinformasikan."
+  );
+}
+
+/** Jumlah item berkas lengkap: 4 jenis dokumen (lihat lib/ppdb-documents) + pas foto. */
+function berkasDoneCount(row: PpdbRow): number {
+  return (
+    PPDB_DOC_KINDS.filter((kind) =>
+      row.documents.some((d) => d.kind === kind)
+    ).length + (row.hasPhoto ? 1 : 0)
+  );
+}
+
+function fileSizeLabel(bytes: number): string {
+  const kb = Math.max(1, Math.round(bytes / 1024));
+  return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
+}
+
+/** Tombol "Berkas" di kolom aksi + lencana ringkasan (mis. 3/5). */
+function BerkasButton({
+  row,
+  onOpen,
+}: {
+  row: PpdbRow;
+  onOpen: (row: PpdbRow) => void;
+}) {
+  const done = berkasDoneCount(row);
+  const complete = done >= PPDB_DOC_TOTAL;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-8"
+      onClick={() => onOpen(row)}
+      title="Berkas kelengkapan yang diunggah siswa"
+    >
+      <FolderOpen className="h-4 w-4" aria-hidden />
+      Berkas
+      <span
+        className={cn(
+          "ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+          complete
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-slate-100 text-slate-600"
+        )}
+      >
+        {done}/{PPDB_DOC_TOTAL}
+      </span>
+    </Button>
+  );
+}
+
+/** Dialog daftar berkas siswa: pas foto + 4 jenis dokumen, bisa dilihat & diunduh. */
+function BerkasDialog({
+  target,
+  onClose,
+}: {
+  target: PpdbRow | null;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={target !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FolderOpen className="h-5 w-5 text-sky-600" aria-hidden />
+            Berkas — {target?.fullName}
+          </DialogTitle>
+          <DialogDescription>
+            {target
+              ? `${target.registrationNo} · ${berkasDoneCount(target)} dari ${PPDB_DOC_TOTAL} berkas lengkap. Siswa dapat menambah/mengganti berkas kapan saja dari dashboard-nya.`
+              : null}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Daftar panjang (rapor mis. 5 file) — beri scroll sendiri. */}
+        <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+          {/* Pas foto — kolom User.photoBytes, endpoint foto yang sudah ada. */}
+          <section className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-800">
+                {PPDB_PHOTO_META.label}
+              </p>
+              <Badge
+                variant={target?.hasPhoto ? "secondary" : "outline"}
+                className="text-[10px]"
+              >
+                {target?.hasPhoto ? "Lengkap" : "Belum"}
+              </Badge>
+            </div>
+            {target?.hasPhoto ? (
+              <div className="mt-2 flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element -- foto dari API ber-sesi, bukan aset statis */}
+                <img
+                  src={`/api/admin/users/${target.userId}/photo`}
+                  alt={`Pas foto ${target.fullName}`}
+                  className="h-16 w-12 rounded-lg border border-slate-200 object-cover"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="outline" size="sm" className="h-8">
+                    <a
+                      href={`/api/admin/users/${target.userId}/photo`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Eye className="h-3.5 w-3.5" aria-hidden />
+                      Lihat
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="h-8">
+                    <a
+                      href={`/api/admin/users/${target.userId}/photo?download=1`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Download className="h-3.5 w-3.5" aria-hidden />
+                      Unduh
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-1 text-xs text-slate-400">Belum diunggah siswa.</p>
+            )}
+          </section>
+
+          {PPDB_DOC_KINDS.map((kind) => {
+            const files =
+              target?.documents.filter((d) => d.kind === kind) ?? [];
+            return (
+              <section
+                key={kind}
+                className="rounded-xl border border-slate-100 bg-slate-50/60 p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {PPDB_DOC_META[kind].label}
+                  </p>
+                  <Badge
+                    variant={files.length > 0 ? "secondary" : "outline"}
+                    className="text-[10px]"
+                  >
+                    {files.length > 0 ? `${files.length} file` : "Belum"}
+                  </Badge>
+                </div>
+                {files.length > 0 ? (
+                  <ul className="mt-2 space-y-1.5">
+                    {files.map((file) => (
+                      <li
+                        key={file.id}
+                        className="flex items-center gap-2 rounded-lg border border-slate-100 bg-card px-2.5 py-1.5"
+                      >
+                        {file.mime === "application/pdf" ? (
+                          <FileText
+                            className="h-4 w-4 shrink-0 text-rose-500"
+                            aria-hidden
+                          />
+                        ) : (
+                          <FileImage
+                            className="h-4 w-4 shrink-0 text-sky-500"
+                            aria-hidden
+                          />
+                        )}
+                        <span
+                          className="min-w-0 flex-1 truncate text-xs font-medium text-slate-700"
+                          title={file.fileName}
+                        >
+                          {file.fileName}
+                        </span>
+                        <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
+                          {fileSizeLabel(file.size)}
+                        </span>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                        >
+                          <a
+                            href={`/api/admin/ppdb/documents/${file.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Lihat"
+                            aria-label={`Lihat ${file.fileName}`}
+                          >
+                            <Eye className="h-3.5 w-3.5" aria-hidden />
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                        >
+                          <a
+                            href={`/api/admin/ppdb/documents/${file.id}?download=1`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Unduh"
+                            aria-label={`Unduh ${file.fileName}`}
+                          >
+                            <Download className="h-3.5 w-3.5" aria-hidden />
+                          </a>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-xs text-slate-400">Belum ada berkas.</p>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -71,6 +312,9 @@ export function AdminPpdbClient({
   const [accText, setAccText] = React.useState("");
   const [accSaving, setAccSaving] = React.useState(false);
   const [accError, setAccError] = React.useState<string | null>(null);
+
+  // Dialog berkas: lihat/unduh semua unggahan siswa untuk pendaftar ini.
+  const [berkasTarget, setBerkasTarget] = React.useState<PpdbRow | null>(null);
 
   const recomputeCounts = (list: PpdbRow[]) => {
     const next: Record<string, number> = {
@@ -341,6 +585,7 @@ export function AdminPpdbClient({
                       </td>
                       <td className="py-3.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <BerkasButton row={r} onOpen={setBerkasTarget} />
                           {r.status !== "APPROVED" && r.status !== "REJECTED" ? (
                             <Button
                               variant="outline"
@@ -391,6 +636,7 @@ export function AdminPpdbClient({
                 phone: r.phone,
                 majorFirst: r.majorFirst,
                 status: r.status,
+                berkas: `${berkasDoneCount(r)}/${PPDB_DOC_TOTAL}`,
                 createdAt: r.createdAt,
               }))}
               columns={[
@@ -400,6 +646,7 @@ export function AdminPpdbClient({
                 { key: "phone", label: "Telepon" },
                 { key: "majorFirst", label: "Jurusan" },
                 { key: "status", label: "Status" },
+                { key: "berkas", label: "Berkas" },
                 { key: "createdAt", label: "Tanggal" },
               ]}
             />
@@ -470,6 +717,12 @@ export function AdminPpdbClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog berkas: semua unggahan siswa (pas foto + dokumen). */}
+      <BerkasDialog
+        target={berkasTarget}
+        onClose={() => setBerkasTarget(null)}
+      />
     </>
   );
 }

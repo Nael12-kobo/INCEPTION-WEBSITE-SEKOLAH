@@ -29,6 +29,7 @@ model User {
   ppdbRegistration PpdbRegistration?
   auditLogs     AuditLog[]
   chatConversations ChatConversation[]
+  ppdbDocuments PpdbDocument[]
 }
 
 model Account {
@@ -162,4 +163,28 @@ model PpdbRegistration {
   @@index([status])
   @@index([createdAt])
   @@map("ppdb_registrations")
+}
+
+// Berkas kelengkapan syarat PPDB (bukti pembayaran, fotokopi rapor, akte,
+// kartu keluarga) yang diunggah siswa dari dashboard setelah formulir terisi.
+// Satu jenis berkas boleh berisi beberapa file (mis. rapor per semester).
+// Pas foto tidak di sini — disimpan di kolom User.photoBytes karena wajib
+// sejak pengisian formulir.
+model PpdbDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  /// Jenis berkas: PEMBAYARAN | RAPOR | AKTE | KK (lihat src/lib/ppdb-documents.ts).
+  kind      String
+  /// Nama file asli dari perangkat siswa (untuk ditampilkan di panel admin).
+  fileName  String
+  mime      String
+  size      Int
+  bytes     Bytes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@map("ppdb_documents")
 }

@@ -106,6 +106,7 @@ export default async function DashboardPage() {
     ppdb7DaysRaw,
     ppdbByMajorRaw,
     recentActivityRaw,
+    ppdbDocumentsRaw,
   ] = await Promise.all([
     prisma.account.findMany({
       where: { userId },
@@ -169,6 +170,20 @@ export default async function DashboardPage() {
         select: { id: true, action: true, detail: true, createdAt: true },
       })
       : Promise.resolve([]),
+    // Berkas kelengkapan PPDB milik pengguna ini — checklist di kartu PPDB
+    // (siswa yang sudah mengisi formulir).
+    prisma.ppdbDocument.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        kind: true,
+        fileName: true,
+        mime: true,
+        size: true,
+        createdAt: true,
+      },
+    }),
   ]);
 
   const providerLabels: Record<string, string> = {
@@ -307,6 +322,14 @@ export default async function DashboardPage() {
           userEmail={dashboardUser.email}
           hasPhoto={Boolean(user.photoUpdatedAt)}
           photoVersion={user.photoUpdatedAt?.toISOString() ?? null}
+          documents={ppdbDocumentsRaw.map((d) => ({
+            id: d.id,
+            kind: d.kind,
+            fileName: d.fileName,
+            mime: d.mime,
+            size: d.size,
+            createdAt: d.createdAt.toISOString(),
+          }))}
         />
         {/* Kartu "Akun Saya" hanya untuk non-admin — dashboard admin fokus
             pada pengelolaan (kartu siswa seperti PPDB & akun disembunyikan). */}

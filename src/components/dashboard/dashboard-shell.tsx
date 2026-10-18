@@ -11,6 +11,7 @@ import {
   CalendarDays,
   CalendarRange,
   ClipboardCheck,
+  FileUp,
   GraduationCap,
   IdCard,
   LayoutDashboard,
@@ -278,6 +279,7 @@ const ACTIVITY_META: Record<string, { icon: React.ComponentType<{ className?: st
   PPDB_STATUS_UPDATED: { icon: ClipboardList, tone: "bg-sky-50 text-sky-600" },
   LOGIN_SUCCESS: { icon: LogIn, tone: "bg-emerald-50 text-emerald-600" },
   PHOTO_UPDATED: { icon: IdCard, tone: "bg-sky-50 text-sky-600" },
+  DOCUMENT_UPLOADED: { icon: FileUp, tone: "bg-emerald-50 text-emerald-600" },
 };
 
 function timeAgoLabel(iso: string): string {

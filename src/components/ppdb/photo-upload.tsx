@@ -22,6 +22,13 @@ type PhotoUploadProps = {
   onSavedChange?: (saved: boolean, version: string | null) => void;
   /** Error eksternal, mis. penolakan dari server saat submit formulir. */
   error?: string;
+  /** Teks bantuan di bawah tombol; default sesuai konteks formulir PPDB. */
+  hint?: string;
+  /**
+   * Peringatan saat foto belum ada. `undefined` = teks default formulir,
+   * `null` = sembunyikan (mis. di dashboard siswa yang sudah terdaftar).
+   */
+  missingWarning?: string | null;
 };
 
 /**
@@ -36,6 +43,8 @@ export function PhotoUpload({
   defaultVersion,
   onSavedChange,
   error,
+  hint,
+  missingWarning,
 }: PhotoUploadProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const [saved, setSaved] = React.useState(defaultSaved);
@@ -176,16 +185,16 @@ export function PhotoUpload({
               <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
               {shownError}
             </p>
-          ) : !saved && !busy ? (
+          ) : !saved && !busy && missingWarning !== null ? (
             <p className="text-xs font-medium text-amber-600">
-              Foto wajib diunggah sebelum formulir dikirim.
+              {missingWarning ??
+                "Foto wajib diunggah sebelum formulir dikirim."}
             </p>
           ) : null}
 
           <p className="text-xs text-slate-400">
-            Pas foto formal, wajah terlihat jelas, latar belakang polos.
-            Format JPG/PNG/WebP maks 3 MB — foto otomatis dikompres sebelum
-            diunggah.
+            {hint ??
+              "Pas foto formal, wajah terlihat jelas, latar belakang polos. Format JPG/PNG/WebP maks 3 MB — foto otomatis dikompres sebelum diunggah."}
           </p>
         </div>
       </div>

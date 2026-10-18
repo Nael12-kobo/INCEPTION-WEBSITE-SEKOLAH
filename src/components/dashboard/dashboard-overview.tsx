@@ -37,6 +37,10 @@ import { useToast } from "@/components/ui/toast";
 import { isAdmin as checkIsAdmin } from "@/lib/roles";
 import { PpdbForm } from "@/components/ppdb/ppdb-form";
 import {
+  BerkasChecklist,
+  type StudentDocumentItem,
+} from "@/components/dashboard/berkas-checklist";
+import {
   FIELD_LABELS,
   PPDB_REQUIREMENT_GROUPS,
   PPDB_REQUIREMENT_TOTAL,
@@ -166,6 +170,8 @@ export interface DashboardOverviewProps {
   hasPhoto?: boolean;
   /** Versi foto tersimpan (ISO) untuk pratinjau di form. */
   photoVersion?: string | null;
+  /** Berkas kelengkapan PPDB (bukti bayar, rapor, akte, KK) — siswa terdaftar. */
+  documents?: StudentDocumentItem[];
 }
 
 export function DashboardOverview({
@@ -184,6 +190,7 @@ export function DashboardOverview({
   adminActivities = [],
   hasPhoto = false,
   photoVersion = null,
+  documents = [],
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
@@ -558,6 +565,14 @@ export function DashboardOverview({
                       </p>
                     </div>
                   </div>
+
+                  {/* Berkas syarat daftar ulang — bisa diunggah kapan saja
+                      setelah formulir terisi; admin memeriksa di /admin/ppdb. */}
+                  <BerkasChecklist
+                    hasPhoto={hasPhoto}
+                    photoVersion={photoVersion}
+                    documents={documents}
+                  />
                 </>
               ) : (
                 <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-3.5">
