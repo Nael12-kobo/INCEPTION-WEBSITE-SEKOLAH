@@ -85,10 +85,12 @@ export function BerkasChecklist({
   const handlePick = async (fileList: FileList | null) => {
     const kind = pickKindRef.current;
     pickKindRef.current = null;
+    // PENTING: salin dulu ke array — FileList bersifat live; mengosongkan
+    // input.value di bawah akan mengosongkan fileList juga (kalau tidak,
+    // file yang dipilih hilang tanpa jejak / tanpa pesan apa pun).
+    const files = fileList ? Array.from(fileList) : [];
     if (inputRef.current) inputRef.current.value = "";
-    if (!kind || busyKind || !fileList || fileList.length === 0) return;
-
-    const files = Array.from(fileList);
+    if (!kind || busyKind || files.length === 0) return;
     setBusyKind(kind);
     setErrors((prev) => ({ ...prev, [kind]: undefined }));
 
