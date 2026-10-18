@@ -54,7 +54,7 @@ export async function DELETE(
   const { id } = await params;
   const document = await prisma.ppdbDocument.findFirst({
     where: { id, userId: session.user.id },
-    select: { id: true },
+    select: { id: true, kind: true },
   });
 
   if (!document) {
@@ -62,5 +62,13 @@ export async function DELETE(
   }
 
   await prisma.ppdbDocument.delete({ where: { id: document.id } });
+
+  // Berkas dihapus → penilaian admin atas jenis ini tidak berlaku lagi.
+  await prisma.ppdbDocumentReview
+    .deleteMany({ where: { userId: session.user.id, kind: document.kind } })
+    .catch((error) =>
+      console.warn("[ppdb] gagal mereset penilaian berkas:", error)
+    );
+
   return NextResponse.json({ ok: true });
 }

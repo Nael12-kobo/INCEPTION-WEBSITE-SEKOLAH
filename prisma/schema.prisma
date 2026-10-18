@@ -30,6 +30,7 @@ model User {
   auditLogs     AuditLog[]
   chatConversations ChatConversation[]
   ppdbDocuments PpdbDocument[]
+  ppdbDocumentReviews PpdbDocumentReview[]
 }
 
 model Account {
@@ -187,4 +188,28 @@ model PpdbDocument {
 
   @@index([userId, kind])
   @@map("ppdb_documents")
+}
+
+// Penilaian admin per item kelengkapan berkas PPDB (4 dokumen + pas foto).
+// Satu baris per (siswa, jenis item); status: SESUAI | PERLU_PERBAIKAN.
+// Dihapus otomatis oleh endpoint siswa saat berkas/ foto terkait diganti
+// atau dihapus, supaya penilaian lama tidak menempel pada berkas baru.
+model PpdbDocumentReview {
+  id         String   @id @default(cuid())
+  userId     String
+  /// Jenis item: PEMBAYARAN | RAPOR | AKTE | KK | FOTO (lihat src/lib/ppdb-documents.ts).
+  kind       String
+  /// Status penilaian: SESUAI | PERLU_PERBAIKAN.
+  status     String
+  /// Catatan admin untuk siswa (mis. "foto kurang jelas, mohon diganti").
+  note       String?
+  /// Email admin yang menilai — jejak singkat untuk siswa/admin lain.
+  reviewedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind])
+  @@map("ppdb_document_reviews")
 }

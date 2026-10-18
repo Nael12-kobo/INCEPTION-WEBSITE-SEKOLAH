@@ -54,3 +54,43 @@ export function isPpdbDocKind(value: unknown): value is PpdbDocKind {
     (PPDB_DOC_KINDS as readonly string[]).includes(value)
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Penilaian admin per item berkas (Sesuai / Perlu perbaikan).         */
+/* ------------------------------------------------------------------ */
+
+export const PPDB_REVIEW_STATUSES = ["SESUAI", "PERLU_PERBAIKAN"] as const;
+
+export type PpdbReviewStatus = (typeof PPDB_REVIEW_STATUSES)[number];
+
+/** Item yang bisa dinilai admin: 4 jenis dokumen + pas foto. */
+export const PPDB_REVIEW_KINDS = [...PPDB_DOC_KINDS, "FOTO"] as const;
+
+export type PpdbReviewKind = (typeof PPDB_REVIEW_KINDS)[number];
+
+export const PPDB_REVIEW_STATUS_LABELS: Record<PpdbReviewStatus, string> = {
+  SESUAI: "Sesuai",
+  PERLU_PERBAIKAN: "Perlu perbaikan",
+};
+
+/** Batas panjang catatan admin per item. */
+export const PPDB_REVIEW_NOTE_MAX = 300;
+
+export function isPpdbReviewKind(value: unknown): value is PpdbReviewKind {
+  return (
+    typeof value === "string" &&
+    (PPDB_REVIEW_KINDS as readonly string[]).includes(value)
+  );
+}
+
+export function isPpdbReviewStatus(value: unknown): value is PpdbReviewStatus {
+  return (
+    typeof value === "string" &&
+    (PPDB_REVIEW_STATUSES as readonly string[]).includes(value)
+  );
+}
+
+/** Label item penilaian — dokumen memakai label berkas, FOTO memakai label pas foto. */
+export function ppdbReviewKindLabel(kind: PpdbReviewKind): string {
+  return kind === "FOTO" ? PPDB_PHOTO_META.label : PPDB_DOC_META[kind].label;
+}

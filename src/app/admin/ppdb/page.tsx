@@ -43,6 +43,9 @@ export default async function AdminPpdbPage() {
             },
             orderBy: { createdAt: "asc" },
           },
+          ppdbDocumentReviews: {
+            select: { kind: true, status: true, note: true },
+          },
         },
       },
     },
@@ -68,6 +71,11 @@ export default async function AdminPpdbPage() {
       mime: d.mime,
       size: d.size,
       createdAt: d.createdAt.toISOString(),
+    })),
+    reviews: r.user.ppdbDocumentReviews.map((v) => ({
+      kind: v.kind,
+      status: v.status,
+      note: v.note,
     })),
   }));
 

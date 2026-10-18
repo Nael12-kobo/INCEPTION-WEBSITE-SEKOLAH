@@ -107,6 +107,7 @@ export default async function DashboardPage() {
     ppdbByMajorRaw,
     recentActivityRaw,
     ppdbDocumentsRaw,
+    ppdbReviewRowsRaw,
   ] = await Promise.all([
     prisma.account.findMany({
       where: { userId },
@@ -183,6 +184,11 @@ export default async function DashboardPage() {
         size: true,
         createdAt: true,
       },
+    }),
+    // Penilaian admin per item berkas (Sesuai / Perlu perbaikan + catatan).
+    prisma.ppdbDocumentReview.findMany({
+      where: { userId },
+      select: { kind: true, status: true, note: true },
     }),
   ]);
 
@@ -329,6 +335,11 @@ export default async function DashboardPage() {
             mime: d.mime,
             size: d.size,
             createdAt: d.createdAt.toISOString(),
+          }))}
+          reviews={ppdbReviewRowsRaw.map((r) => ({
+            kind: r.kind,
+            status: r.status,
+            note: r.note,
           }))}
         />
         {/* Kartu "Akun Saya" hanya untuk non-admin — dashboard admin fokus
