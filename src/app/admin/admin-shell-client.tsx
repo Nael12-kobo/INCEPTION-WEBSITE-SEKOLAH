@@ -18,6 +18,7 @@ import {
   UserPlus,
   ClipboardList,
   KeyRound,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -50,7 +51,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  section: "manajemen" | "sistem";
+  section: "manajemen" | "sistem" | "pratinjau";
   superAdminOnly?: boolean;
   breadcrumbLabel: string;
 };
@@ -98,6 +99,15 @@ const navItems: NavItem[] = [
     icon: Settings,
     section: "sistem",
     breadcrumbLabel: "Pengaturan",
+  },
+  {
+    // Pintasan pratinjau portal siswa — halaman /student/* membuka mode
+    // pratinjau khusus admin (bukan data siswa tertentu).
+    href: "/student/schedule",
+    label: "Portal Siswa",
+    icon: GraduationCap,
+    section: "pratinjau",
+    breadcrumbLabel: "Portal Siswa (Pratinjau)",
   },
 ];
 
@@ -286,6 +296,7 @@ function SidebarContent({
 
   const manajemenItems = navItems.filter((i) => i.section === "manajemen");
   const sistemItems = navItems.filter((i) => i.section === "sistem");
+  const pratinjauItems = navItems.filter((i) => i.section === "pratinjau");
 
   const renderNavItem = (item: NavItem) => {
     const Icon = item.icon;
@@ -367,6 +378,11 @@ function SidebarContent({
           SISTEM
         </div>
         {sistemItems.map(renderNavItem)}
+
+        <div className="font-overline text-slate-500 px-4 py-2 uppercase tracking-wider mt-4">
+          PRATINJAU
+        </div>
+        {pratinjauItems.map(renderNavItem)}
       </nav>
 
       <div className="border-t border-neutral-800 px-4 py-3">
@@ -501,6 +517,12 @@ function AdminShellInner({
                   label: "Dashboard",
                   href: "/dashboard",
                   icon: Home,
+                },
+                {
+                  key: "student-preview",
+                  label: "Portal Siswa (Pratinjau)",
+                  href: "/student/schedule",
+                  icon: GraduationCap,
                 },
                 {
                   key: "settings",
