@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, MapPin, MessageCircle, Phone, ArrowRight, LogIn } from "lucide-react";
+import { BadgeCheck, Bot, MapPin, MessageCircle, Phone, ArrowRight, LogIn } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -245,11 +245,15 @@ export default async function PpdbPage() {
               <h3 className="text-base font-extrabold text-slate-900">
                 Butuh bantuan?
               </h3>
-              <Button asChild variant="outline" className="mt-4 w-full">
-                <a href={WA_ADMIN_URL} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle aria-hidden />
-                  Chat WhatsApp PPDB
-                </a>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Tanya asisten AI sekolah — dijawab langsung soal PPDB, jurusan,
+                dan biaya pendidikan.
+              </p>
+              <Button asChild className="mt-4 w-full">
+                <Link href="/chat">
+                  <Bot aria-hidden />
+                  Tanya Asisten AI
+                </Link>
               </Button>
             </div>
           </aside>
