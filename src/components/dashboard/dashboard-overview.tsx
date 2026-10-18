@@ -162,6 +162,10 @@ export interface DashboardOverviewProps {
   ppdbByMajor: DonutSegment[];
   ppdb?: DashboardPpdb;
   adminActivities?: AdminActivity[];
+  /** Foto siswa sudah tersimpan (syarat PPDB) — diteruskan ke form. */
+  hasPhoto?: boolean;
+  /** Versi foto tersimpan (ISO) untuk pratinjau di form. */
+  photoVersion?: string | null;
 }
 
 export function DashboardOverview({
@@ -178,6 +182,8 @@ export function DashboardOverview({
   ppdbByMajor,
   ppdb,
   adminActivities = [],
+  hasPhoto = false,
+  photoVersion = null,
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
@@ -489,192 +495,198 @@ export function DashboardOverview({
         </Card>
       )}
 
-      <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
-        <Card id="pendaftaran" className="bg-card lg:col-span-3 scroll-mt-24">
-          <CardHeader className="flex-row items-start justify-between space-y-0">
-            <div>
-              <CardTitle className="font-h4">
-                {ppdb ? "Status Pendaftaran Anda" : "Siapkan Pendaftaran PPDB"}
-              </CardTitle>
-              <CardDescription className="mt-1">
-                {ppdb
-                  ? "Data diambil langsung dari formulir PPDB."
-                  : "Isi formulir langsung di sini —12 data berikut perlu disiapkan untuk formulir PPDB."}
-              </CardDescription>
-            </div>
-            <Badge variant="secondary">PPDB</Badge>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {ppdb ? (
-              <>
-                {/* Pengumuman ACC — status APPROVED: lanjut daftar ulang */}
-                {ppdb.status === "APPROVED" && (
-                  <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 ring-1 ring-teal-200">
-                        <PartyPopper className="h-5 w-5" aria-hidden />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-extrabold text-teal-900">
-                          Selamat! Pendaftaran Anda disetujui
-                        </p>
-                        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-teal-800/90">
-                          {ppdb.announcement?.trim() || APPROVED_FALLBACK_ANNOUNCEMENT}
-                        </p>
+      {/* Kartu pendaftaran PPDB untuk calon siswa — dashboard admin tidak
+          menampilkannya (pengelolaan PPDB lewat panel admin). */}
+      {!isAdmin && (
+        <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
+          <Card id="pendaftaran" className="bg-card lg:col-span-3 scroll-mt-24">
+            <CardHeader className="flex-row items-start justify-between space-y-0">
+              <div>
+                <CardTitle className="font-h4">
+                  {ppdb ? "Status Pendaftaran Anda" : "Siapkan Pendaftaran PPDB"}
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  {ppdb
+                    ? "Data diambil langsung dari formulir PPDB."
+                    : "Isi formulir langsung di sini — 12 data berikut + foto siswa perlu disiapkan untuk formulir PPDB."}
+                </CardDescription>
+              </div>
+              <Badge variant="secondary">PPDB</Badge>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {ppdb ? (
+                <>
+                  {/* Pengumuman ACC — status APPROVED: lanjut daftar ulang */}
+                  {ppdb.status === "APPROVED" && (
+                    <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 ring-1 ring-teal-200">
+                          <PartyPopper className="h-5 w-5" aria-hidden />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-extrabold text-teal-900">
+                            Selamat! Pendaftaran Anda disetujui
+                          </p>
+                          <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-teal-800/90">
+                            {ppdb.announcement?.trim() || APPROVED_FALLBACK_ANNOUNCEMENT}
+                          </p>
+                        </div>
                       </div>
+                      <Button asChild size="sm" className="mt-3.5">
+                        <Link href="/ppdb">
+                          Lanjutkan Pendaftaran Ulang
+                          <ArrowRight aria-hidden />
+                        </Link>
+                      </Button>
                     </div>
-                    <Button asChild size="sm" className="mt-3.5">
-                      <Link href="/ppdb">
-                        Lanjutkan Pendaftaran Ulang
-                        <ArrowRight aria-hidden />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+                  )}
 
-                <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-emerald-800">
-                        Terdaftar — {ppdb.registrationNo}
+                  <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3.5">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-emerald-800">
+                          Terdaftar — {ppdb.registrationNo}
+                        </p>
+                        <StatusBadge status={ppdb.status} />
+                      </div>
+                      <p className="mt-1 text-xs text-emerald-700/80">
+                        {PPDB_STATUS_LABELS[ppdb.status] ?? "Proses berjalan"}. Jurusan{" "}
+                        {ppdb.majorFirst}
+                        {ppdb.majorSecond ? ` / ${ppdb.majorSecond}` : ""}. Detail dikirim
+                        via WhatsApp.
                       </p>
-                      <StatusBadge status={ppdb.status} />
                     </div>
-                    <p className="mt-1 text-xs text-emerald-700/80">
-                      {PPDB_STATUS_LABELS[ppdb.status] ?? "Proses berjalan"}. Jurusan{" "}
-                      {ppdb.majorFirst}
-                      {ppdb.majorSecond ? ` / ${ppdb.majorSecond}` : ""}. Detail dikirim
-                      via WhatsApp.
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-3.5">
+                  <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-sky-800">
+                      Anda belum mengisi formulir PPDB
+                    </p>
+                    <p className="text-xs text-sky-700/80">
+                      Klik tombol &ldquo;Isi Formulir&rdquo; di bawah — formulir muncul
+                      langsung di halaman ini. Nama dan email otomatis terisi dari akun
+                      Anda.
                     </p>
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-3.5">
-                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-sky-800">
-                    Anda belum mengisi formulir PPDB
-                  </p>
-                  <p className="text-xs text-sky-700/80">
-                    Klik tombol &ldquo;Isi Formulir&rdquo; di bawah — formulir muncul
-                    langsung di halaman ini. Nama dan email otomatis terisi dari akun
-                    Anda.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Progress kelengkapan data */}
-            <div>
-              <div className="flex items-center justify-between text-xs font-medium text-slate-500">
-                <span>Kelengkapan data</span>
-                <span className="tabular-nums text-slate-700">
-                  {readyCount} dari {PPDB_REQUIREMENT_TOTAL} siap
-                </span>
-              </div>
-              <div
-                className="mt-1.5 h-2 overflow-hidden rounded-full bg-sky-100"
-                role="progressbar"
-                aria-valuenow={readyCount}
-                aria-valuemin={0}
-                aria-valuemax={PPDB_REQUIREMENT_TOTAL}
-                aria-label="Kelengkapan data pendaftaran"
-              >
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-[width] duration-500 ease-out"
-                  style={{ width: `${readinessPercent}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Checklist per grup — label sama dengan FIELD_LABELS di form PPDB */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              {PPDB_REQUIREMENT_GROUPS.map((group) => (
-                <div
-                  key={group.key}
-                  className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5"
-                >
-                  <p className="font-caption text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    {group.title}
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {group.fields.map((field) => {
-                      const ready = readiness.has(field);
-                      return (
-                        <li key={field} className="flex items-center gap-2 text-sm">
-                          {ready ? (
-                            <CheckCircle2
-                              className="h-4 w-4 shrink-0 text-emerald-500"
-                              aria-hidden
-                            />
-                          ) : (
-                            <Circle
-                              className="h-4 w-4 shrink-0 text-slate-300"
-                              aria-hidden
-                            />
-                          )}
-                          <span
-                            className={cn(
-                              "truncate",
-                              ready ? "text-slate-700" : "text-slate-400"
-                            )}
-                          >
-                            {FIELD_LABELS[field] ?? field}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full"
-              disabled={!ppdb && formOpen}
-              onClick={() => {
-                if (ppdb) return; // status terdaftar: tidak ada form untuk dibuka
-                setFormOpen((o) => !o);
-              }}
-              aria-expanded={!ppdb ? formOpen : undefined}
-              aria-controls="ppdb-inline-form"
-            >
-              {ppdb ? (
-                <>
-                  Lihat Info PPDB
-                  <ArrowRight aria-hidden />
-                </>
-              ) : formOpen ? (
-                <>
-                  Tutup Formulir
-                  <ChevronDown className="rotate-180" aria-hidden />
-                </>
-              ) : (
-                <>
-                  Isi Formulir PPDB
-                  <ChevronDown aria-hidden />
-                </>
               )}
-            </Button>
 
-            {/* Form PPDB di-expand langsung di dalam kartu — satu halaman. */}
-            {!ppdb && formOpen ? (
-              <div id="ppdb-inline-form" className="pt-1">
-                <PpdbForm
-                  defaultEmail={userEmail}
-                  variant="dashboard"
-                  onSubmitted={handleFormSubmitted}
-                />
+              {/* Progress kelengkapan data */}
+              <div>
+                <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                  <span>Kelengkapan data</span>
+                  <span className="tabular-nums text-slate-700">
+                    {readyCount} dari {PPDB_REQUIREMENT_TOTAL} siap
+                  </span>
+                </div>
+                <div
+                  className="mt-1.5 h-2 overflow-hidden rounded-full bg-sky-100"
+                  role="progressbar"
+                  aria-valuenow={readyCount}
+                  aria-valuemin={0}
+                  aria-valuemax={PPDB_REQUIREMENT_TOTAL}
+                  aria-label="Kelengkapan data pendaftaran"
+                >
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-[width] duration-500 ease-out"
+                    style={{ width: `${readinessPercent}%` }}
+                  />
+                </div>
               </div>
-            ) : null}
-          </CardContent>
-        </Card>
-      </div>
+
+              {/* Checklist per grup — label sama dengan FIELD_LABELS di form PPDB */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {PPDB_REQUIREMENT_GROUPS.map((group) => (
+                  <div
+                    key={group.key}
+                    className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5"
+                  >
+                    <p className="font-caption text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      {group.title}
+                    </p>
+                    <ul className="mt-2 space-y-1.5">
+                      {group.fields.map((field) => {
+                        const ready = readiness.has(field);
+                        return (
+                          <li key={field} className="flex items-center gap-2 text-sm">
+                            {ready ? (
+                              <CheckCircle2
+                                className="h-4 w-4 shrink-0 text-emerald-500"
+                                aria-hidden
+                              />
+                            ) : (
+                              <Circle
+                                className="h-4 w-4 shrink-0 text-slate-300"
+                                aria-hidden
+                              />
+                            )}
+                            <span
+                              className={cn(
+                                "truncate",
+                                ready ? "text-slate-700" : "text-slate-400"
+                              )}
+                            >
+                              {FIELD_LABELS[field] ?? field}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                disabled={!ppdb && formOpen}
+                onClick={() => {
+                  if (ppdb) return; // status terdaftar: tidak ada form untuk dibuka
+                  setFormOpen((o) => !o);
+                }}
+                aria-expanded={!ppdb ? formOpen : undefined}
+                aria-controls="ppdb-inline-form"
+              >
+                {ppdb ? (
+                  <>
+                    Lihat Info PPDB
+                    <ArrowRight aria-hidden />
+                  </>
+                ) : formOpen ? (
+                  <>
+                    Tutup Formulir
+                    <ChevronDown className="rotate-180" aria-hidden />
+                  </>
+                ) : (
+                  <>
+                    Isi Formulir PPDB
+                    <ChevronDown aria-hidden />
+                  </>
+                )}
+              </Button>
+
+              {/* Form PPDB di-expand langsung di dalam kartu — satu halaman. */}
+              {!ppdb && formOpen ? (
+                <div id="ppdb-inline-form" className="pt-1">
+                  <PpdbForm
+                    defaultEmail={userEmail}
+                    variant="dashboard"
+                    onSubmitted={handleFormSubmitted}
+                    defaultHasPhoto={hasPhoto}
+                    defaultPhotoVersion={photoVersion}
+                  />
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </section>
   );
 }

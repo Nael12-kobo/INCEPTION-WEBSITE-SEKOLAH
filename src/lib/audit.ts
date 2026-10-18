@@ -55,6 +55,7 @@ export const AUDIT_ACTIONS = {
   PPDB_STATUS_UPDATED: "PPDB_STATUS_UPDATED",
   PPDB_DELETED: "PPDB_DELETED",
   PPDB_REGISTERED: "PPDB_REGISTERED",
+  PHOTO_UPDATED: "PHOTO_UPDATED",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -74,6 +75,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   [AUDIT_ACTIONS.PPDB_STATUS_UPDATED]: "Mengubah status PPDB",
   [AUDIT_ACTIONS.PPDB_DELETED]: "Menghapus pendaftaran PPDB",
   [AUDIT_ACTIONS.PPDB_REGISTERED]: "Pendaftaran PPDB baru",
+  [AUDIT_ACTIONS.PHOTO_UPDATED]: "Memperbarui foto siswa",
 };
 
 /** Dapatkan nama pemilik nomor WhatsApp pendaftar (helper kecil). */

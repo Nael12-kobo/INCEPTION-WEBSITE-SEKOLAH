@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
+  Camera,
   CheckCircle2,
   CircleUser,
   Loader2,
@@ -35,12 +36,14 @@ import {
   PpdbSelect,
   PpdbTextarea,
 } from "@/components/ppdb/field-controls";
+import { PhotoUpload } from "@/components/ppdb/photo-upload";
 
 const STEPS = [
   { key: "identity", title: "Data Diri", icon: CircleUser },
   { key: "address", title: "Alamat & Kontak", icon: MapPin },
   { key: "major", title: "Pilihan Jurusan", icon: Sparkles },
   { key: "parent", title: "Data Orang Tua", icon: Users },
+  { key: "photo", title: "Foto Siswa", icon: Camera },
 ] as const;
 
 const STEP_FIELDS: Record<string, string[]> = {
@@ -48,6 +51,7 @@ const STEP_FIELDS: Record<string, string[]> = {
   address: ["email", "phone", "previousSchool", "address"],
   major: ["majorFirst", "majorSecond"],
   parent: ["parentName", "parentPhone"],
+  photo: ["photo"],
 };
 
 const INITIAL: PpdbValues = {
@@ -75,6 +79,8 @@ export function PpdbForm({
   defaultEmail,
   onSubmitted,
   variant = "page",
+  defaultHasPhoto = false,
+  defaultPhotoVersion = null,
 }: {
   defaultEmail: string;
   /**
@@ -85,6 +91,10 @@ export function PpdbForm({
   onSubmitted?: (registrationNo: string) => void;
   /** "page" = halaman /ppdb utuh; "dashboard" = form di dalam kartu dashboard. */
   variant?: "page" | "dashboard";
+  /** Sudah ada foto siswa tersimpan (syarat PPDB) — dari data halaman. */
+  defaultHasPhoto?: boolean;
+  /** Versi foto tersimpan (ISO) agar pratinjau selalu segar. */
+  defaultPhotoVersion?: string | null;
 }) {
   const [step, setStep] = React.useState(0);
   const [values, setValues] = React.useState<PpdbValues>({
@@ -92,6 +102,10 @@ export function PpdbForm({
     email: defaultEmail,
   });
   const [agreed, setAgreed] = React.useState(false);
+  const [photoSaved, setPhotoSaved] = React.useState(defaultHasPhoto);
+  const [photoVersion, setPhotoVersion] = React.useState<string | null>(
+    defaultPhotoVersion
+  );
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [state, setState] = React.useState<SubmitState>({ status: "idle" });
 
@@ -144,6 +158,16 @@ export function PpdbForm({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!photoSaved) {
+      setErrors((p) => ({
+        ...p,
+        photo: "Unggah foto siswa terlebih dahulu sebelum mengirim formulir.",
+      }));
+      const photoStep = STEPS.findIndex((s) => s.key === "photo");
+      if (photoStep >= 0) setStep(photoStep);
+      headingRef.current?.focus();
+      return;
+    }
     if (!agreed) {
       setErrors((p) => ({ ...p, agreement: "Centang persetujuan terlebih dahulu." }));
       return;
@@ -456,6 +480,21 @@ export function PpdbForm({
                 onChange={(e) => set("parentPhone", e.target.value)}
                 error={errors.parentPhone}
               />
+            </div>
+          ) : null}
+
+          {current.key === "photo" ? (
+            <div className="space-y-5">
+              <PhotoUpload
+                defaultSaved={photoSaved}
+                defaultVersion={photoVersion}
+                onSavedChange={(saved, version) => {
+                  setPhotoSaved(saved);
+                  setPhotoVersion(version);
+                }}
+                error={errors.photo}
+              />
+
               <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
                 <PpdbCheckbox
                   id="ppdb-agreement"
@@ -527,6 +566,8 @@ const STEP_INTRO: Record<string, string> = {
   address: "Pastikan nomor WhatsApp aktif — jadwal tes dikirim ke nomor tersebut.",
   major: "Pilih dua jurusan. Kami akan menyesuaikan penempatan sesuai kuota yang tersedia.",
   parent: "Orang tua/wali kami hubungi bila ada hal yang perlu dikonfirmasi.",
+  photo:
+    "Unggah pas foto formal sebagai syarat pendaftaran, lalu centang pernyataan dan kirim formulir Anda.",
 };
 
 /** Opsi asal sekolah: SMP/MTs (wajib) atau sedang belajar / belum. */

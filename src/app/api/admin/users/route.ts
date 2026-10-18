@@ -30,12 +30,17 @@ export async function GET() {
         role: true,
         emailVerified: true,
         createdAt: true,
+        photoUpdatedAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({
-      users,
+      // Jangan kirim detail foto (bytea) — cukup penanda ada/tidak.
+      users: users.map(({ photoUpdatedAt, ...rest }) => ({
+        ...rest,
+        hasPhoto: photoUpdatedAt !== null,
+      })),
       accessibleRoles: getAccessibleRoles(session.user.role),
       currentUserRole: session.user.role,
     });

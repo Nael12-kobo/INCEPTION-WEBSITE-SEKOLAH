@@ -24,7 +24,8 @@ import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
  * Kontrak dengan PpdbForm:
  * - 201 → { registrationNo, waUrl } pendaftar baru
  * - 200 → registrationNo yang sama, bila user sudah pernah mendaftar
- * - 400 → { errors } per-field, dari validatePpdbDraft yang sama
+ * - 400 → { errors } per-field, dari validatePpdbDraft yang sama; key "photo"
+ *         dipakai bila foto siswa (syarat pendaftaran) belum diunggah
  * - 401 → belum login
  */
 export async function POST(request: Request) {
@@ -92,6 +93,25 @@ export async function POST(request: Request) {
   if (Number.isNaN(birthDate.getTime())) {
     return NextResponse.json(
       { errors: { birthDate: "Tanggal lahir tidak valid." } },
+      { status: 400 }
+    );
+  }
+
+  // Syarat pendaftaran: foto siswa wajib sudah diunggah lewat /api/account/photo.
+  // Pendaftar lama (grandfathered) tidak terkena syarat ini karena sudah
+  // ditangani cabang `existing` di atas.
+  const registrant = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { photoUpdatedAt: true },
+  });
+  if (!registrant?.photoUpdatedAt) {
+    return NextResponse.json(
+      {
+        errors: {
+          photo:
+            "Unggah foto siswa terlebih dahulu — foto merupakan syarat pendaftaran.",
+        },
+      },
       { status: 400 }
     );
   }

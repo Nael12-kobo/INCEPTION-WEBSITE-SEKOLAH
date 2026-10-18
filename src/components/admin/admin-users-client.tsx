@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Mail, UserCog, Trash2 } from "lucide-react";
+import { Download, Eye, Mail, UserCog, Trash2 } from "lucide-react";
 import {
   UserRole,
   canEditUser,
@@ -24,6 +24,8 @@ export type AdminUserRow = {
   role: string;
   emailVerified: string | null;
   createdAt: string;
+  /** Foto siswa (syarat PPDB) sudah diunggah — untuk pratinjau & unduh. */
+  hasPhoto: boolean;
 };
 
 const roleBadge: Record<
@@ -100,6 +102,7 @@ export function AdminUsersClient({
           role: string;
           emailVerified: string | Date | null;
           createdAt: string | Date;
+          hasPhoto?: boolean;
         }) => ({
           id: u.id,
           name: u.name,
@@ -114,6 +117,7 @@ export function AdminUsersClient({
             typeof u.createdAt === "string"
               ? u.createdAt
               : new Date(u.createdAt).toISOString(),
+          hasPhoto: Boolean(u.hasPhoto),
         })
       )
     );
@@ -143,7 +147,8 @@ export function AdminUsersClient({
     emailVerified: string | null;
     createdAt: string;
   }) => {
-    setUsers((prev) => [user, ...prev]);
+    // User baru pasti belum punya foto.
+    setUsers((prev) => [{ ...user, hasPhoto: false }, ...prev]);
   };
 
   const handleDelete = async (userId: string) => {
@@ -223,9 +228,19 @@ export function AdminUsersClient({
                       >
                         <td className="py-3.5 px-3">
                           <div className="flex items-center gap-3">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 font-bold text-xs text-white ring-2 ring-sky-100">
-                              {initialsFrom(user.name, user.email)}
-                            </span>
+                            {user.hasPhoto ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- foto dari API ber-sesi, bukan aset statis
+                              <img
+                                src={`/api/admin/users/${user.id}/photo`}
+                                alt={`Foto ${user.name ?? user.email ?? "siswa"}`}
+                                loading="lazy"
+                                className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-100"
+                              />
+                            ) : (
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 font-bold text-xs text-white ring-2 ring-sky-100">
+                                {initialsFrom(user.name, user.email)}
+                              </span>
+                            )}
                             <div className="min-w-0">
                               <div className="font-body text-sm font-semibold text-slate-900 truncate">
                                 {user.name || "—"}
@@ -263,6 +278,36 @@ export function AdminUsersClient({
                         </td>
                         <td className="py-3.5 px-3 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            {user.hasPhoto ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label={`Lihat foto ${user.name ?? user.email ?? ""}`}
+                                  title="Lihat foto"
+                                  asChild
+                                >
+                                  <a
+                                    href={`/api/admin/users/${user.id}/photo`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Eye className="h-4 w-4 text-slate-500" />
+                                  </a>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label={`Unduh foto ${user.name ?? user.email ?? ""}`}
+                                  title="Unduh foto"
+                                  asChild
+                                >
+                                  <a href={`/api/admin/users/${user.id}/photo?download=1`}>
+                                    <Download className="h-4 w-4 text-slate-500" />
+                                  </a>
+                                </Button>
+                              </>
+                            ) : null}
                             {canEdit ? (
                               <Button
                                 variant="ghost"
@@ -286,7 +331,7 @@ export function AdminUsersClient({
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             ) : null}
-                            {!canEdit && !canDelete ? (
+                            {!canEdit && !canDelete && !user.hasPhoto ? (
                               <span className="text-xs text-slate-300 px-2">—</span>
                             ) : null}
                           </div>
@@ -310,6 +355,7 @@ export function AdminUsersClient({
                 email: u.email,
                 role: u.role,
                 emailVerified: Boolean(u.emailVerified),
+                foto: u.hasPhoto ? "Ada" : "Belum",
                 createdAt: u.createdAt,
               }))}
               columns={[
@@ -317,6 +363,7 @@ export function AdminUsersClient({
                 { key: "email", label: "Email" },
                 { key: "role", label: "Role" },
                 { key: "emailVerified", label: "Terverifikasi" },
+                { key: "foto", label: "Foto Siswa" },
                 { key: "createdAt", label: "Bergabung" },
               ]}
             />

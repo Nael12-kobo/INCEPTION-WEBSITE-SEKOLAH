@@ -27,6 +27,7 @@ export default async function AdminUsersPage() {
       role: true,
       emailVerified: true,
       createdAt: true,
+      photoUpdatedAt: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -38,6 +39,7 @@ export default async function AdminUsersPage() {
     role: u.role,
     emailVerified: u.emailVerified?.toISOString() ?? null,
     createdAt: u.createdAt.toISOString(),
+    hasPhoto: u.photoUpdatedAt !== null,
   }));
 
   return (

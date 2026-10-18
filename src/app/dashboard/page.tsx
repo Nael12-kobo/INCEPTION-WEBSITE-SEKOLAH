@@ -88,6 +88,7 @@ export default async function DashboardPage() {
       image: true,
       emailVerified: true,
       role: true,
+      photoUpdatedAt: true,
     },
   });
 
@@ -304,8 +305,12 @@ export default async function DashboardPage() {
               : null
           }
           userEmail={dashboardUser.email}
+          hasPhoto={Boolean(user.photoUpdatedAt)}
+          photoVersion={user.photoUpdatedAt?.toISOString() ?? null}
         />
-        <AccountSection user={dashboardUser} />
+        {/* Kartu "Akun Saya" hanya untuk non-admin — dashboard admin fokus
+            pada pengelolaan (kartu siswa seperti PPDB & akun disembunyikan). */}
+        {!isAdminUser ? <AccountSection user={dashboardUser} /> : null}
         <ProgramsSection />
       </DashboardShell>
     </SessionProvider>
