@@ -20,7 +20,7 @@ export function Profil() {
     <section id="profil" ref={ref} className="relative overflow-hidden bg-transparent">
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-violet-300/50 blur-3xl"
+        className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-violet-300/50 blur-3xl dark:hidden"
       />
       <div className="tilt-scene relative mx-auto grid max-w-6xl items-start gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2">
         <div data-scrub-item data-scrub-dir="left">

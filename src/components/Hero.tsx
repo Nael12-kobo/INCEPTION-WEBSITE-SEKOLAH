@@ -129,7 +129,7 @@ export function Hero() {
       className="relative overflow-hidden bg-transparent"
     >
       {/* dekorasi */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div aria-hidden className="pointer-events-none absolute inset-0 dark:hidden">
         <div className="absolute inset-0 bg-grid-sky [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,black,transparent)]" />
         <div
           data-hero-blob
@@ -184,7 +184,7 @@ export function Hero() {
           >
             <span data-magnetic className="inline-flex">
               <Button size="lg" asChild className="shadow-lg shadow-sky-300/50">
-                <Link href="#ppdb">
+                <Link href="#ppdb" className="dark:text-white">
                   Daftar PPDB
                   <ArrowRight />
                 </Link>
@@ -224,12 +224,12 @@ export function Hero() {
         <div data-scrub-item data-scrub-dir="right" data-tilt className="hidden lg:block">
           
           <div className="flex relative z-[-50] top-35 justify-center items-center opacity-75">
-        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 justify-center items-center" />
+        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 dark:text-sky-400/80 justify-center items-center" />
         <Loader2 strokeWidth={2} className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center" />
 
         <Loader2 strokeWidth={2} className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center" />
-        <Loader2 strokeWidth={1} className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 justify-center items-center" />
-        <Loader2 strokeWidth={1.25} className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 justify-center items-center text-shadow-lg" />
+        <Loader2 strokeWidth={1} className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 dark:text-yellow-500/40 justify-center items-center" />
+        <Loader2 strokeWidth={1.25} className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 dark:text-yellow-500/80 justify-center items-center text-shadow-lg" />
 
         <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] " ></div>
         <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] " ></div>

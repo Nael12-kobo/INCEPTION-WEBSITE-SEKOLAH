@@ -52,7 +52,7 @@ const mobileLinks = [
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 bg-card/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 dark:border-card bg-card/80 backdrop-blur-md">
       {/* gap-1 (bukan gap-4): saat 1024px muatan nav hampir penuh — gap cuma
           berpengaruh kalau sempit, saat lega justify-between tetap memisahkan
           grup dengan jarak yang sama. Dibutuhkan untuk muat button "Guru". */}
@@ -155,8 +155,10 @@ export function Navbar() {
             <Link href="/auth/login">Masuk</Link>
           </Button>
           <ThemeToggle />
-          <Button asChild>
-            <Link href="#ppdb">PPDB 2026</Link>
+          <Button asChild className="dark:bg-sky-200">
+            <Link href="#ppdb" className="text-white dark:text-gray-300">
+              PPDB 2026
+            </Link>
           </Button>
         </div>
 
