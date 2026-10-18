@@ -283,6 +283,8 @@ export function DashboardOverview({
         </div>
       </div>
 
+      {/* Statistik agregat user/PPDB: data seluruh sekolah — hanya untuk admin. */}
+      {isAdmin && (
       <div id="statistik" data-reveal-item className="scroll-mt-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
@@ -318,7 +320,10 @@ export function DashboardOverview({
           />
         </div>
       </div>
+      )}
 
+      {/* Grafik rekap PPDB: data seluruh pendaftar — hanya untuk admin. */}
+      {isAdmin && (
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
         <Card className="bg-card lg:col-span-3">
           <CardHeader className="flex-row items-start justify-between space-y-0">
@@ -363,6 +368,7 @@ export function DashboardOverview({
           </CardContent>
         </Card>
       </div>
+      )}
 
       <div data-reveal-item className="grid gap-5 lg:grid-cols-5">
         <Card

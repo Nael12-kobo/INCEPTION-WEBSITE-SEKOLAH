@@ -78,7 +78,8 @@ const navSections: NavSection[] = [
     title: "Dashboard",
     items: [
       { href: "/dashboard#ringkasan", label: "Ringkasan", icon: LayoutDashboard },
-      { href: "/dashboard#statistik", label: "Statistik", icon: BarChart3 },
+      // "Statistik" berisi data agregat seluruh sekolah — hanya admin.
+      { href: "/dashboard#statistik", label: "Statistik", icon: BarChart3, adminOnly: true },
     ],
   },
   {

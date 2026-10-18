@@ -7,6 +7,7 @@ import {
 } from "@/components/dashboard/dashboard-shell";
 import { AcademicClient } from "@/components/academic/academic-client";
 import { isStudentStatus } from "@/lib/ppdb";
+import { isAdmin as checkIsAdmin } from "@/lib/roles";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata = {
@@ -44,8 +45,11 @@ export default async function AcademicPage() {
 
   if (!user) redirect("/auth/login?callbackUrl=/academic");
 
+  // Lonceng notifikasi: admin melihat aktivitas semua orang,
+  // pengguna lain hanya aktivitasnya sendiri.
   const recentLogs = prisma.auditLog
     ? await prisma.auditLog.findMany({
+        where: checkIsAdmin(user.role) ? undefined : { actorId: user.id },
         orderBy: { createdAt: "desc" },
         take: 8,
         select: { id: true, action: true, detail: true, createdAt: true },

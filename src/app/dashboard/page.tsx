@@ -78,8 +78,24 @@ export default async function DashboardPage() {
   const now = new Date();
   const sevenDaysAgo = addDays(startOfDayWib(now), -6);
 
+  // Diambil lebih dulu karena role menentukan data mana yang boleh di-query:
+  // statistik agregat seluruh sekolah & aktivitas global hanya untuk admin.
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      name: true,
+      email: true,
+      image: true,
+      emailVerified: true,
+      role: true,
+    },
+  });
+
+  if (!user) redirect("/auth/login?callbackUrl=/dashboard");
+
+  const isAdminUser = checkIsAdminRole(user.role);
+
   const [
-    user,
     accounts,
     ppdb,
     totalUsers,
@@ -90,16 +106,6 @@ export default async function DashboardPage() {
     ppdbByMajorRaw,
     recentActivityRaw,
   ] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        name: true,
-        email: true,
-        image: true,
-        emailVerified: true,
-        role: true,
-      },
-    }),
     prisma.account.findMany({
       where: { userId },
       select: { provider: true, createdAt: true },
@@ -126,31 +132,43 @@ export default async function DashboardPage() {
         parentPhone: true,
       },
     }),
-    prisma.user.count(),
-    prisma.ppdbRegistration.count(),
-    prisma.ppdbRegistration.count({ where: { status: "PENDING" } }),
-    prisma.user.count({
-      where: { role: { in: [UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
-    }),
-    prisma.ppdbRegistration.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
-      select: { createdAt: true },
-    }),
-    prisma.ppdbRegistration.groupBy({
-      by: ["majorFirst"],
-      _count: { _all: true },
-    }),
-    // Aktivitas terbaru untuk notifikasi bell — nyata dari audit log.
+    // Statistik agregat hanya untuk admin — siswa tidak menerima data
+    // seluruh sekolah, bahkan di payload server.
+    isAdminUser ? prisma.user.count() : Promise.resolve(0),
+    isAdminUser ? prisma.ppdbRegistration.count() : Promise.resolve(0),
+    isAdminUser
+      ? prisma.ppdbRegistration.count({ where: { status: "PENDING" } })
+      : Promise.resolve(0),
+    isAdminUser
+      ? prisma.user.count({
+        where: { role: { in: [UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
+      })
+      : Promise.resolve(0),
+    isAdminUser
+      ? prisma.ppdbRegistration.findMany({
+        where: { createdAt: { gte: sevenDaysAgo } },
+        select: { createdAt: true },
+      })
+      : Promise.resolve([] as { createdAt: Date }[]),
+    isAdminUser
+      ? prisma.ppdbRegistration.groupBy({
+        by: ["majorFirst"],
+        _count: { _all: true },
+      })
+      : Promise.resolve(
+        [] as { majorFirst: string; _count: { _all: number } }[]
+      ),
+    // Aktivitas terbaru untuk notifikasi bell — admin melihat semua,
+    // pengguna lain hanya melihat aktivitasnya sendiri.
     prisma.auditLog
       ? prisma.auditLog.findMany({
+        where: isAdminUser ? undefined : { actorId: userId },
         orderBy: { createdAt: "desc" },
         take: 8,
         select: { id: true, action: true, detail: true, createdAt: true },
       })
       : Promise.resolve([]),
   ]);
-
-  if (!user) redirect("/auth/login?callbackUrl=/dashboard");
 
   const providerLabels: Record<string, string> = {
     credentials: "Email & kata sandi",
