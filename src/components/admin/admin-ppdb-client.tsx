@@ -14,6 +14,7 @@ import {
   FileImage,
   FileText,
   FolderOpen,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,8 @@ import {
   PPDB_DOC_META,
   PPDB_DOC_TOTAL,
   PPDB_PHOTO_META,
+  PPDB_REVIEW_NOTE_MAX,
+  PPDB_REVIEW_STATUS_LABELS,
 } from "@/lib/ppdb-documents";
 
 /** Satu berkas kelengkapan PPDB yang diunggah siswa. */
@@ -44,6 +47,13 @@ export type PpdbDocumentRow = {
   mime: string;
   size: number;
   createdAt: string;
+};
+
+/** Penilaian admin untuk satu item berkas (termasuk pas foto). */
+export type PpdbReviewRow = {
+  kind: string;
+  status: string;
+  note: string | null;
 };
 
 export type PpdbRow = {
@@ -61,6 +71,8 @@ export type PpdbRow = {
   userId: string;
   hasPhoto: boolean;
   documents: PpdbDocumentRow[];
+  /** Penilaian admin per item (Sesuai / Perlu perbaikan) + catatan. */
+  reviews: PpdbReviewRow[];
 };
 
 const PPDB_STATUSES = [
@@ -104,22 +116,29 @@ function BerkasButton({
 }) {
   const done = berkasDoneCount(row);
   const complete = done >= PPDB_DOC_TOTAL;
+  const needsFix = row.reviews.some((r) => r.status === "PERLU_PERBAIKAN");
   return (
     <Button
       variant="outline"
       size="sm"
       className="h-8"
       onClick={() => onOpen(row)}
-      title="Berkas kelengkapan yang diunggah siswa"
+      title={
+        needsFix
+          ? "Ada berkas yang perlu diperbaiki siswa — buka detail"
+          : "Berkas kelengkapan yang diunggah siswa"
+      }
     >
       <FolderOpen className="h-4 w-4" aria-hidden />
       Berkas
       <span
         className={cn(
           "ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
-          complete
-            ? "bg-emerald-100 text-emerald-700"
-            : "bg-slate-100 text-slate-600"
+          needsFix
+            ? "bg-amber-100 text-amber-700"
+            : complete
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-slate-100 text-slate-600"
         )}
       >
         {done}/{PPDB_DOC_TOTAL}
@@ -128,14 +147,211 @@ function BerkasButton({
   );
 }
 
-/** Dialog daftar berkas siswa: pas foto + 4 jenis dokumen, bisa dilihat & diunduh. */
+/* ------------------------------------------------------------------ */
+/* Penilaian admin per item berkas (Sesuai / Perlu perbaikan).         */
+/* ------------------------------------------------------------------ */
+
+const REVIEW_STATUS_LABELS = PPDB_REVIEW_STATUS_LABELS as Record<string, string>;
+
+const reviewPillBase =
+  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:opacity-50";
+
+/** Kontrol penilaian satu item berkas — dipakai di dialog Berkas. */
+function ReviewControls({
+  userId,
+  kind,
+  review,
+  onSaved,
+  onCleared,
+}: {
+  userId: string;
+  kind: string;
+  review: PpdbReviewRow | undefined;
+  onSaved: (review: PpdbReviewRow) => void;
+  onCleared: (kind: string) => void;
+}) {
+  const [status, setStatus] = React.useState<string>(review?.status ?? "");
+  const [note, setNote] = React.useState(review?.note ?? "");
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Sinkron saat dialog dibuka untuk siswa lain, atau data berubah dari luar
+  // (mis. penilaian lain disimpan) — jangan biarkan draft lama menempel.
+  React.useEffect(() => {
+    setStatus(review?.status ?? "");
+    setNote(review?.note ?? "");
+    setError(null);
+  }, [userId, kind, review?.status, review?.note]);
+
+  const dirty =
+    status !== (review?.status ?? "") || note !== (review?.note ?? "");
+
+  const save = async () => {
+    if (saving || !status || !dirty) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/ppdb/reviews", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, kind, status, note }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { error?: string; review?: PpdbReviewRow }
+        | null;
+      if (!res.ok || !data?.review) {
+        throw new Error(data?.error ?? "Gagal menyimpan penilaian.");
+      }
+      onSaved(data.review);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan penilaian.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const clear = async () => {
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/ppdb/reviews", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, kind }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(data?.error ?? "Gagal menghapus penilaian.");
+      }
+      onCleared(kind);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menghapus penilaian.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-2.5 rounded-lg border border-dashed border-slate-200 bg-card px-2.5 py-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          Penilaian admin
+        </span>
+        <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setStatus("SESUAI")}
+            disabled={saving}
+            className={cn(
+              reviewPillBase,
+              status === "SESUAI"
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-card text-slate-500 hover:border-slate-300"
+            )}
+          >
+            <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+            Sesuai
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatus("PERLU_PERBAIKAN")}
+            disabled={saving}
+            className={cn(
+              reviewPillBase,
+              status === "PERLU_PERBAIKAN"
+                ? "border-amber-300 bg-amber-50 text-amber-700"
+                : "border-slate-200 bg-card text-slate-500 hover:border-slate-300"
+            )}
+          >
+            <AlertCircle className="h-3.5 w-3.5" aria-hidden />
+            Perlu perbaikan
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-2 flex items-center gap-2">
+        <Input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={PPDB_REVIEW_NOTE_MAX}
+          placeholder="Catatan untuk siswa (opsional)"
+          className="h-8 text-xs"
+          disabled={saving}
+        />
+        <Button
+          type="button"
+          size="sm"
+          className="h-8 shrink-0"
+          onClick={() => void save()}
+          disabled={saving || !status || !dirty}
+        >
+          {saving ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          ) : null}
+          Simpan
+        </Button>
+      </div>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-2">
+        {review && !dirty ? (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 text-[11px] font-semibold",
+              review.status === "SESUAI" ? "text-emerald-600" : "text-amber-600"
+            )}
+          >
+            {review.status === "SESUAI" ? (
+              <BadgeCheck className="h-3 w-3" aria-hidden />
+            ) : (
+              <AlertCircle className="h-3 w-3" aria-hidden />
+            )}
+            Tersimpan: {REVIEW_STATUS_LABELS[review.status] ?? review.status}
+            {review.note ? ` — “${review.note}”` : ""}
+          </span>
+        ) : dirty ? (
+          <span className="text-[11px] font-medium text-amber-600">
+            Perubahan belum disimpan.
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">Belum dinilai.</span>
+        )}
+        {review ? (
+          <button
+            type="button"
+            onClick={() => void clear()}
+            disabled={saving}
+            className="ml-auto text-[11px] font-medium text-slate-400 underline-offset-2 hover:text-rose-600 hover:underline disabled:opacity-50"
+          >
+            Hapus penilaian
+          </button>
+        ) : null}
+      </div>
+
+      {error ? (
+        <p className="mt-1 text-[11px] font-medium text-rose-600">{error}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Dialog daftar berkas siswa: pas foto + 4 jenis dokumen, bisa dilihat,
+ *  diunduh, dan dinilai per item (Sesuai / Perlu perbaikan + catatan). */
 function BerkasDialog({
   target,
   onClose,
+  onReviewSaved,
+  onReviewCleared,
 }: {
   target: PpdbRow | null;
   onClose: () => void;
+  onReviewSaved: (userId: string, review: PpdbReviewRow) => void;
+  onReviewCleared: (userId: string, kind: string) => void;
 }) {
+  const reviewOf = (kind: string) =>
+    target?.reviews.find((r) => r.kind === kind);
   return (
     <Dialog open={target !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[560px]">
@@ -200,6 +416,15 @@ function BerkasDialog({
             ) : (
               <p className="mt-1 text-xs text-slate-400">Belum diunggah siswa.</p>
             )}
+            {target ? (
+              <ReviewControls
+                userId={target.userId}
+                kind="FOTO"
+                review={reviewOf("FOTO")}
+                onSaved={(review) => onReviewSaved(target.userId, review)}
+                onCleared={(kind) => onReviewCleared(target.userId, kind)}
+              />
+            ) : null}
           </section>
 
           {PPDB_DOC_KINDS.map((kind) => {
@@ -286,6 +511,15 @@ function BerkasDialog({
                 ) : (
                   <p className="mt-1 text-xs text-slate-400">Belum ada berkas.</p>
                 )}
+                {target ? (
+                  <ReviewControls
+                    userId={target.userId}
+                    kind={kind}
+                    review={reviewOf(kind)}
+                    onSaved={(review) => onReviewSaved(target.userId, review)}
+                    onCleared={(k) => onReviewCleared(target.userId, k)}
+                  />
+                ) : null}
               </section>
             );
           })}
@@ -315,6 +549,26 @@ export function AdminPpdbClient({
 
   // Dialog berkas: lihat/unduh semua unggahan siswa untuk pendaftar ini.
   const [berkasTarget, setBerkasTarget] = React.useState<PpdbRow | null>(null);
+
+  /** Simpan/hapus penilaian di state lokal agar tabel & dialog langsung sinkron. */
+  const applyReview = (
+    userId: string,
+    review: PpdbReviewRow | null,
+    kind?: string
+  ) => {
+    const replace = (list: PpdbReviewRow[]) =>
+      review
+        ? [...list.filter((r) => r.kind !== review.kind), review]
+        : list.filter((r) => r.kind !== kind);
+    setRows((list) =>
+      list.map((r) =>
+        r.userId === userId ? { ...r, reviews: replace(r.reviews) } : r
+      )
+    );
+    setBerkasTarget((t) =>
+      t && t.userId === userId ? { ...t, reviews: replace(t.reviews) } : t
+    );
+  };
 
   const recomputeCounts = (list: PpdbRow[]) => {
     const next: Record<string, number> = {
@@ -722,6 +976,8 @@ export function AdminPpdbClient({
       <BerkasDialog
         target={berkasTarget}
         onClose={() => setBerkasTarget(null)}
+        onReviewSaved={(userId, review) => applyReview(userId, review)}
+        onReviewCleared={(userId, kind) => applyReview(userId, null, kind)}
       />
     </>
   );

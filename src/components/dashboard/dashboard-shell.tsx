@@ -280,6 +280,7 @@ const ACTIVITY_META: Record<string, { icon: React.ComponentType<{ className?: st
   LOGIN_SUCCESS: { icon: LogIn, tone: "bg-emerald-50 text-emerald-600" },
   PHOTO_UPDATED: { icon: IdCard, tone: "bg-sky-50 text-sky-600" },
   DOCUMENT_UPLOADED: { icon: FileUp, tone: "bg-emerald-50 text-emerald-600" },
+  DOCUMENT_REVIEWED: { icon: ClipboardCheck, tone: "bg-amber-50 text-amber-600" },
 };
 
 function timeAgoLabel(iso: string): string {

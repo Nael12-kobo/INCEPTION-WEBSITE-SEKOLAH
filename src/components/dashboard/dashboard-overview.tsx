@@ -39,6 +39,7 @@ import { PpdbForm } from "@/components/ppdb/ppdb-form";
 import {
   BerkasChecklist,
   type StudentDocumentItem,
+  type StudentReviewItem,
 } from "@/components/dashboard/berkas-checklist";
 import {
   FIELD_LABELS,
@@ -172,6 +173,8 @@ export interface DashboardOverviewProps {
   photoVersion?: string | null;
   /** Berkas kelengkapan PPDB (bukti bayar, rapor, akte, KK) — siswa terdaftar. */
   documents?: StudentDocumentItem[];
+  /** Penilaian admin per item berkas — keterangan status untuk siswa. */
+  reviews?: StudentReviewItem[];
 }
 
 export function DashboardOverview({
@@ -191,6 +194,7 @@ export function DashboardOverview({
   hasPhoto = false,
   photoVersion = null,
   documents = [],
+  reviews = [],
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
@@ -572,6 +576,7 @@ export function DashboardOverview({
                     hasPhoto={hasPhoto}
                     photoVersion={photoVersion}
                     documents={documents}
+                    reviews={reviews}
                   />
                 </>
               ) : (

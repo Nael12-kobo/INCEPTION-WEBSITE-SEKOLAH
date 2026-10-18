@@ -162,6 +162,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Berkas berubah → penilaian admin sebelumnya tidak berlaku lagi,
+    // supaya status "Sesuai" tidak menempel pada berkas yang belum diperiksa.
+    await prisma.ppdbDocumentReview
+      .deleteMany({ where: { userId: session.user.id, kind } })
+      .catch((error) =>
+        console.warn("[ppdb] gagal mereset penilaian berkas:", error)
+      );
+
     await logAudit({
       actorId: session.user.id,
       actorEmail: session.user.email ?? null,

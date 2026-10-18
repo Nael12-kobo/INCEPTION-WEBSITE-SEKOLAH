@@ -121,6 +121,13 @@ export async function POST(request: Request) {
       },
     });
 
+    // Foto diganti → penilaian admin atas pas foto tidak berlaku lagi.
+    await prisma.ppdbDocumentReview
+      .deleteMany({ where: { userId: session.user.id, kind: "FOTO" } })
+      .catch((error) =>
+        console.warn("[ppdb] gagal mereset penilaian foto:", error)
+      );
+
     await logAudit({
       actorId: session.user.id,
       actorEmail: session.user.email ?? null,

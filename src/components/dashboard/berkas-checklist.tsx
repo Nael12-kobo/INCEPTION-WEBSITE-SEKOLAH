@@ -9,6 +9,8 @@ import {
   Trash2,
   Upload,
   UserRound,
+  AlertCircle,
+  BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,13 @@ export type StudentDocumentItem = {
   createdAt: string;
 };
 
+/** Penilaian admin per item berkas (Sesuai / Perlu perbaikan + catatan). */
+export type StudentReviewItem = {
+  kind: string;
+  status: string;
+  note: string | null;
+};
+
 type BerkasChecklistProps = {
   /** Foto siswa sudah tersimpan di akun (kolom User.photoBytes). */
   hasPhoto: boolean;
@@ -41,7 +50,38 @@ type BerkasChecklistProps = {
   photoVersion?: string | null;
   /** Berkas kelengkapan yang sudah diunggah. */
   documents?: StudentDocumentItem[];
+  /** Penilaian admin per item — ditampilkan sebagai keterangan status. */
+  reviews?: StudentReviewItem[];
 };
+
+/** Keterangan penilaian admin untuk satu item (di bawah deskripsi item). */
+function ReviewNote({
+  review,
+}: {
+  review?: { status: string; note: string | null };
+}) {
+  if (!review) return null;
+  if (review.status === "SESUAI") {
+    return (
+      <p className="mt-1 flex items-start gap-1.5 text-xs font-medium text-emerald-600">
+        <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span>
+          Sudah diperiksa admin — sesuai.
+          {review.note ? ` Catatan: ${review.note}` : ""}
+        </span>
+      </p>
+    );
+  }
+  return (
+    <p className="mt-1 flex items-start gap-1.5 text-xs font-medium text-amber-600">
+      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+      <span>
+        Admin minta perbaikan:{" "}
+        {review.note ?? "silakan periksa kembali berkas ini, lalu unggah ulang."}
+      </span>
+    </p>
+  );
+}
 
 /** Urutan tampil mengikuti daftar syarat sekolah — pas foto di tengah. */
 const ITEM_ORDER: ReadonlyArray<PpdbDocKind | "FOTO"> = [
@@ -66,8 +106,27 @@ export function BerkasChecklist({
   hasPhoto,
   photoVersion = null,
   documents = [],
+  reviews = [],
 }: BerkasChecklistProps) {
   const [docs, setDocs] = React.useState<StudentDocumentItem[]>(documents);
+  // Penilaian admin per jenis item — hilang sendiri saat siswa mengganti
+  // berkas (server juga menghapusnya, jadi konsisten setelah refresh).
+  const [reviewMap, setReviewMap] = React.useState<
+    Record<string, { status: string; note: string | null }>
+  >(() =>
+    Object.fromEntries(
+      reviews.map((r) => [r.kind, { status: r.status, note: r.note }])
+    )
+  );
+
+  const clearReview = (kinds: string[]) => {
+    setReviewMap((prev) => {
+      if (!kinds.some((k) => prev[k])) return prev;
+      const next = { ...prev };
+      for (const k of kinds) delete next[k];
+      return next;
+    });
+  };
   const [photoSaved, setPhotoSaved] = React.useState(hasPhoto);
   const [currentPhotoVersion, setCurrentPhotoVersion] = React.useState<
     string | null
@@ -149,7 +208,11 @@ export function BerkasChecklist({
           error instanceof Error ? error.message : "Gagal mengunggah berkas.",
       }));
     } finally {
-      if (added.length > 0) setDocs((prev) => [...prev, ...added]);
+      if (added.length > 0) {
+        setDocs((prev) => [...prev, ...added]);
+        // Berkas baru → penilaian admin sebelumnya tidak berlaku lagi.
+        clearReview(added.map((d) => d.kind));
+      }
       setBusyKind(null);
     }
   };
@@ -182,6 +245,9 @@ export function BerkasChecklist({
     PPDB_DOC_KINDS.filter((kind) => docs.some((d) => d.kind === kind)).length +
     (photoSaved ? 1 : 0);
   const allDone = doneCount >= PPDB_DOC_TOTAL;
+  const fixCount =
+    PPDB_DOC_KINDS.filter((k) => reviewMap[k]?.status === "PERLU_PERBAIKAN")
+      .length + (reviewMap.FOTO?.status === "PERLU_PERBAIKAN" ? 1 : 0);
 
   return (
     <div className="space-y-3">
@@ -230,6 +296,13 @@ export function BerkasChecklist({
           Unggah berkas di sini — admin memeriksa langsung dari panel PPDB.
           Berkas fisik tetap dibawa saat daftar ulang.
         </p>
+        {fixCount > 0 ? (
+          <p className="mt-2 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs font-medium text-amber-700">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            {fixCount} item perlu diperbaiki — lihat catatan admin di item yang
+            ditandai, lalu unggah ulang. Admin akan memeriksa ulang.
+          </p>
+        ) : null}
       </div>
 
       {ITEM_ORDER.map((item) => {
@@ -260,6 +333,7 @@ export function BerkasChecklist({
               <p className="mt-0.5 text-xs text-slate-500">
                 {PPDB_PHOTO_META.hint}
               </p>
+              <ReviewNote review={reviewMap.FOTO} />
 
               <div className="mt-2 flex items-center gap-3">
                 <div className="relative flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-card">
@@ -294,6 +368,8 @@ export function BerkasChecklist({
                     onSavedChange={(saved, version) => {
                       setPhotoSaved(saved);
                       setCurrentPhotoVersion(version);
+                      // Foto baru → penilaian admin atas pas foto tidak berlaku lagi.
+                      clearReview(["FOTO"]);
                     }}
                     missingWarning={null}
                     hint="Pas foto formal, wajah terlihat jelas, latar belakang polos — otomatis dikompres sebelum diunggah."
@@ -332,6 +408,7 @@ export function BerkasChecklist({
               </span>
             </div>
             <p className="mt-0.5 text-xs text-slate-500">{meta.hint}</p>
+            <ReviewNote review={reviewMap[item]} />
 
             {files.length > 0 ? (
               <ul className="mt-2 space-y-1.5">
