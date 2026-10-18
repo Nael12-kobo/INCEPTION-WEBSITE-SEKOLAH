@@ -76,14 +76,22 @@ export function RegisterForm() {
         return;
       }
 
-      // Akun dibuat → langsung masuk dan arahkan ke beranda.
-      await signIn("credentials", {
-        email: email.trim(),
+      // Akun dibuat → coba langsung masuk. Email di-lowercase agar cocok
+      // dengan data tersimpan (server menormalkan email saat register).
+      const result = await signIn("credentials", {
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
       setSucceeded(true);
-      router.push("/dashboard");
+      if (result?.error) {
+        // Auto-login gagal (mis. kena rate limit) → arahkan ke halaman
+        // login agar siswa bisa masuk manual, bukan ke /dashboard yang
+        // akan memantulkan mereka kembali ke login.
+        router.push("/auth/login");
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch {
       setFormError(t("error.generic"));

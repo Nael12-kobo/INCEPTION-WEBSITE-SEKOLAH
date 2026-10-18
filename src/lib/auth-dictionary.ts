@@ -81,7 +81,7 @@ const id = {
   "errorPage.backToLogin": "Coba login lagi",
   "errorPage.home": "Kembali ke beranda",
   "errorPage.configuration":
-    "Konfigurasi login sedang bermasalah di sisi server. Silakan coba lagi beberapa saat, atau login dengan email & kata sandi.",
+    "Proses login (biasanya lewat Google) tidak selesai. Penyebab tersering: halaman dibuka dari browser dalam aplikasi seperti WhatsApp/Instagram, sehingga sesi login ikut terhapus — atau kredensial login di server belum lengkap. Buka kembali situs ini di Chrome/Safari lalu coba lagi, atau login dengan email & kata sandi.",
   "errorPage.accessDenied":
     "Akun Anda tidak memiliki akses. Hubungi sekolah bila menurut Anda ini keliru.",
   "errorPage.verification":
@@ -175,7 +175,7 @@ const en: Record<keyof typeof id, string> = {
   "errorPage.backToLogin": "Try signing in again",
   "errorPage.home": "Back to home",
   "errorPage.configuration":
-    "The sign-in configuration is temporarily broken on the server. Please try again shortly, or sign in with email & password.",
+    "The sign-in (usually with Google) did not complete. Most common cause: the page was opened in an in-app browser such as WhatsApp/Instagram, which discarded the login session — or the sign-in credentials on the server are incomplete. Reopen this site in Chrome/Safari and try again, or sign in directly with email & password.",
   "errorPage.accessDenied":
     "Your account doesn't have access. Contact the school if you believe this is a mistake.",
   "errorPage.verification":

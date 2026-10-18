@@ -56,8 +56,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials, request) {
         try {
+          // Normalisasi email (trim + lowercase) SEBELUM lookup DB.
+          // Register/admin/forgot-password menyimpan email selalu lowercase,
+          // jadi tanpa ini siswa yang mendaftar/ mengetik email dengan huruf
+          // besar tidak akan pernah ditemukan (selalu "email atau sandi salah").
           const email =
-            typeof credentials?.email === "string" ? credentials.email : "";
+            typeof credentials?.email === "string"
+              ? credentials.email.trim().toLowerCase()
+              : "";
           const password =
             typeof credentials?.password === "string" ? credentials.password : "";
           if (!email || !password) return null;
@@ -65,7 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Guard brute-force: maksimal 5 percobaan per 5 menit untuk
           // kombinasi email+IP. Dihitung SEBELUM bcrypt.compare supaya
           // percobaan berlebih juga tidak membuang CPU.
-          const rlKey = `login:${email.trim().toLowerCase()}|${clientIp(request)}`;
+          const rlKey = `login:${email}|${clientIp(request)}`;
           const rl = rateLimit(rlKey, { limit: 5, windowMs: 5 * 60_000 });
           if (!rl.ok) {
             await logAudit({
