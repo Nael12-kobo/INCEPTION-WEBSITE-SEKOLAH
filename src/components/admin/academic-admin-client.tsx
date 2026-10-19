@@ -507,8 +507,10 @@ export function AcademicAdminClient({
               className={cn(
                 "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors",
                 active
-                  ? "bg-slate-900 text-white"
-                  : "bg-card text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                  // neutral (bukan slate): pill aktif harus tetap gelap + teks
+                  // putih di KEDUA mode — slate dibalik oleh .dark di globals.css.
+                  ? "bg-neutral-900 text-white"
+                  : "bg-card text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
               )}
             >
               {ACADEMIC_META[d].label}
@@ -518,8 +520,7 @@ export function AcademicAdminClient({
                   active
                     ? "bg-white/15 text-white"
                     : "bg-slate-100 text-slate-500"
-                )}
-              >
+                )}              >
                 {(rows[d] ?? []).length}
               </span>
             </button>
@@ -660,7 +661,7 @@ export function AcademicAdminClient({
                           [field.key]: e.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                      className="w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
                     />
                   ) : field.type === "select" ||
                     field.type === "student" ? (
@@ -673,7 +674,7 @@ export function AcademicAdminClient({
                           [field.key]: e.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                      className="w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
                     >
                       {field.type === "student" ? (
                         <>
@@ -708,7 +709,7 @@ export function AcademicAdminClient({
                           [field.key]: e.target.value,
                         }))
                       }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                      className="w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
                     />
                   )}
                 </div>
