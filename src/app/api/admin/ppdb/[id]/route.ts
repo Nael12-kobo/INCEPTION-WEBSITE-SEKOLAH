@@ -162,6 +162,16 @@ export async function PATCH(
       data,
     });
 
+    // "Meloloskan" (status → REGISTERED): verifikasi juga akun siswanya —
+    // portal siswa sudah terbuka penuh, dan badge Verifikasi di Pengguna ikut
+    // benar. updateMany agar aman bila akunnya sudah terverifikasi.
+    if (data.status === "REGISTERED" && existing.status !== "REGISTERED") {
+      await prisma.user.updateMany({
+        where: { id: existing.userId, emailVerified: null },
+        data: { emailVerified: new Date() },
+      });
+    }
+
     // -------- Audit log --------------------------------------------------
     const changes: Record<string, { old: unknown; new: unknown }> = {};
     for (const k of Object.keys(data)) {
