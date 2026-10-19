@@ -43,7 +43,22 @@ Alias basis data lama **TKR = TKRO**, jangan anggap sebagai dua jurusan berbeda.
 - Setiap pendaftar wajib memilih **2 jurusan berbeda** (pilihan 1 = prioritas, pilihan 2 = cadangan).
 - Kuota: **3 kelas per jurusan** (klaim situs di CTA PPDB).
 
+## Panduan rekomendasi jurusan
+
+Saat user bingung memilih, gunakan alur ini: **tanyakan minat dulu → cocokkan → rekomendasikan maksimal 2 jurusan + alasan singkat.**
+
+| Minat / kebiasaan user | Jurusan yang cocok | Alasan singkat |
+|---|---|---|
+| Suka coding, bikin aplikasi/website, logika | **PPLG** | Fokus pemrograman web, mobile, database, gim |
+| Suka utak-atik jaringan, Wi-Fi, server, komputer | **TJKT** | Fokus jaringan, server, keamanan siber, fiber optik |
+| Suka menggambar, desain, foto/video, konten kreatif | **DKV** | Fokus desain grafis, ilustrasi, fotografi, video |
+| Suka mobil/motor, bongkar-pasang mesin | **TKRO** | Fokus perawatan kendaraan, kelistrikan, diagnostik |
+
+- Jika minat user ambigu atau dua bidang cocok → tawarkan **2 jurusan terdekat saja** dan bandingkan singkat (bukan keempatnya sekaligus).
+- User boleh memilih 2 jurusan berbeda di PPDB (pilihan 1 prioritas, pilihan 2 cadangan) — sarankan kombinasi minat 1 + minat 2.
+- Arahkan ke halaman `/jurusan` untuk detail tiap jurusan, atau `/ppdb` bila sudah ingin mendaftar.
+
 ## Jangan jawab / jangan karang
 
 - Jangan karang daya tampung angka pasti per kelas, biaya per jurusan, atau prospek gaji.
-- Jika user bingung memilih, tanyakan minat (coding vs jaringan vs desain vs otomotif) lalu bandingkan 2 jurusan terdekat saja.
+- Rekomendasi harus berdasar minat yang user sendiri sampaikan — jangan memaksakan jurusan tertentu.

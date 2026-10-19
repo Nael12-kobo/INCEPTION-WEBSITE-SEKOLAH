@@ -29,6 +29,7 @@ model User {
   ppdbRegistration PpdbRegistration?
   auditLogs     AuditLog[]
   chatConversations ChatConversation[]
+  chatFeedbacks ChatFeedback[]
   ppdbDocuments PpdbDocument[]
   ppdbDocumentReviews PpdbDocumentReview[]
   academicGrades AcademicGrade[]
@@ -112,6 +113,40 @@ model ChatConversation {
 
   @@index([userId, updatedAt])
   @@map("chat_conversations")
+}
+
+// Feedback per jawaban AI (👍/👎). Bisa dari user login maupun guest
+// (userId null) — dipakai halaman /admin/chat untuk menilai kualitas
+// jawaban dan menemukan topik knowledge yang perlu diperbaiki.
+model ChatFeedback {
+  id             String     @id @default(cuid())
+  userId         String?
+  conversationId String? // null untuk guest (tidak ada baris chat_conversations)
+  /// ID pesan di ChatMessage client (uid lokal) — untuk cek "sudah vote?".
+  messageId      String
+  /// Snapshot pertanyaan user sebelum jawaban ini (maks 500 char).
+  question       String
+  /// Snapshot jawaban AI (maks 2000 char) — bahan evaluasi bila isi konten
+  /// knowledge berubah nanti.
+  answer         String
+  rating         ChatRating
+  /// Alasan singkat (opsional, diisi user saat memberi rating).
+  comment        String? // maks 500 char
+  /// IP client (untuk rate-limit & deteksi spam guest).
+  ip             String?
+  createdAt      DateTime   @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([messageId, ip])
+  @@index([createdAt])
+  @@index([rating])
+  @@map("chat_feedbacks")
+}
+
+enum ChatRating {
+  UP
+  DOWN
 }
 
 // Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;

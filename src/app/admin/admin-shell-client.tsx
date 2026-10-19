@@ -21,6 +21,7 @@ import {
   GraduationCap,
   LogIn,
   UserCheck,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -86,6 +87,13 @@ const navItems: NavItem[] = [
     icon: GraduationCap,
     section: "manajemen",
     breadcrumbLabel: "Akademik",
+  },
+  {
+    href: "/admin/chat",
+    label: "Evaluasi Chat AI",
+    icon: MessageSquare,
+    section: "manajemen",
+    breadcrumbLabel: "Evaluasi Chat AI",
   },
   {
     href: "/admin/roles",

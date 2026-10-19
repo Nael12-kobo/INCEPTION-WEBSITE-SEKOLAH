@@ -15,6 +15,8 @@ export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
   timestamp: string;
+  /** File knowledge yang dipakai AI menjawab (chip "Sumber" di bubble). */
+  sources?: string[];
 }
 
 interface ChatContextValue {
@@ -210,6 +212,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           typeof data.reply === "string" && data.reply.trim()
             ? data.reply
             : "Maaf, saya tidak bisa menjawab saat ini.";
+        const sources = Array.isArray(data.sources)
+          ? (data.sources as string[]).filter((s) => typeof s === "string")
+          : [];
         setMessages((prev) => [
           ...prev,
           {
@@ -217,6 +222,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             role: "assistant",
             text: reply,
             timestamp: nowTime(),
+            ...(sources.length ? { sources } : {}),
           },
         ]);
         void speakReply(reply);
@@ -276,6 +282,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       role: string;
       content: string;
       createdAt?: string;
+      sources?: string[];
     }[];
     setMessages(
       rows.map((r) => ({
@@ -288,6 +295,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               minute: "2-digit",
             })
           : nowTime(),
+        ...(Array.isArray(r.sources) && r.sources.length
+          ? { sources: r.sources }
+          : {}),
       }))
     );
     setConversationId(id);

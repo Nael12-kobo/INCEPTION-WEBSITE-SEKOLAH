@@ -23,8 +23,8 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     file: "06-ppdb.md",
     topic: "ppdb",
     keywords: [
-      "ppdb", "spmb", "pendaftaran", "daftar", "gelombang", "syarat",
-      "berkas", "rapor", "formulir", "nomor pendaftaran", "daftar ulang",
+      "ppdb", "spmb", "pendaftaran", "pendaftar", "daftar", "gelombang", "syarat",
+      "berkas", "rapor", "akta", "kartu keluarga", "pas foto", "formulir", "nomor pendaftaran", "daftar ulang",
       "tes", "wawancara", "biaya", "beasiswa", "kuota", "login",
     ],
   },

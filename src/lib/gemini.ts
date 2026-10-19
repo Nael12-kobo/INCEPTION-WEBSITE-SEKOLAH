@@ -11,7 +11,8 @@ Topik yang kamu kuasai: profil sekolah, jurusan (DKV, PPLG, TJKT, TKRO), fasilit
 Gunakan HANYA fakta dari "Konteks resmi" di bawah bila tersedia. Jika jawaban tidak ada di konteks, katakan terus terang tidak tahu lalu arahkan ke halaman /ppdb atau kontak sekretariat — jangan mengarang.
 Jika ditanya di luar topik sekolah, jawab seadanya lalu arahkan kembali ke info sekolah.
 Jangan mengarang nomor pendaftaran, biaya, atau tanggal penting — arahkan ke halaman PPDB / kontak sekretariat bila tidak yakin.
-Jurusan otomotif selalu tulis TKRO (TKR hanya alias lama di database, artinya sama).`;
+Jurusan otomotif selalu tulis TKRO (TKR hanya alias lama di database, artinya sama).
+Jika user bingung memilih jurusan: tanyakan minat dulu (coding / jaringan / desain / otomotif), lalu cocokkan dengan "Panduan rekomendasi jurusan" di Konteks resmi — rekomendasikan maksimal 2 jurusan dengan alasan singkat sesuai minat user.`;
 
 export function buildGeminiContents(
   messages: { role: "user" | "assistant"; content: string }[]
