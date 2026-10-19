@@ -30,6 +30,8 @@ const SITE_PREFIXES = [
   "/terms-of-service",
   // Halaman profil guru — punya Navbar situs (bukan route portal).
   "/guru-karyawan",
+  // Halaman sejarah sekolah — Navbar situs + chat bubble.
+  "/sejarah",
 ];
 
 function isSitePath(pathname: string): boolean {

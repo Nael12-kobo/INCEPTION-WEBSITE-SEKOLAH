@@ -17,6 +17,52 @@ function toTitle(firstUserText: string): string {
 }
 
 /**
+ * Snapshot jumlah pendaftar PPDB per jurusan, diambil dari database
+ * (tabel ppdb_registrations) dengan cache singkat. Ditempel ke konteks
+ * knowledge agar AI bisa menjawab kuota/ jumlah pendaftar dari data asli,
+ * bukan angka statis di markdown yang bisa basi.
+ */
+const PPDB_CACHE_MS = 5 * 60_000; // 5 menit
+let ppdbCache: { at: number; text: string } | null = null;
+
+async function getPpdbLiveContext(): Promise<string> {
+  if (ppdbCache && Date.now() - ppdbCache.at < PPDB_CACHE_MS) {
+    return ppdbCache.text;
+  }
+  try {
+    const byMajor = await prisma.ppdbRegistration.groupBy({
+      by: ["majorFirst"],
+      _count: { _all: true },
+    });
+    const total = byMajor.reduce((sum, r) => sum + r._count._all, 0);
+    if (total === 0) {
+      ppdbCache = { at: Date.now(), text: "" };
+      return "";
+    }
+    const label: Record<string, string> = {
+      DKV: "DKV",
+      PPLG: "PPLG",
+      TJKT: "TJKT",
+      TKR: "TKRO",
+    };
+    const parts = byMajor.map(
+      (r) => `${label[r.majorFirst] ?? r.majorFirst}: ${r._count._all}`
+    );
+    const text =
+      `📊 Data pendaftar PPDB dari sistem (baru dihitung, sumber database):\n` +
+      `- Total pendaftar tercatat: ${total} orang\n` +
+      `- Per pilihan pertama jurusan: ${parts.join(", ")}\n` +
+      `Angka ini jumlah pendaftar tercatat, BUKAN sisa kuota. Jangan mengklaim sisa kuota/ pendaftar tersisa.`;
+    ppdbCache = { at: Date.now(), text };
+    return text;
+  } catch (error) {
+    // DB gagal → jangan gagalkan chat; lewati saja konteks kuota.
+    console.warn("[/api/chat] Gagal mengambil data PPDB live:", error);
+    return "";
+  }
+}
+
+/**
  * Berapa banyak pesan di awal `thread` yang sudah identik (role + isi)
  * dengan pesan di akhir `existing`.
  *
@@ -107,14 +153,34 @@ export async function POST(request: Request) {
   }
 
   let reply: string;
+  // Sumber knowledge yang dipakai untuk menjawab — diteruskan ke client
+  // sebagai chip "Sumber" di bubble jawaban (lihat Fase: sumber jawaban).
+  let sourceFiles: string[] = [];
   try {
-    // Retrieval keyword: ambil 2-3 file knowledge paling relevan dengan
-    // pesan terakhir agar Gemini menjawab dari fakta situs. Gagal baca
-    // file tidak boleh menggagalkan chat → fallback string kosong.
+    // Retrieval keyword: ambil 2-3 file knowledge paling relevan. Query =
+    // gabungan pesan user terakhir + giliran user sebelumnya (multi-turn),
+    // supaya pertanyaan lanjutan seperti "yang kedua berapa?" tetap punya
+    // konteks topik sebelumnya. Gagal baca file tidak boleh menggagalkan
+    // chat → fallback string kosong.
     let knowledge = "";
     try {
-      const lastUser = messages[messages.length - 1]?.content ?? "";
-      knowledge = getKnowledgeContext(lastUser).context;
+      const userTurns = messages
+        .filter((m) => m.role === "user")
+        .map((m) => m.content);
+      const query = userTurns.slice(-2).join(" ");
+      const { files, context } = getKnowledgeContext(
+        query || messages[messages.length - 1]?.content || ""
+      );
+      sourceFiles = files;
+      knowledge = context;
+      // Konteks PPDB live dari DB hanya relevan bila topik PPDB terpilih
+      // atau pertanyaan menyentuh kata terkait pendaftaran.
+      const touchesPpdb =
+        files.includes("06-ppdb.md") || /ppdb|daftar|pendaftar|kuota|biaya/i.test(query);
+      if (touchesPpdb) {
+        const live = await getPpdbLiveContext();
+        if (live) knowledge = `${knowledge}\n\n${live}`;
+      }
     } catch {
       knowledge = "";
     }
@@ -133,13 +199,25 @@ export async function POST(request: Request) {
 
   // Guest → tanpa penyimpanan.
   if (!userId) {
-    return NextResponse.json({ reply, conversationId: null, stored: false });
+    return NextResponse.json({
+      reply,
+      conversationId: null,
+      stored: false,
+      sources: sourceFiles,
+    });
   }
 
   const now = new Date().toISOString();
   const fullThread = [
     ...messages.map((m) => ({ ...m, createdAt: now })),
-    { role: "assistant" as const, content: reply, createdAt: now },
+    {
+      role: "assistant" as const,
+      content: reply,
+      createdAt: now,
+      // Sumber ikut disimpan agar riwayat (loadConversation) tetap
+      // menampilkan chip "Sumber" seperti chat baru.
+      ...(sourceFiles.length ? { sources: sourceFiles } : {}),
+    },
   ];
 
   try {
@@ -161,6 +239,7 @@ export async function POST(request: Request) {
           reply,
           conversationId: updated.id,
           stored: true,
+          sources: sourceFiles,
         });
       }
     }
@@ -176,6 +255,7 @@ export async function POST(request: Request) {
       reply,
       conversationId: created.id,
       stored: true,
+      sources: sourceFiles,
     });
   } catch (error) {
     // DB gagal → tetap kembalikan balasan agar UX tidak rusak.
@@ -184,6 +264,7 @@ export async function POST(request: Request) {
       reply,
       conversationId: body.conversationId ?? null,
       stored: false,
+      sources: sourceFiles,
     });
   }
 }

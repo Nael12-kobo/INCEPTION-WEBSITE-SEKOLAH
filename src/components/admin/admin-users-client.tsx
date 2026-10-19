@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Download, Eye, Mail, UserCog, Trash2 } from "lucide-react";
+import { Download, Eye, Mail, UserCog, Trash2, LogIn } from "lucide-react";
 import {
   UserRole,
   canEditUser,
   canDeleteUser,
+  canImpersonate,
   getAccessibleRoles,
 } from "@/lib/roles";
 import { UserEditDialog } from "@/components/admin/user-edit-dialog";
@@ -162,6 +163,29 @@ export function AdminUsersClient({
     setUsers((prev) => prev.filter((u) => u.id !== userId));
   };
 
+  /** Pindah sesi ke akun target (mode "masuk sebagai siswa"). */
+  const handleImpersonate = async (user: AdminUserRow) => {
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/impersonate`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(body?.error ?? "");
+      }
+      // Muat ulang penuh: semua halaman memakai sesi siswa hasil pindah.
+      window.location.assign("/dashboard");
+    } catch (error) {
+      alert(
+        error instanceof Error && error.message
+          ? error.message
+          : "Gagal masuk sebagai user ini."
+      );
+    }
+  };
+
   return (
     <>
       <Card>
@@ -220,6 +244,7 @@ export function AdminUsersClient({
                     const isSelf = user.id === currentUserId;
                     const canEdit = !isSelf && canEditUser(currentUserRole, user.role);
                     const canDelete = !isSelf && canDeleteUser(currentUserRole, user.role);
+                    const canSwitch = !isSelf && canImpersonate(currentUserRole, user.role);
 
                     return (
                       <tr
@@ -307,6 +332,17 @@ export function AdminUsersClient({
                                   </a>
                                 </Button>
                               </>
+                            ) : null}
+                            {canSwitch ? (
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Masuk sebagai user ini"
+                                title="Masuk sebagai siswa ini"
+                                onClick={() => handleImpersonate(user)}
+                              >
+                                <LogIn className="h-4 w-4 text-slate-500" />
+                              </Button>
                             ) : null}
                             {canEdit ? (
                               <Button

@@ -43,3 +43,31 @@ source:
 - **Jangan karang** tanggal tes, biaya exact, tanggal penutupan gelombang, atau nomor pendaftaran contoh sebagai milik user.
 - Jika ditanya hal yang tidak ada di atas, arahkan ke halaman `/ppdb` atau WhatsApp admin via `07-kontak.md`.
 - Jangan pernah minta / bagikan kata sandi.
+
+## persyaratan dokumen 
+Membayarkan Biaya Pendaftaran (saat mengisi formulir)
+Mengumpulkan Foto Copy Raport Semester 1-5
+Mengumpulkan Foto Copy Akte Kelahiran
+Mengumpulkan Pas Foto 3×4 sebanyak 5 Lembar
+Menggumpulkan Foto Copy Kartu Keluarga
+
+## Biaya Pendaftaran
+
+Biaya Pendidikan Spesial (Early Registration) :
+PP : Rp. 3.500.000,- (dapat diangsur)
+SPP : Rp. 250.000,- 
+
+## Materi wawancara 
+Biodata Calon Siswa
+Bakat dan Minat
+Karakter dan Sikap
+Kesanggupan peserta PPDB akan menaati Peraturan di SMK Telekomunikasi Tunas Harapan 
+Kesanggupan orangtua/wali siswa dalam membiayai pendidikan anak di SMK Telekomunikasi Tunas Harapan
+
+## Tes kesehatan 
+Tes Buta Warna
+Tes Pendengaran
+Tes Tato, Tindik dan Cacat Tubuh
+Tes Penyakit Keturunan (Asma, Tremor, Jantung, dll)
+Ukur Tinggi dan Berat Badan
+

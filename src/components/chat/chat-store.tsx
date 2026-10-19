@@ -15,6 +15,8 @@ export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
   timestamp: string;
+  /** File knowledge yang dipakai AI menjawab (chip "Sumber" di bubble). */
+  sources?: string[];
 }
 
 interface ChatContextValue {
@@ -24,12 +26,21 @@ interface ChatContextValue {
   sendMessage: (text: string) => Promise<void>;
   clearChat: () => void;
   loadConversation: (id: string) => Promise<void>;
+  /** Karakter 3D (VRM) tampil atau tidak — toggle ikon mata. */
+  showCharacter: boolean;
+  toggleCharacter: () => void;
+  /** Suara TTS jawaban aktif atau tidak — toggle ikon speaker. */
+  voiceEnabled: boolean;
+  toggleVoice: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
 const STORAGE_KEY = "tth:chat:draft:v1";
 const CONV_KEY = "tth:chat:conversationId:v1";
+// Preferensi tampilan chat — "0" = nonaktif, selain itu (termasuk kosong) = aktif.
+const CHARACTER_KEY = "tth:chat:character:v1";
+const VOICE_KEY = "tth:chat:voice:v1";
 
 function nowTime(): string {
   return new Date().toLocaleTimeString("id-ID", {
@@ -115,6 +126,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  /**
+   * Ref sinkron voiceEnabled — dibaca sendMessage agar closure tidak basi
+   * saat pengguna menyalakan/mematikan suara di tengah obrolan.
+   */
+  const voiceRef = useRef(true);
   const hydrated = useRef(false);
   /**
    * Nomor giliran. Dinaikkan tiap kali user memulai chat baru ATAU
@@ -135,11 +153,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setMessages(loadDraft());
     try {
       setConversationId(localStorage.getItem(CONV_KEY));
+      setShowCharacter(localStorage.getItem(CHARACTER_KEY) !== "0");
+      setVoiceEnabled(localStorage.getItem(VOICE_KEY) !== "0");
     } catch {
       /* abaikan */
     }
     hydrated.current = true;
   }, []);
+
+  useEffect(() => {
+    voiceRef.current = voiceEnabled;
+  }, [voiceEnabled]);
 
   useEffect(() => {
     if (!hydrated.current) return;
@@ -210,6 +234,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           typeof data.reply === "string" && data.reply.trim()
             ? data.reply
             : "Maaf, saya tidak bisa menjawab saat ini.";
+        const sources = Array.isArray(data.sources)
+          ? (data.sources as string[]).filter((s) => typeof s === "string")
+          : [];
         setMessages((prev) => [
           ...prev,
           {
@@ -217,9 +244,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             role: "assistant",
             text: reply,
             timestamp: nowTime(),
+            ...(sources.length ? { sources } : {}),
           },
         ]);
-        void speakReply(reply);
+        // Suara dimatikan → lewati TTS sepenuhnya (tanpa fetch /api/tts).
+        if (voiceRef.current) void speakReply(reply);
         if (typeof data.conversationId === "string") {
           setConversationId(data.conversationId);
         }
@@ -276,6 +305,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       role: string;
       content: string;
       createdAt?: string;
+      sources?: string[];
     }[];
     setMessages(
       rows.map((r) => ({
@@ -288,10 +318,35 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               minute: "2-digit",
             })
           : nowTime(),
+        ...(Array.isArray(r.sources) && r.sources.length
+          ? { sources: r.sources }
+          : {}),
       }))
     );
     setConversationId(id);
   }, []);
+
+  const toggleCharacter = useCallback(() => {
+    const next = !showCharacter;
+    setShowCharacter(next);
+    try {
+      localStorage.setItem(CHARACTER_KEY, next ? "1" : "0");
+    } catch {
+      /* abaikan */
+    }
+  }, [showCharacter]);
+
+  const toggleVoice = useCallback(() => {
+    const next = !voiceEnabled;
+    setVoiceEnabled(next);
+    try {
+      localStorage.setItem(VOICE_KEY, next ? "1" : "0");
+    } catch {
+      /* abaikan */
+    }
+    // Dimatikan di tengah audio → hentikan suara yang sedang berbunyi.
+    if (!next) window.dispatchEvent(new Event("nara:stop-audio"));
+  }, [voiceEnabled]);
 
   const value = useMemo(
     () => ({
@@ -301,8 +356,23 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       sendMessage,
       clearChat,
       loadConversation,
+      showCharacter,
+      toggleCharacter,
+      voiceEnabled,
+      toggleVoice,
     }),
-    [messages, isTyping, conversationId, sendMessage, clearChat, loadConversation]
+    [
+      messages,
+      isTyping,
+      conversationId,
+      sendMessage,
+      clearChat,
+      loadConversation,
+      showCharacter,
+      toggleCharacter,
+      voiceEnabled,
+      toggleVoice,
+    ]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

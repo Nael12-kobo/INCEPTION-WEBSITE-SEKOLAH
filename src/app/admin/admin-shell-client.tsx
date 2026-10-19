@@ -19,6 +19,9 @@ import {
   ClipboardList,
   KeyRound,
   GraduationCap,
+  LogIn,
+  UserCheck,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -77,6 +80,20 @@ const navItems: NavItem[] = [
     icon: FileSpreadsheet,
     section: "manajemen",
     breadcrumbLabel: "PPDB",
+  },
+  {
+    href: "/admin/academic",
+    label: "Akademik",
+    icon: GraduationCap,
+    section: "manajemen",
+    breadcrumbLabel: "Akademik",
+  },
+  {
+    href: "/admin/chat",
+    label: "Evaluasi Chat AI",
+    icon: MessageSquare,
+    section: "manajemen",
+    breadcrumbLabel: "Evaluasi Chat AI",
   },
   {
     href: "/admin/roles",
@@ -146,6 +163,11 @@ const ACTIVITY_META: Record<string, { icon: LucideIcon; tone: string }> = {
   PASSWORD_CHANGED: { icon: KeyRound, tone: "bg-amber-50 text-amber-600" },
   ACCOUNT_REGISTERED: { icon: UserPlus, tone: "bg-sky-50 text-sky-600" },
   PPDB_STATUS_UPDATED: { icon: ClipboardList, tone: "bg-sky-50 text-sky-600" },
+  IMPERSONATION_STARTED: { icon: LogIn, tone: "bg-amber-50 text-amber-600" },
+  IMPERSONATION_ENDED: { icon: UserCheck, tone: "bg-slate-100 text-slate-600" },
+  ACADEMIC_CREATED: { icon: GraduationCap, tone: "bg-teal-50 text-teal-600" },
+  ACADEMIC_UPDATED: { icon: GraduationCap, tone: "bg-sky-50 text-sky-600" },
+  ACADEMIC_DELETED: { icon: GraduationCap, tone: "bg-rose-50 text-rose-600" },
 };
 
 function timeAgoLabel(iso: string): string {

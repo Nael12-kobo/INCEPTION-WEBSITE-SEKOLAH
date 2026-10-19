@@ -453,6 +453,24 @@ export function canDeleteUser(
   return targetUserRole === UserRole.ADMIN || targetUserRole === UserRole.USER;
 }
 
+/**
+ * Boleh "masuk sebagai" (impersonate) target — admin melihat portal dari
+ * sudut pandang user lain tanpa tahu password-nya.
+ * Hanya ke role yang LEBIH RENDAH (ADMIN → USER; SUPER_ADMIN → ADMIN &
+ * USER). Tidak bisa ke sesama admin/super admin — mencegah fitur ini
+ * dipakai untuk eskalasi hak akses.
+ */
+export function canImpersonate(
+  currentUserRole: string | null | undefined,
+  targetUserRole: string | null | undefined
+): boolean {
+  if (!hasPermission(currentUserRole, "admin.access")) return false;
+  if (!targetUserRole || !(targetUserRole in ROLE_LEVEL)) return false;
+  const current = ROLE_LEVEL[currentUserRole as UserRole] ?? 0;
+  const target = ROLE_LEVEL[targetUserRole as UserRole] ?? 0;
+  return current > 0 && target > 0 && target < current;
+}
+
 /** Role yang boleh di-assign lewat UI/API. */
 export function getAccessibleRoles(currentUserRole: string | null | undefined): UserRole[] {
   if (!hasPermission(currentUserRole, "admin.users.change_role")) return [];

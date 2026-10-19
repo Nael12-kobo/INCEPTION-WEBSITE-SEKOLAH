@@ -9,6 +9,8 @@ import {
   BadgeCheck,
   Loader2,
   Megaphone,
+  GraduationCap,
+  LogIn,
   Download,
   Eye,
   FileImage,
@@ -700,6 +702,70 @@ export function AdminPpdbClient({
     }
   };
 
+  /**
+   * Loloskan: jadikan pendaftar siswa aktif (status REGISTERED).
+   * Server juga men-verifikasi akun siswanya — portal siswa terbuka penuh.
+   */
+  const handleLoloskan = async (row: PpdbRow) => {
+    const konfirmasi = confirm(
+      `Jadikan ${row.fullName} siswa aktif?\n` +
+        `Pendaftaran ${row.registrationNo} diloloskan (REGISTERED), akun siswa ` +
+        "terverifikasi, dan portal siswanya terbuka penuh."
+    );
+    if (!konfirmasi) return;
+    const prev = rows;
+    setRows((list) =>
+      list.map((r) => (r.id === row.id ? { ...r, status: "REGISTERED" } : r))
+    );
+    try {
+      const res = await fetch(`/api/admin/ppdb/${row.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "REGISTERED" }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal meloloskan pendaftar");
+      }
+      setRows((list) => {
+        const next = list.map((r) =>
+          r.id === row.id ? { ...r, status: "REGISTERED" } : r
+        );
+        recomputeCounts(next);
+        return next;
+      });
+    } catch (error: unknown) {
+      setRows(prev);
+      recomputeCounts(prev);
+      alert(
+        error instanceof Error ? error.message : "Gagal meloloskan pendaftar."
+      );
+    }
+  };
+
+  /** Pindah sesi ke akun siswa pendaftar ini (mode "masuk sebagai siswa"). */
+  const handleSwitchToStudent = async (row: PpdbRow) => {
+    try {
+      const res = await fetch(`/api/admin/users/${row.userId}/impersonate`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(body?.error ?? "");
+      }
+      // Muat ulang penuh: semua halaman memakai sesi siswa hasil pindah.
+      window.location.assign("/dashboard");
+    } catch (error) {
+      alert(
+        error instanceof Error && error.message
+          ? error.message
+          : "Gagal masuk sebagai siswa ini."
+      );
+    }
+  };
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -861,6 +927,29 @@ export function AdminPpdbClient({
                               Pengumuman
                             </Button>
                           ) : null}
+                          {r.status !== "REGISTERED" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                              title="Loloskan — jadikan siswa aktif (REGISTERED)"
+                              onClick={() => handleLoloskan(r)}
+                            >
+                              <GraduationCap className="h-4 w-4" aria-hidden />
+                              Loloskan
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-sky-700 hover:bg-sky-50 hover:text-sky-800"
+                              title="Masuk sebagai siswa ini"
+                              onClick={() => handleSwitchToStudent(r)}
+                            >
+                              <LogIn className="h-4 w-4" aria-hidden />
+                              Masuk Siswa
+                            </Button>
+                          )}
                           <Button
                             variant="ghost-destructive"
                             size="icon-sm"

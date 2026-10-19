@@ -23,8 +23,8 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     file: "06-ppdb.md",
     topic: "ppdb",
     keywords: [
-      "ppdb", "spmb", "pendaftaran", "daftar", "gelombang", "syarat",
-      "berkas", "rapor", "formulir", "nomor pendaftaran", "daftar ulang",
+      "ppdb", "spmb", "pendaftaran", "pendaftar", "daftar", "gelombang", "syarat",
+      "berkas", "rapor", "akta", "kartu keluarga", "pas foto", "formulir", "nomor pendaftaran", "daftar ulang",
       "tes", "wawancara", "biaya", "beasiswa", "kuota", "login",
     ],
   },
@@ -61,6 +61,15 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     keywords: [
       "profil", "sekolah", "visi", "misi", "sejarah", "akreditasi",
       "npsn", "siswa", "guru", "alumni", "mitra", "smk", "tunas harapan",
+    ],
+  },
+  {
+    file: "09-sejarah.md",
+    topic: "sejarah",
+    keywords: [
+      "sejarah", "berdiri", "berdirinya", "didirikan", "pendirian", "tahun berdiri",
+      "yayasan", "kanwil", "ssn", "rsbi", "teknik informatika", "latar belakang",
+      "awal mula", "tonggak", "sejak kapan", "2001",
     ],
   },
   {

@@ -23,6 +23,7 @@ import {
 
 const profilLinks = [
   { href: "/#profil", title: "Profil Sekolah", desc: "Sambutan, visi-misi, dan sejarah singkat." },
+  { href: "/sejarah", title: "Sejarah", desc: "Perjalanan sekolah sejak 2001." },
   { href: "/#statistik", title: "Data & Statistik", desc: "Jumlah siswa, guru, dan prestasi." },
   { href: "/#fasilitas", title: "Fasilitas", desc: "Lab, perpustakaan, dan sarana praktik." },
 ];
@@ -38,6 +39,7 @@ const mobileLinks = [
   { href: "/#profil", label: "Profil Sekolah" },
   { href: "/#statistik", label: "Data & Statistik" },
   { href: "/#fasilitas", label: "Fasilitas" },
+  { href: "/sejarah", label: "Sejarah" },
   { href: "/jurusan/PPLG", label: "PPLG - Pengembangan Perangkat Lunak" },
   { href: "/jurusan/TJKT", label: "TJKT - Jaringan Komputer" },
   { href: "/jurusan/DKV", label: "DKV - Desain Komunikasi Visual" },
@@ -183,7 +185,8 @@ export function Navbar() {
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Profil
                 </p>
-                {mobileLinks.slice(0, 3).map((l) => (
+                {/* 4 item: Profil Sekolah, Data & Statistik, Fasilitas, Sejarah */}
+                {mobileLinks.slice(0, 4).map((l) => (
                   <Link
                     key={l.href + l.label}
                     href={l.href}
@@ -199,7 +202,7 @@ export function Navbar() {
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Program Keahlian
                 </p>
-                {mobileLinks.slice(3, 7).map((l) => (
+                {mobileLinks.slice(4, 8).map((l) => (
                   <Link
                     key={l.href + l.label}
                     href={l.href}
@@ -215,7 +218,7 @@ export function Navbar() {
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Lainnya
                 </p>
-                {mobileLinks.slice(7).map((l) => (
+                {mobileLinks.slice(8).map((l) => (
                   <Link
                     key={l.href + l.label}
                     href={l.href}

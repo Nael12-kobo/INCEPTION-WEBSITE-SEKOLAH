@@ -9,6 +9,8 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
       role: string;
+      /** Id admin asli bila sedang mode "masuk sebagai user lain". */
+      impersonatorId?: string | null;
     };
   }
 
@@ -26,5 +28,6 @@ declare module "next-auth/jwt" {
     sub: string;
     role: string;
     roleSyncedAt?: number;
+    impersonatorId?: string | null;
   }
 }

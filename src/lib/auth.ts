@@ -223,6 +223,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (session.user && token.sub) {
           session.user.id = token.sub as string;
           session.user.role = (token.role as string) || "USER";
+          // Mode "masuk sebagai user lain": id admin asli dibawa di token
+          // agar UI bisa menampilkan banner & tombol kembali ke admin.
+          session.user.impersonatorId =
+            (token.impersonatorId as string | undefined) ?? null;
         }
       } catch (error) {
         console.error("[Auth Session] Error:", error);

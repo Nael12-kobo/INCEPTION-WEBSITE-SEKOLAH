@@ -7,11 +7,15 @@ import {
   ArrowLeft,
   Bot,
   ChevronUp,
+  Eye,
+  EyeOff,
   History,
   Maximize2,
   Minimize2,
   Plus,
   Trash2,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +46,16 @@ interface HistoryItem {
  *   setinggi 30% dengan gradient transparan ke atas; tombol expand → fullscreen.
  */
 export function ChatPageClient() {
-  const { isTyping, clearChat, conversationId, loadConversation } = useChat();
+  const {
+    isTyping,
+    clearChat,
+    conversationId,
+    loadConversation,
+    showCharacter,
+    toggleCharacter,
+    voiceEnabled,
+    toggleVoice,
+  } = useChat();
   const isDesktop = useIsDesktop();
   const [expanded, setExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -109,11 +122,19 @@ export function ChatPageClient() {
   return (
     <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-sky-100 via-slate-50 to-indigo-100 lg:h-[calc(100dvh-0px)]">
       {/* ===== SATU VRM permanen — tidak pernah unmount saat pindah breakpoint ===== */}
-      <div className="absolute inset-0 lg:inset-y-0 lg:left-0 lg:right-[440px]">
+      {/* Disembunyikan → hanya `hidden` + paused (model tetap mounted, hemat GPU;
+          saat ditampilkan lagi instan tanpa unduh ulang). */}
+      <div
+        className={cn(
+          "absolute inset-0 lg:inset-y-0 lg:left-0 lg:right-[440px]",
+          !showCharacter && "hidden"
+        )}
+      >
         {/* offsetY di mobile: angkat badan agar wajah di atas panel chat 30%.
             Dibaca VrmViewer via ref — ganti breakpoint tanpa reload model. */}
         <VrmViewer
-          speaking={isTyping}
+          speaking={isTyping && voiceEnabled}
+          paused={!showCharacter}
           framing={{ offsetY: isDesktop ? -0.4 : -0.45 , zoomOffset: -3}}
         />
       </div>
@@ -145,6 +166,10 @@ export function ChatPageClient() {
               clearChat();
               setShowHistory(false);
             }}
+            showCharacter={showCharacter}
+            onToggleCharacter={toggleCharacter}
+            voiceEnabled={voiceEnabled}
+            onToggleVoice={toggleVoice}
           />
           <div className="flex min-h-0 flex-1 flex-col">
             <ChatMessages />
@@ -176,6 +201,28 @@ export function ChatPageClient() {
             </Link>
           </Button>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"}
+              title={showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"}
+              aria-pressed={!showCharacter}
+              className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+              onClick={toggleCharacter}
+            >
+              {showCharacter ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
+              title={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
+              aria-pressed={!voiceEnabled}
+              className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+              onClick={toggleVoice}
+            >
+              {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
             <Button
               variant="outline"
               size="icon-sm"
@@ -268,9 +315,17 @@ export function ChatPageClient() {
 function DesktopHeader({
   onHistory,
   onNew,
+  showCharacter,
+  onToggleCharacter,
+  voiceEnabled,
+  onToggleVoice,
 }: {
   onHistory: () => void;
   onNew: () => void;
+  showCharacter: boolean;
+  onToggleCharacter: () => void;
+  voiceEnabled: boolean;
+  onToggleVoice: () => void;
 }) {
   return (
     <div className="flex items-center justify-between border-b border-white/40 p-4">
@@ -286,6 +341,26 @@ function DesktopHeader({
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onToggleCharacter}
+          title={showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"}
+          aria-label={showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"}
+          aria-pressed={!showCharacter}
+        >
+          {showCharacter ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onToggleVoice}
+          title={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
+          aria-label={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
+          aria-pressed={!voiceEnabled}
+        >
+          {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </Button>
         <Button variant="ghost" size="icon-sm" onClick={onNew} title="Percakapan baru" aria-label="Percakapan baru">
           <Plus className="h-4 w-4" />
         </Button>

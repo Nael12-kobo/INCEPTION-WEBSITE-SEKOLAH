@@ -276,7 +276,7 @@ export default function TKROPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/asisten"
+                href="/chat"
                 className="inline-flex items-center justify-center gap-2 bg-card text-orange-700 font-semibold px-8 py-3 rounded-full hover:bg-orange-50 transition-colors shadow-lg"
               >
                 Tanya AI Asisten

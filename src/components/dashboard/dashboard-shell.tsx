@@ -290,6 +290,11 @@ const ACTIVITY_META: Record<string, { icon: React.ComponentType<{ className?: st
   PHOTO_UPDATED: { icon: IdCard, tone: "bg-sky-50 text-sky-600" },
   DOCUMENT_UPLOADED: { icon: FileUp, tone: "bg-emerald-50 text-emerald-600" },
   DOCUMENT_REVIEWED: { icon: ClipboardCheck, tone: "bg-amber-50 text-amber-600" },
+  IMPERSONATION_STARTED: { icon: LogIn, tone: "bg-amber-50 text-amber-600" },
+  IMPERSONATION_ENDED: { icon: UserCheck, tone: "bg-slate-100 text-slate-600" },
+  ACADEMIC_CREATED: { icon: GraduationCap, tone: "bg-teal-50 text-teal-600" },
+  ACADEMIC_UPDATED: { icon: GraduationCap, tone: "bg-sky-50 text-sky-600" },
+  ACADEMIC_DELETED: { icon: GraduationCap, tone: "bg-rose-50 text-rose-600" },
 };
 
 function timeAgoLabel(iso: string): string {
@@ -425,6 +430,22 @@ export function DashboardShell({
     }
   }, [router]);
 
+  // Mode impersonasi (admin "masuk sebagai" siswa) — terlihat dari klaim
+  // session.user.impersonatorId yang ditanam route impersonate.
+  const impersonatorId = session?.user?.impersonatorId ?? null;
+  const isImpersonating = Boolean(impersonatorId);
+
+  const handleExitImpersonation = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/impersonate/exit", { method: "POST" });
+      if (!res.ok) throw new Error("exit");
+      // Muat ulang penuh: semua data server ikut menyegarkan sesi admin.
+      window.location.assign("/admin");
+    } catch {
+      alert("Gagal kembali ke akun admin. Coba lagi atau login ulang.");
+    }
+  }, []);
+
   const userDropdownItems: UserDropdownItem[] = React.useMemo(() => {
     const items: UserDropdownItem[] = [
       {
@@ -541,7 +562,32 @@ export function DashboardShell({
         </aside>
 
         <div className="flex min-h-dvh w-full min-w-0 flex-1 flex-col lg:pl-72">
-          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-card/80 px-4 backdrop-blur-md sm:px-6">
+          {/* Banner mode impersonasi — admin yang sedang "masuk sebagai"
+              siswa selalu melihat ini; tombolnya kembali ke sesi admin. */}
+          {isImpersonating && (
+            <div className="sticky top-0 z-30 flex h-10 items-center justify-between gap-2 border-b border-amber-300 bg-amber-100 px-4 text-xs font-medium text-amber-900 sm:px-6">
+              <span className="flex min-w-0 items-center gap-2">
+                <LogIn className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                <span className="truncate">
+                  Masuk sebagai {user.name} ({user.email}) — tampilan seperti
+                  siswa; aksi di sini mengubah data akun tersebut.
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={handleExitImpersonation}
+                className="shrink-0 rounded-lg border border-amber-400 bg-white/70 px-2.5 py-1 text-[11px] font-bold text-amber-800 transition-colors hover:bg-white"
+              >
+                Kembali ke Admin
+              </button>
+            </div>
+          )}
+          <header
+            className={cn(
+              "sticky z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-card/80 px-4 backdrop-blur-md sm:px-6",
+              isImpersonating ? "top-10" : "top-0"
+            )}
+          >
             <div className="flex items-center gap-2">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
