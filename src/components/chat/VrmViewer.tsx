@@ -40,6 +40,11 @@ export interface VrmGlobalOffset {
 interface VrmViewerProps {
   src?: string;
   speaking?: boolean;
+  /**
+   * Pause render loop (karakter disembunyikan oleh pengguna). Model TETAP
+   * mounted — saat visible lagi tampil instan tanpa reload model besar.
+   */
+  paused?: boolean;
   framing?: VrmFraming;
   globalOffset?: VrmGlobalOffset;
   className?: string;
@@ -58,11 +63,13 @@ interface VrmViewerProps {
  *   saat clip aktif prosedural badan mati (clip pegang penuh), blink +
  *   mulut prosedural tetap jalan di atasnya + frustumCulled=false.
  * - Error asli ditampilkan (bukan pesan generik) agar mudah diagnosis.
- * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden.
+ * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden / karakter
+ *   disembunyikan pengguna (prop paused).
  */
-export function VrmViewer({ src, speaking = false, framing, globalOffset, className }: VrmViewerProps) {
+export function VrmViewer({ src, speaking = false, paused = false, framing, globalOffset, className }: VrmViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const speakingRef = useRef(speaking);
+  const pausedRef = useRef(paused);
   const framingRef = useRef<VrmFraming | undefined>(framing);
   const globalOffsetRef = useRef<VrmGlobalOffset | undefined>(globalOffset);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -84,6 +91,10 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
   useEffect(() => {
     speakingRef.current = speaking;
   }, [speaking]);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   // framing dibaca via ref agar ganti breakpoint (desktop/mobile)
   // tidak memicu reload ulang model besar.
@@ -599,16 +610,19 @@ export function VrmViewer({ src, speaking = false, framing, globalOffset, classN
           phase: "idle" as "idle" | "closing" | "hold" | "opening",
           phaseT: 0,
         };
-        let paused = document.hidden;
+        let tabHidden = document.hidden;
 
         onVisibility = () => {
-          paused = document.hidden;
+          tabHidden = document.hidden;
         };
         document.addEventListener("visibilitychange", onVisibility);
 
         const animate = () => {
           raf = requestAnimationFrame(animate);
-          if (paused) {
+          // Pause saat tab tersembunyi ATAU karakter disembunyikan pengguna
+          // (prop paused): loop tetap hidup tapi render/animasi di-skip —
+          // hemat GPU tanpa harus unmount (model tak perlu diunduh ulang).
+          if (tabHidden || pausedRef.current) {
             clock.getDelta();
             return;
           }
