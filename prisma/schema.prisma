@@ -31,6 +31,9 @@ model User {
   chatConversations ChatConversation[]
   ppdbDocuments PpdbDocument[]
   ppdbDocumentReviews PpdbDocumentReview[]
+  academicGrades AcademicGrade[]
+  academicAttendance AcademicAttendance[]
+  academicExamCards AcademicExamCard[]
 }
 
 model Account {
@@ -212,4 +215,91 @@ model PpdbDocumentReview {
 
   @@unique([userId, kind])
   @@map("ppdb_document_reviews")
+}
+
+// ===== Data akademik siswa (Bagian C) =====================================
+// Diisi admin lewat Admin Panel > Akademik, dibaca portal siswa /student/*.
+// Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "YYYY-MM-DDTHH:mm")
+// agar bebas masalah zona waktu dan cocok langsung dengan input form.
+
+/// Jadwal pelajaran/piket — berlaku per jurusan atau semua (major null).
+model AcademicSchedule {
+  id        String   @id @default(cuid())
+  day       String // "Senin" .. "Sabtu"
+  startTime String // "07:30"
+  endTime   String // "09:00"
+  subject   String
+  teacher   String?
+  major     String? // JurusanValue; null = semua jurusan
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day])
+  @@map("academic_schedules")
+}
+
+/// Nilai per siswa.
+model AcademicGrade {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  kind      String // "Tugas" | "UTS" | "UAS" | "Praktik" | "Rapor"
+  score     Float
+  semester  String? // bebas: "Ganjil 2026/2027"
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("academic_grades")
+}
+
+/// Absensi harian per siswa — `date` = "YYYY-MM-DD".
+model AcademicAttendance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String // "YYYY-MM-DD"
+  status    String // "HADIR" | "IZIN" | "SAKIT" | "ALFA"
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@map("academic_attendance")
+}
+
+/// Tugas dari guru — tampil ke semua siswa atau per jurusan.
+model AcademicTask {
+  id          String   @id @default(cuid())
+  title       String
+  subject     String
+  description String?
+  dueAt       String? // "YYYY-MM-DD" atau "YYYY-MM-DDTHH:mm"
+  major       String? // null = semua jurusan
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([dueAt])
+  @@map("academic_tasks")
+}
+
+/// Kartu ujian per siswa.
+model AcademicExamCard {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examName      String // "UTS" | "UAS" | "US" | bebas
+  startDate     String // "YYYY-MM-DD"
+  endDate       String?
+  room          String
+  seatNo        String?
+  participantNo String?
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@map("academic_exam_cards")
 }

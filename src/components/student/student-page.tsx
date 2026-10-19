@@ -17,6 +17,7 @@ import {
   type DashboardUser,
 } from "@/components/dashboard/dashboard-shell";
 import { isStudentStatus, JurusanLabel } from "@/lib/ppdb";
+import { AcademicSection } from "@/components/student/student-academic";
 import { hasPermission, isAdmin as checkIsAdminRole } from "@/lib/roles";
 import type { JurusanValue } from "@/lib/ppdb";
 
@@ -114,6 +115,19 @@ export async function StudentPage({
     | JurusanValue
     | undefined;
 
+  // Konten data akademik (Bagian C): jadwal/nilai/absensi/tugas/kartu ujian
+  // diisi admin lewat Admin Panel > Akademik. Bila belum ada data, `node`
+  // null dan StudentPage menampilkan kotak kosong bawaannya.
+  const section = await AcademicSection({
+    slug,
+    userId: session.user.id,
+    student: {
+      name: dashboardUser.name,
+      email: dashboardUser.email,
+      major: majorFirst ?? null,
+    },
+  });
+
   return (
     <SessionProvider session={session}>
       <DashboardShell user={dashboardUser} isStudent={realStudent}>
@@ -154,8 +168,9 @@ export async function StudentPage({
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
               <span>
                 Mode pratinjau admin — begini tampilan halaman untuk siswa
-                aktif. Halaman ini tidak membuka data siswa tertentu; isinya
-                akan menyusul saat sekolah mulai mengisi data siswa.
+                aktif. Jadwal &amp; tugas bersifat umum; data pribadi siswa
+                (nilai, absensi, kartu ujian) hanya tampil untuk akun
+                siswanya. Datanya diisi sekolah lewat Admin Panel → Akademik.
               </span>
             </div>
           ) : null}
@@ -166,21 +181,27 @@ export async function StudentPage({
                 <CardTitle className="font-h4">{title}</CardTitle>
                 <CardDescription className="mt-1">{emptyHint}</CardDescription>
               </div>
-              <Badge variant="secondary">Segera</Badge>
+              {section.hasData ? (
+                <Badge variant="success">{section.count} data</Badge>
+              ) : (
+                <Badge variant="secondary">Segera</Badge>
+              )}
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-12 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-slate-400 ring-1 ring-slate-200">
-                  <Construction className="h-6 w-6" aria-hidden />
-                </span>
-                <p className="mt-4 text-sm font-semibold text-slate-700">
-                  Belum ada data untuk ditampilkan
-                </p>
-                <p className="mt-1 max-w-md text-xs leading-relaxed text-slate-500">
-                  {emptyHint} Data ini akan muncul otomatis setelah diisi oleh
-                  sekolah.
-                </p>
-              </div>
+              {section.node ?? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-12 text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-slate-400 ring-1 ring-slate-200">
+                    <Construction className="h-6 w-6" aria-hidden />
+                  </span>
+                  <p className="mt-4 text-sm font-semibold text-slate-700">
+                    Belum ada data untuk ditampilkan
+                  </p>
+                  <p className="mt-1 max-w-md text-xs leading-relaxed text-slate-500">
+                    {emptyHint} Data ini akan muncul otomatis setelah diisi oleh
+                    sekolah.
+                  </p>
+                </div>
+              )}
               <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
                 <Info className="h-3.5 w-3.5" aria-hidden />
                 Hubungi wali kelas bila ada data yang perlu diperbaiki.
