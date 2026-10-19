@@ -19,6 +19,8 @@ import {
   ClipboardList,
   KeyRound,
   GraduationCap,
+  LogIn,
+  UserCheck,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -146,6 +148,8 @@ const ACTIVITY_META: Record<string, { icon: LucideIcon; tone: string }> = {
   PASSWORD_CHANGED: { icon: KeyRound, tone: "bg-amber-50 text-amber-600" },
   ACCOUNT_REGISTERED: { icon: UserPlus, tone: "bg-sky-50 text-sky-600" },
   PPDB_STATUS_UPDATED: { icon: ClipboardList, tone: "bg-sky-50 text-sky-600" },
+  IMPERSONATION_STARTED: { icon: LogIn, tone: "bg-amber-50 text-amber-600" },
+  IMPERSONATION_ENDED: { icon: UserCheck, tone: "bg-slate-100 text-slate-600" },
 };
 
 function timeAgoLabel(iso: string): string {
