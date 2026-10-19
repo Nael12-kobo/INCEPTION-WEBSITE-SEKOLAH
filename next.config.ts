@@ -3,6 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  async redirects() {
+    return [
+      // Route lama "/asisten" (CTA halaman jurusan) tidak pernah ada;
+      // tanpa ini link lama yang sudah ter-share / terindeks tetap 404.
+      {
+        source: "/asisten",
+        destination: "/chat",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     // Foto berita diambil dari situs resmi sekolah (WordPress).
     remotePatterns: [

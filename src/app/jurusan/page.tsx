@@ -138,7 +138,7 @@ export default function JurusanPage() {
             yang sesuai dengan minat dan bakatmu!
           </p>
           <Link
-            href="/asisten"
+            href="/chat"
             className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-8 py-3 rounded-full hover:bg-blue-700 transition-colors shadow-lg"
           >
             Tanya AI Asisten
