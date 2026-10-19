@@ -65,7 +65,7 @@ export function Navbar() {
             <span className="block text-sm font-bold tracking-tight text-slate-900">
               SMK Telekomunikasi
             </span>
-            <span className="block text-xs font-medium text-blue-500">Tunas Harapan</span>
+            <span className="block text-xs font-medium text-cyan-500 dark:text-white/80">Tunas Harapan</span>
           </span>
         </Link>
 
@@ -155,7 +155,7 @@ export function Navbar() {
             <Link href="/auth/login">Masuk</Link>
           </Button>
           <ThemeToggle />
-          <Button asChild className="dark:bg-sky-200">
+          <Button asChild className="dark:bg-sky-200 glass-hover hover:dark:bg-sky-300">
             <Link href="#ppdb" className="text-white dark:text-gray-300">
               PPDB 2026
             </Link>

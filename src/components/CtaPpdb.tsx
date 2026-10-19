@@ -41,7 +41,7 @@ export function CtaPpdb() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <span data-magnetic className="inline-flex">
-                <Button size="lg" variant="secondary" asChild className="bg-white/95 text-sky-800 shadow-lg shadow-sky-900/20 hover:bg-card">
+                <Button size="lg" variant="secondary" asChild className="bg-white/95 hover:bg-white/95 text-sky-800 shadow-lg shadow-sky-900/20">
                   <Link href="/ppdb" className="dark:text-cyan-800">
                     Isi Formulir PPDB
                     <ArrowRight />
