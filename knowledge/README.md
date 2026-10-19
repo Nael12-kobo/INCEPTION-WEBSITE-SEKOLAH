@@ -15,6 +15,7 @@ AI hanya boleh menjawab dari file-file ini. Jika tidak ada di sini → katakan t
 | `06-ppdb.md`           | PPDB            |
 | `07-kontak.md`         | Kontak          |
 | `08-berita.md`         | Berita          |
+| `09-sejarah.md`        | Sejarah sekolah |
 
 ## Cara update
 

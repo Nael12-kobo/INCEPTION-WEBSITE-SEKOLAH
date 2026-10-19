@@ -5,6 +5,7 @@
  */
 export const SOURCE_META: Record<string, { label: string; href: string }> = {
   "01-profil-sekolah.md": { label: "Profil Sekolah", href: "/" },
+  "09-sejarah.md": { label: "Sejarah Sekolah", href: "/sejarah" },
   "02-jurusan.md": { label: "Info Jurusan", href: "/jurusan" },
   "03-fasilitas.md": { label: "Fasilitas Sekolah", href: "/" },
   "04-prestasi.md": { label: "Prestasi", href: "/" },

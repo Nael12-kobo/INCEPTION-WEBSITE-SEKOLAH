@@ -37,6 +37,6 @@ source:
 
 ## Jangan jawab / jangan karang
 
-- Jangan karang tahun berdiri, nama kepala sekolah, atau alamat — alamat resmi hanya ada di `07-kontak.md`.
+- Jangan karang tahun berdiri, nama kepala sekolah, atau alamat — tahun berdiri resmi hanya dari `09-sejarah.md`, alamat resmi hanya dari `07-kontak.md`.
 - Jangan karang ranking atau akreditasi selain "A".
 - Jika ditanya hal di luar daftar ini, katakan tidak tahu dan arahkan ke kontak sekretariat.

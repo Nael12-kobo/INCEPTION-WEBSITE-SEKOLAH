@@ -64,6 +64,15 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     ],
   },
   {
+    file: "09-sejarah.md",
+    topic: "sejarah",
+    keywords: [
+      "sejarah", "berdiri", "berdirinya", "didirikan", "pendirian", "tahun berdiri",
+      "yayasan", "kanwil", "ssn", "rsbi", "teknik informatika", "latar belakang",
+      "awal mula", "tonggak", "sejak kapan", "2001",
+    ],
+  },
+  {
     file: "08-berita.md",
     topic: "berita",
     keywords: [
