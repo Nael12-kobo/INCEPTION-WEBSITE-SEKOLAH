@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { SOURCE_META } from "@/lib/chat-sources";
 import { useChat } from "./chat-store";
+import { MarkdownLite } from "./MarkdownLite";
 
 /** Pertanyaan populer — sesuai topik di knowledge/. Klik = langsung terkirim. */
 const SUGGESTIONS = [
@@ -218,7 +219,11 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                   : "rounded-bl-md border border-slate-200 bg-card text-slate-800"
               )}
             >
-              {message.text}
+              {message.role === "assistant" ? (
+                <MarkdownLite text={message.text} />
+              ) : (
+                message.text
+              )}
             </div>
             {message.role === "assistant" && !!message.sources?.length && (
               <div className="flex flex-wrap items-center gap-1.5 pt-0.5">

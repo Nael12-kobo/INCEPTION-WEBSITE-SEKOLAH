@@ -15,7 +15,7 @@ source:
 - Tahun ajaran: **2026/2027**, fase: **Gelombang 1**.
 - Kuota: **3 kelas per jurusan** (klaim situs). Pendaftar gelombang pertama berkesempatan **beasiswa + gratis biaya pendaftaran**.
 - Beasiswa terdata: **SPP 1 tahun untuk 20 pendaftar gelombang pertama** berprestasi akademik/non-akademik (lihat `08-berita.md`). Jangan janjikan nominal lain.
-- Wajib **login akun dulu** (`/auth/login?callbackUrl=/ppdb`), lalu isi formulir di `/ppdb`.
+- Wajib **login akun dulu** (halaman login), lalu isi formulir di `/ppdb`.
 - Wajib pilih **2 jurusan berbeda** (pilihan 1 prioritas, pilihan 2 cadangan).
 - Nomor pendaftaran otomatis dari server, format `PPDB-YYYY-NNNN` (mis. PPDB-2026-0007).
 - Notifikasi & jadwal tes dikirim via **WhatsApp** ke nomor pendaftar (alternatif SMS).
