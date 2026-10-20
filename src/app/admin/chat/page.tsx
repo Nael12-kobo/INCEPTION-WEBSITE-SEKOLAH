@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   AdminChatClient,
   type ChatFeedbackRow,
+  type ChatMissRow,
   type ChatSummary,
 } from "@/components/admin/admin-chat-client";
 
@@ -19,7 +20,7 @@ export default async function AdminChatPage() {
     redirect("/auth/login?callbackUrl=/admin/chat");
   }
 
-  const [totalUp, totalDown, recent, conversationCount, userCount] =
+  const [totalUp, totalDown, recent, conversationCount, userCount, missRows] =
     await Promise.all([
       prisma.chatFeedback.count({ where: { rating: "UP" } }),
       prisma.chatFeedback.count({ where: { rating: "DOWN" } }),
@@ -38,6 +39,17 @@ export default async function AdminChatPage() {
       }),
       prisma.chatConversation.count(),
       prisma.user.count({ where: { chatConversations: { some: {} } } }),
+      // Pertanyaan tanpa kecocokan keyword knowledge — urut frekuensi.
+      prisma.chatMissLog.findMany({
+        orderBy: { count: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          question: true,
+          count: true,
+          lastAt: true,
+        },
+      }),
     ]);
 
   const total = totalUp + totalDown;
@@ -61,6 +73,13 @@ export default async function AdminChatPage() {
     createdAt: r.createdAt.toISOString(),
   }));
 
+  const miss: ChatMissRow[] = missRows.map((m) => ({
+    id: m.id,
+    question: m.question,
+    count: m.count,
+    lastAt: m.lastAt.toISOString(),
+  }));
+
   return (
     <div className="space-y-8">
       <div className="space-y-1">
@@ -71,7 +90,7 @@ export default async function AdminChatPage() {
         </p>
       </div>
 
-      <AdminChatClient summary={summary} initialRows={rows} />
+      <AdminChatClient summary={summary} initialRows={rows} missRows={miss} />
     </div>
   );
 }

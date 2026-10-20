@@ -133,7 +133,10 @@ function matchesKeyword(lower: string, kw: string): boolean {
 }
 
 /** Daftar topik yang relevan, diurutkan dari yang paling cocok. */
-export function pickRelevantTopics(text: string, maxFiles = 3): string[] {
+export function pickRelevantTopics(
+  text: string,
+  maxFiles = 3
+): { files: string[]; matched: boolean } {
   const lower = text.toLowerCase();
   const scored = TOPIC_KEYWORDS.map((def) => {
     let score = 0;
@@ -147,10 +150,14 @@ export function pickRelevantTopics(text: string, maxFiles = 3): string[] {
     .slice(0, maxFiles)
     .map((s) => s.file);
 
-  // Tanpa kecocokan keyword (mis. "halo", "pagi") → beri konteks umum
-  // agar AI tetap memperkenalkan diri dengan fakta benar.
-  if (scored.length === 0) return ["01-profil-sekolah.md", "07-kontak.md"];
-  return scored;
+  // Tanpa kecocokan keyword (mis. "halo", "pagi", atau topik di luar materi)
+  // → beri konteks umum agar AI tetap memperkenalkan diri dengan fakta benar.
+  // matched=false dipakai /api/chat untuk mencatat "miss" ke chat_miss_logs
+  // (bahan admin menambah file knowledge / keyword baru).
+  if (scored.length === 0) {
+    return { files: ["01-profil-sekolah.md", "07-kontak.md"], matched: false };
+  }
+  return { files: scored, matched: true };
 }
 
 /**
@@ -160,9 +167,9 @@ export function pickRelevantTopics(text: string, maxFiles = 3): string[] {
 export function getKnowledgeContext(
   text: string,
   opts: { maxFiles?: number; maxCharsPerFile?: number; maxTotalChars?: number } = {}
-): { files: string[]; context: string } {
-  const { maxFiles = 3, maxCharsPerFile = 2500, maxTotalChars = 7500 } = opts;
-  const files = pickRelevantTopics(text, maxFiles);
+): { files: string[]; context: string; matched: boolean } {
+  const { maxFiles = 3, maxCharsPerFile = 2000, maxTotalChars = 6000 } = opts;
+  const { files, matched } = pickRelevantTopics(text, maxFiles);
   const parts: string[] = [];
   let total = 0;
 
@@ -180,5 +187,5 @@ export function getKnowledgeContext(
 
   // Fallback: direktori knowledge hilang → kembalikan string kosong,
   // pemanggil tetap lanjut dengan SYSTEM_PROMPT lama.
-  return { files, context: parts.join("\n\n") };
+  return { files, context: parts.join("\n\n"), matched };
 }

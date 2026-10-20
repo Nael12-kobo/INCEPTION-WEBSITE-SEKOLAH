@@ -149,6 +149,38 @@ enum ChatRating {
   DOWN
 }
 
+// Cache jawaban AI per pertanyaan ternormalisasi. Pertanyaan populer
+// ("Berapa biaya PPDB?") diulang ratusan kali — hit cache = nol panggilan
+// Gemini (hemat kuota GEMINI_API_KEY). TTL dijaga aplikasi via expiresAt.
+model ChatQACache {
+  id        String   @id @default(cuid())
+  /// Pertanyaan ternormalisasi (huruf kecil, spasi dirapikan, maks 300 char).
+  key       String   @unique
+  reply     String
+  /// File knowledge yang dipakai saat jawaban dibuat (chip "Sumber").
+  sources   Json     @default("[]")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("chat_qa_cache")
+}
+
+// Pertanyaan yang TIDAK ketemu keyword knowledge (retrieval nol kecocokan).
+// Di-agregasi per pertanyaan ternormalisasi — ditampilkan admin di
+// /admin/chat sebagai bahan mengisi knowledge/*.md / menambah keyword baru.
+model ChatMissLog {
+  id        String   @id @default(cuid())
+  /// Pertanyaan user ternormalisasi (maks 300 char).
+  question  String   @unique
+  /// Berapa kali pertanyaan ini tercatat sebagai miss.
+  count     Int      @default(1)
+  lastAt    DateTime @default(now())
+
+  @@index([count])
+  @@map("chat_miss_logs")
+}
+
 // Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;
 // nomor pendaftaran dibuat server dan dipakai sebagai rujukan di WhatsApp.
 

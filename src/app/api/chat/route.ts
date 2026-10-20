@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { askGemini } from "@/lib/gemini";
+import { streamGemini } from "@/lib/gemini";
 import { getKnowledgeContext } from "@/lib/knowledge";
+import {
+  getCachedAnswer,
+  normalizeQuestion,
+  recordMissedQuestion,
+  setCachedAnswer,
+} from "@/lib/chat-cache";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 interface IncomingMessage {
@@ -92,10 +98,89 @@ function countTrailingOverlap(
 }
 
 /**
+ * Simpan thread ke chat_conversations (hanya user login).
+ * Return { conversationId, stored } — DB gagal tetap stored:false tanpa
+ * menggagalkan balasan (sudah terkirim ke user lewat stream).
+ */
+async function persistConversation(
+  userId: string | undefined,
+  messages: { role: "user" | "assistant"; content: string }[],
+  reply: string,
+  sourceFiles: string[],
+  conversationId: string | undefined
+): Promise<{ conversationId: string | null; stored: boolean }> {
+  if (!userId) return { conversationId: null, stored: false };
+
+  const now = new Date().toISOString();
+  const fullThread = [
+    ...messages.map((m) => ({ ...m, createdAt: now })),
+    {
+      role: "assistant" as const,
+      content: reply,
+      createdAt: now,
+      // Sumber ikut disimpan agar riwayat (loadConversation) tetap
+      // menampilkan chip "Sumber" seperti chat baru.
+      ...(sourceFiles.length ? { sources: sourceFiles } : {}),
+    },
+  ];
+
+  try {
+    if (conversationId) {
+      const existing = await prisma.chatConversation.findFirst({
+        where: { id: conversationId, userId },
+      });
+      if (existing) {
+        const prev = Array.isArray(existing.messages)
+          ? (existing.messages as { role: string; content: string; createdAt?: string }[])
+          : [];
+        const overlap = countTrailingOverlap(prev, fullThread);
+        const merged = [...prev, ...fullThread.slice(overlap)].slice(-100);
+        const updated = await prisma.chatConversation.update({
+          where: { id: existing.id },
+          data: { messages: merged, updatedAt: new Date() },
+        });
+        return { conversationId: updated.id, stored: true };
+      }
+    }
+    const firstUser = messages.find((m) => m.role === "user");
+    const created = await prisma.chatConversation.create({
+      data: {
+        userId,
+        title: toTitle(firstUser?.content ?? ""),
+        messages: fullThread,
+      },
+    });
+    return { conversationId: created.id, stored: true };
+  } catch (error) {
+    // DB gagal → tetap kembalikan balasan agar UX tidak rusak.
+    console.error("[/api/chat] Gagal menyimpan histori:", error);
+    return { conversationId: conversationId ?? null, stored: false };
+  }
+}
+
+/** Pesan ramah untuk kegagalan Gemini (dikirim sebagai event error SSE). */
+function geminiFailureMessage(error: unknown): string {
+  return error instanceof Error && error.message.includes("GEMINI_API_KEY")
+    ? "Layanan AI belum dikonfigurasi (GEMINI_API_KEY kosong). Hubungi admin."
+    : "Maaf, asisten AI sedang sibuk. Coba lagi sebentar ya.";
+}
+
+/**
  * POST /api/chat
  * Body: { messages: [{role, content}], conversationId?: string }
+ *
+ * Respons 200 = SSE (`text/event-stream`):
+ *   data: {"t":"token","v":"..."}        potongan teks (streaming)
+ *   data: {"t":"done","reply","sources","conversationId","stored"}
+ *   data: {"t":"error","message"}        kegagalan setelah stream dibuka
+ *
+ * Error sebelum stream (validasi 400 / rate limit 429 / invalid JSON)
+ * tetap JSON error biasa seperti sebelumnya.
+ *
  * - Guest (belum login): tidak disimpan ke DB, hanya balasan Gemini.
- * - Login: conversation dibuat / dilanjutkan di chat_conversations (Supabase via Prisma).
+ * - Login: conversation dibuat / dilanjutkan di chat_conversations.
+ * - Cache (chat_qa_cache): pertanyaan tunggal yang sudah pernah dijawab
+ *   dilayani tanpa memanggil Gemini — hemat kuota.
  */
 export async function POST(request: Request) {
   let body: { messages?: IncomingMessage[]; conversationId?: string };
@@ -152,119 +237,155 @@ export async function POST(request: Request) {
     );
   }
 
-  let reply: string;
   // Sumber knowledge yang dipakai untuk menjawab — diteruskan ke client
   // sebagai chip "Sumber" di bubble jawaban (lihat Fase: sumber jawaban).
   let sourceFiles: string[] = [];
+  let knowledge = "";
+  let knowledgeMatched = true;
+  // Konteks PPDB live ikut menempel → jawaban memuat angka berubah-ubah,
+  // sehingga TIDAK boleh masuk cache (angka live bisa basi 24 jam).
+  let liveAppended = false;
+
   try {
     // Retrieval keyword: ambil 2-3 file knowledge paling relevan. Query =
     // gabungan pesan user terakhir + giliran user sebelumnya (multi-turn),
     // supaya pertanyaan lanjutan seperti "yang kedua berapa?" tetap punya
     // konteks topik sebelumnya. Gagal baca file tidak boleh menggagalkan
     // chat → fallback string kosong.
-    let knowledge = "";
-    try {
-      const userTurns = messages
-        .filter((m) => m.role === "user")
-        .map((m) => m.content);
-      const query = userTurns.slice(-2).join(" ");
-      const { files, context } = getKnowledgeContext(
-        query || messages[messages.length - 1]?.content || ""
-      );
-      sourceFiles = files;
-      knowledge = context;
-      // Konteks PPDB live dari DB hanya relevan bila topik PPDB terpilih
-      // atau pertanyaan menyentuh kata terkait pendaftaran.
-      const touchesPpdb =
-        files.includes("06-ppdb.md") || /ppdb|daftar|pendaftar|kuota|biaya/i.test(query);
-      if (touchesPpdb) {
-        const live = await getPpdbLiveContext();
-        if (live) knowledge = `${knowledge}\n\n${live}`;
+    const userTurns = messages
+      .filter((m) => m.role === "user")
+      .map((m) => m.content);
+    const query = userTurns.slice(-2).join(" ");
+    const picked = getKnowledgeContext(
+      query || messages[messages.length - 1]?.content || ""
+    );
+    sourceFiles = picked.files;
+    knowledge = picked.context;
+    knowledgeMatched = picked.matched;
+
+    // Konteks PPDB live dari DB hanya untuk pertanyaan yang menanyakan
+    // JUMLAH pendaftar/kuota — pertanyaan lain (biaya, syarat, cara daftar)
+    // tidak membutuhkannya, jadi hemat token input DAN tetap cacheable.
+    const wantsPpdbCount =
+      /\b(pendaftar|mendaftar|terdaftar|kuota|sisa|jumlah)\b/i.test(query);
+    if (wantsPpdbCount) {
+      const live = await getPpdbLiveContext();
+      if (live) {
+        knowledge = `${knowledge}\n\n${live}`;
+        liveAppended = true;
       }
-    } catch {
-      knowledge = "";
     }
-    reply = await askGemini(messages, knowledge);
-  } catch (error) {
-    console.error("[/api/chat] Gemini gagal:", error);
-    const msg =
-      error instanceof Error && error.message.includes("GEMINI_API_KEY")
-        ? "Layanan AI belum dikonfigurasi (GEMINI_API_KEY kosong). Hubungi admin."
-        : "Maaf, asisten AI sedang sibuk. Coba lagi sebentar ya.";
-    return NextResponse.json({ message: msg }, { status: 502 });
+  } catch {
+    knowledge = "";
   }
 
-  const session = await auth().catch(() => null);
-  const userId = session?.user?.id;
-
-  // Guest → tanpa penyimpanan.
-  if (!userId) {
-    return NextResponse.json({
-      reply,
-      conversationId: null,
-      stored: false,
-      sources: sourceFiles,
-    });
+  // Pertanyaan di luar materi knowledge (nol keyword cocok) → catat sebagai
+  // miss; hitung frekuensinya di /admin/chat sebagai bahan isi knowledge.
+  const lastUserText = [...messages].reverse().find((m) => m.role === "user");
+  if (lastUserText && !knowledgeMatched) {
+    recordMissedQuestion(lastUserText.content);
   }
 
-  const now = new Date().toISOString();
-  const fullThread = [
-    ...messages.map((m) => ({ ...m, createdAt: now })),
-    {
-      role: "assistant" as const,
-      content: reply,
-      createdAt: now,
-      // Sumber ikut disimpan agar riwayat (loadConversation) tetap
-      // menampilkan chip "Sumber" seperti chat baru.
-      ...(sourceFiles.length ? { sources: sourceFiles } : {}),
-    },
-  ];
+  // Cache hanya untuk pertanyaan TUNGGAL (percakapan baru): jawaban
+  // pertanyaan lanjutan bergantung riwayat ("yang tadi berapa?") sehingga
+  // tidak boleh dipakai ulang lintas user.
+  const isSingleTurn =
+    messages.filter((m) => m.role === "user").length === 1 && !liveAppended;
+  const cacheKey = isSingleTurn
+    ? normalizeQuestion(messages[messages.length - 1].content)
+    : "";
+  const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 
-  try {
-    if (body.conversationId) {
-      const existing = await prisma.chatConversation.findFirst({
-        where: { id: body.conversationId, userId },
-      });
-      if (existing) {
-        const prev = Array.isArray(existing.messages)
-          ? (existing.messages as { role: string; content: string; createdAt?: string }[])
-          : [];
-        const overlap = countTrailingOverlap(prev, fullThread);
-        const merged = [...prev, ...fullThread.slice(overlap)].slice(-100);
-        const updated = await prisma.chatConversation.update({
-          where: { id: existing.id },
-          data: { messages: merged, updatedAt: new Date() },
-        });
-        return NextResponse.json({
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let closed = false;
+      const send = (payload: unknown) => {
+        if (closed) return;
+        try {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(payload)}\n\n`)
+          );
+        } catch {
+          // Client putus (abort/navigasi) → stream sudah tertutup sendiri.
+          closed = true;
+        }
+      };
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        try {
+          controller.close();
+        } catch {
+          /* stream sudah ditutup */
+        }
+      };
+
+      let reply = "";
+      try {
+        if (cached) {
+          // Hit cache: satu chunk utuh, langsung selesai (nol panggilan Gemini).
+          reply = cached.reply;
+          sourceFiles = cached.sources;
+          send({ t: "token", v: reply });
+        } else {
+          await streamGemini(messages, knowledge, (chunk) => {
+            // Client putus di tengah → hentikan tarikan Gemini (hemat kuota).
+            if (closed) throw new Error("CLIENT_DISCONNECTED");
+            reply += chunk;
+            send({ t: "token", v: chunk });
+          });
+          if (!reply.trim()) {
+            throw new Error("Gemini mengembalikan respons kosong.");
+          }
+          // Pertanyaan tunggal tanpa angka live → simpan untuk kunjungan berikutnya.
+          if (cacheKey) {
+            void setCachedAnswer(cacheKey, reply, sourceFiles);
+          }
+        }
+
+        const session = await auth().catch(() => null);
+        const persisted = await persistConversation(
+          session?.user?.id,
+          messages,
           reply,
-          conversationId: updated.id,
-          stored: true,
+          sourceFiles,
+          body.conversationId
+        );
+        send({
+          t: "done",
+          reply,
           sources: sourceFiles,
+          conversationId: persisted.conversationId,
+          stored: persisted.stored,
         });
+      } catch (error) {
+        // Putus oleh client sendiri → bukan kegagalan, jangan log error.
+        if (error instanceof Error && error.message === "CLIENT_DISCONNECTED") {
+          return;
+        }
+        console.error("[/api/chat] Gemini gagal:", error);
+        const message = geminiFailureMessage(error);
+        // Belum ada teks terkirim → bubble error penuh.
+        // Sudah terpotong di tengah → tampilkan teks parsial + keterangan.
+        send(
+          reply
+            ? { t: "error", message, partial: reply }
+            : { t: "error", message }
+        );
+      } finally {
+        close();
       }
-    }
-    const firstUser = messages.find((m) => m.role === "user");
-    const created = await prisma.chatConversation.create({
-      data: {
-        userId,
-        title: toTitle(firstUser?.content ?? ""),
-        messages: fullThread,
-      },
-    });
-    return NextResponse.json({
-      reply,
-      conversationId: created.id,
-      stored: true,
-      sources: sourceFiles,
-    });
-  } catch (error) {
-    // DB gagal → tetap kembalikan balasan agar UX tidak rusak.
-    console.error("[/api/chat] Gagal menyimpan histori:", error);
-    return NextResponse.json({
-      reply,
-      conversationId: body.conversationId ?? null,
-      stored: false,
-      sources: sourceFiles,
-    });
-  }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      // Balasan tidak boleh di-buffer proxy depan (Vercel/CDN) sampai penuh.
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

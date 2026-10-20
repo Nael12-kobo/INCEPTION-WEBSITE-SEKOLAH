@@ -205,9 +205,36 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       abortRef.current?.abort();
       const ctrl = new AbortController();
       abortRef.current = ctrl;
-      // Batas tunggu: tanpa ini fetch yang menggantung membuat `isTyping`
-      // terkunci selamanya (tombol kirim & input tetap disabled).
-      const timer = setTimeout(() => ctrl.abort(), 30_000);
+      /**
+       * Timeout dua lapis (streaming butuh waktu lebih lama dari JSON, tapi
+       * tidak boleh menggantung selamanya):
+       * - idle 20s: tidak ada chunk masuk (Gemini diam/proxy buffer) → abort.
+       * - total 60s: pagar keras dari saat kirim.
+       * Timer idle di-reset tiap chunk yang diterima.
+       */
+      const IDLE_MS = 20_000;
+      const TOTAL_MS = 60_000;
+      let idleTimer: ReturnType<typeof setTimeout> = setTimeout(
+        () => ctrl.abort(),
+        IDLE_MS
+      );
+      const totalTimer = setTimeout(() => ctrl.abort(), TOTAL_MS);
+      const resetIdle = () => {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => ctrl.abort(), IDLE_MS);
+      };
+
+      // Pesan assistant yang sedang tumbuh (di-append saat token masuk).
+      let streamId: string | null = null;
+      let streamText = "";
+      const applyStream = () => {
+        const id = streamId;
+        const text = streamText;
+        if (!id) return;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text } : m))
+        );
+      };
 
       try {
         const history = [...messagesRef.current, userMsg].map((m) => ({
@@ -223,34 +250,198 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           }),
           signal: ctrl.signal,
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.message || "Gagal menghubungi AI.");
+        const contentType = res.headers.get("content-type") ?? "";
+        const isSSE =
+          res.ok && contentType.includes("text/event-stream") && res.body;
 
-        // Obrolan sudah diganti (clearChat / pilih riwayat lain) selagi
-        // request berjalan → jangan tempel balasannya ke obrolan baru.
+        if (!isSSE) {
+          // Jalur lama (error JSON 400/429/502, atau respons non-stream).
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.message || "Gagal menghubungi AI.");
+          // Obrolan sudah diganti (clearChat / pilih riwayat lain) selagi
+          // request berjalan → jangan tempel balasannya ke obrolan baru.
+          if (seqRef.current !== seq) return;
+
+          const reply =
+            typeof data.reply === "string" && data.reply.trim()
+              ? data.reply
+              : "Maaf, saya tidak bisa menjawab saat ini.";
+          const sources = Array.isArray(data.sources)
+            ? (data.sources as string[]).filter((s) => typeof s === "string")
+            : [];
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              role: "assistant",
+              text: reply,
+              timestamp: nowTime(),
+              ...(sources.length ? { sources } : {}),
+            },
+          ]);
+          // Suara dimatikan → lewati TTS sepenuhnya (tanpa fetch /api/tts).
+          if (voiceRef.current) void speakReply(reply);
+          if (typeof data.conversationId === "string") {
+            setConversationId(data.conversationId);
+          }
+          return;
+        }
+
+        // ===== Streaming SSE =====
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        /**
+         * Payload done/error dikumpulkan ke array (bukan var luar yang
+         * di-assign di closure) — TS control-flow tidak melihat assignment
+         * di dalam closure sehingga variabel luar ter-narrow ke `never`.
+         */
+        const terminal: {
+          t: string;
+          reply?: unknown;
+          sources?: unknown;
+          conversationId?: unknown;
+          message?: unknown;
+          partial?: unknown;
+        }[] = [];
+
+        const handleEvent = (raw: string) => {
+          const line = raw.trim();
+          if (!line.startsWith("data:")) return;
+          let payload: Record<string, unknown>;
+          try {
+            payload = JSON.parse(line.slice(5));
+          } catch {
+            return;
+          }
+          if (payload.t === "token" && typeof payload.v === "string") {
+            if (!streamId) {
+              streamId = uid();
+              streamText = payload.v;
+              const id = streamId;
+              const text = streamText;
+              setMessages((prev) => [
+                ...prev,
+                { id, role: "assistant", text, timestamp: nowTime() },
+              ]);
+            } else {
+              streamText += payload.v;
+              applyStream();
+            }
+          } else if (payload.t === "done" || payload.t === "error") {
+            terminal.push(payload as (typeof terminal)[number]);
+          }
+        };
+
+        // Baca sampai stream habis — event dipisah baris kosong ("\n\n").
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          resetIdle();
+          buffer += decoder.decode(value, { stream: true });
+          let idx: number;
+          while ((idx = buffer.indexOf("\n\n")) !== -1) {
+            const raw = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            handleEvent(raw);
+          }
+        }
+        // Sisa buffer tanpa delimiter penutup (putus di tengah event).
+        if (buffer.trim()) handleEvent(buffer);
+
         if (seqRef.current !== seq) return;
 
+        const errorPayload = terminal.find((p) => p.t === "error");
+        const donePayload = terminal.find((p) => p.t === "done");
+
+        if (errorPayload) {
+          const message =
+            typeof errorPayload.message === "string" && errorPayload.message
+              ? errorPayload.message
+              : "Maaf, terjadi kesalahan. Coba lagi ya.";
+          const partial =
+            typeof errorPayload.partial === "string"
+              ? errorPayload.partial
+              : "";
+          if (streamId && partial) {
+            // Teks parsial sudah tampil → tambahkan keterangan gangguan saja.
+            streamText = partial;
+            applyStream();
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: uid(),
+                role: "assistant",
+                text: message,
+                timestamp: nowTime(),
+              },
+            ]);
+          } else if (streamId) {
+            const id = streamId;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === id ? { ...m, text: message } : m))
+            );
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: uid(),
+                role: "assistant",
+                text: message,
+                timestamp: nowTime(),
+              },
+            ]);
+          }
+          return;
+        }
+
+        // Stream berakhir tanpa done/error (koneksi terputus sebelum selesai).
+        if (!donePayload) {
+          if (streamId && streamText.trim()) {
+            // Teks parsial dibiarkan tampil apa adanya.
+            return;
+          }
+          throw new Error("Waktu tunggu habis. Coba kirim lagi ya.");
+        }
+
         const reply =
-          typeof data.reply === "string" && data.reply.trim()
-            ? data.reply
-            : "Maaf, saya tidak bisa menjawab saat ini.";
-        const sources = Array.isArray(data.sources)
-          ? (data.sources as string[]).filter((s) => typeof s === "string")
+          typeof donePayload.reply === "string" && donePayload.reply.trim()
+            ? donePayload.reply
+            : streamText.trim() || "Maaf, saya tidak bisa menjawab saat ini.";
+        const sources = Array.isArray(donePayload.sources)
+          ? (donePayload.sources as string[]).filter(
+              (s) => typeof s === "string"
+            )
           : [];
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: uid(),
-            role: "assistant",
-            text: reply,
-            timestamp: nowTime(),
-            ...(sources.length ? { sources } : {}),
-          },
-        ]);
-        // Suara dimatikan → lewati TTS sepenuhnya (tanpa fetch /api/tts).
+        // Finalisasi: teks final + chip sumber pada bubble streaming.
+        if (streamId) {
+          const id = streamId;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === id
+                ? {
+                    ...m,
+                    text: reply,
+                    ...(sources.length ? { sources } : {}),
+                  }
+                : m
+            )
+          );
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              role: "assistant",
+              text: reply,
+              timestamp: nowTime(),
+              ...(sources.length ? { sources } : {}),
+            },
+          ]);
+        }
         if (voiceRef.current) void speakReply(reply);
-        if (typeof data.conversationId === "string") {
-          setConversationId(data.conversationId);
+        if (typeof donePayload.conversationId === "string") {
+          setConversationId(donePayload.conversationId);
         }
       } catch (error) {
         if (seqRef.current !== seq) return;
@@ -269,7 +460,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           },
         ]);
       } finally {
-        clearTimeout(timer);
+        clearTimeout(idleTimer);
+        clearTimeout(totalTimer);
         if (abortRef.current === ctrl) abortRef.current = null;
         setIsTyping(false);
       }

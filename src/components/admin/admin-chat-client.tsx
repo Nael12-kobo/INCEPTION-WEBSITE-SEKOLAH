@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,13 @@ export type ChatFeedbackRow = {
   userName: string | null;
   userEmail: string | null;
   createdAt: string;
+};
+
+export type ChatMissRow = {
+  id: string;
+  question: string;
+  count: number;
+  lastAt: string;
 };
 
 export type ChatSummary = {
@@ -82,12 +90,15 @@ function StatCard({
 export function AdminChatClient({
   summary,
   initialRows,
+  missRows,
 }: {
   summary: ChatSummary;
   initialRows: ChatFeedbackRow[];
+  missRows: ChatMissRow[];
 }) {
   const [query, setQuery] = React.useState("");
   const [filter, setFilter] = React.useState<"ALL" | "UP" | "DOWN">("ALL");
+  const [showMiss, setShowMiss] = React.useState(false);
 
   const rows = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -138,6 +149,62 @@ export function AdminChatClient({
           tone="bg-violet-50 text-violet-600"
         />
       </div>
+
+      {/* Pertanyaan miss — retrieval knowledge tidak menemukan keyword cocok */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle>Pertanyaan yang belum dijawab dari knowledge</CardTitle>
+              <CardDescription>
+                Pertanyaan user yang tidak ketemu keyword di knowledge/*.md
+                (AI menjawab tanpa rujukan spesifik). Frekuensi = berapa kali
+                ditanyakan — kandidat topik/keyword knowledge berikutnya.
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMiss((v) => !v)}
+            >
+              {showMiss ? "Sembunyikan" : `Tampilkan (${missRows.length})`}
+            </Button>
+          </div>
+        </CardHeader>
+        {showMiss && (
+          <CardContent>
+            {missRows.length === 0 ? (
+              <p className="py-6 text-center text-sm text-slate-400">
+                Belum ada miss — semua pertanyaan ketemu keyword knowledge.
+              </p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {missRows.map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex items-start justify-between gap-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="break-words text-sm text-slate-700">
+                        {r.question}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Terakhir: {formatWib(r.lastAt)}
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 border-amber-200 bg-amber-50 text-amber-700"
+                    >
+                      {r.count}×
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        )}
+      </Card>
 
       {/* Daftar feedback */}
       <Card>
