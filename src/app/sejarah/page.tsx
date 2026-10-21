@@ -61,7 +61,7 @@ export default function SejarahPage() {
   return (
     <div className="min-h-dvh font-sans text-slate-900 dark:text-slate-100">
       {/* Header */}
-      <section className="border-b border-blue-100/70 bg-gradient-to-b from-sky-50 via-card to-slate-50 dark:border-slate-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <section className=" bg-gradient-to-b from-sky-50 via-card to-slate-50 dark:border-slate-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
         <div className="mx-auto max-w-6xl px-4 py-14 text-center sm:px-6">
           <Badge variant="secondary" className="glass-chip border-white/60">
             Profil Sekolah
@@ -85,6 +85,9 @@ export default function SejarahPage() {
             width={1024}
             height={672}
             priority
+            // Tanpa sizes, browser mengasumsikan 100vw → varian terbesar
+            // diminta; di HP cukup selebar layar.
+            sizes="(max-width: 640px) 100vw, 1152px"
             className="h-auto w-full object-cover"
           />
         </div>
@@ -95,24 +98,24 @@ export default function SejarahPage() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
           Latar Belakang
         </h2>
-        <div className="mt-5 space-y-5 leading-relaxed text-slate-600 dark:text-slate-400">
+        <div className="mt-5 space-y-5 leading-relaxed text-slate-600 dark:text-white/90">
           <p>
             SMK Telekomunikasi Tunas Harapan Kabupaten Semarang lahir dari
             sebuah gagasan untuk menjawab tantangan perkembangan teknologi dan
             kebutuhan dunia industri terhadap sumber daya manusia yang
             terampil, adaptif, dan siap kerja. Gagasan tersebut diwujudkan oleh{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               Yayasan Tunas Harapan Kabupaten Semarang
             </strong>{" "}
             dengan mendirikan SMK Telekomunikasi Tunas Harapan yang secara
             resmi berdiri pada{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               27 Februari 2001
             </strong>
             , berdasarkan SK Kepala Kantor Wilayah Departemen Pendidikan dan
             Kebudayaan Provinsi Jawa Tengah Nomor 1315/I03.08/MN/2001. Pada
             awal berdirinya, sekolah ini hanya memiliki satu Program Keahlian,
-            yaitu <strong className="text-slate-800 dark:text-slate-200">
+            yaitu <strong className="text-slate-800 dark:text-white">
               Teknik Informatika
             </strong>
             , sebagai bentuk keberanian untuk memasuki era teknologi informasi
@@ -124,7 +127,7 @@ export default function SejarahPage() {
             terus beradaptasi. Berdasarkan perkembangan kebutuhan pasar
             industri dan kurikulum yang berlaku, sekolah membuka program
             keahlian baru, yaitu{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               Teknik Elektronika Komunikasi dan Teknik Otomotif
             </strong>{" "}
             berdasarkan Kurikulum 1999. Perubahan tersebut menjadi bagian dari
@@ -141,11 +144,11 @@ export default function SejarahPage() {
             relevan dengan kebutuhan peserta didik dan dunia kerja. Sekolah
             tidak hanya berkembang sebagai satuan pendidikan kejuruan, tetapi
             juga pernah menjadi bagian dari perjalanan{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               Sekolah Standar Nasional (SSN)
             </strong>{" "}
             dan{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               Rintisan Sekolah Bertaraf Internasional (RSBI)
             </strong>
             . Pengalaman tersebut menjadi fondasi penting dalam membangun
@@ -157,7 +160,7 @@ export default function SejarahPage() {
             Lebih dari dua dekade sejak berdiri, SMK Telekomunikasi Tunas
             Harapan Kabupaten Semarang terus menapaki perjalanan dengan satu
             semangat yang tidak berubah:{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               menyiapkan generasi yang mampu menghadapi masa depan
             </strong>
             . Dari satu program keahlian hingga berkembang mengikuti dinamika
@@ -166,7 +169,7 @@ export default function SejarahPage() {
             semangat inovasi yang terus dijaga, SMK Telekomunikasi Tunas
             Harapan memandang masa depan bukan sebagai sesuatu yang harus
             ditunggu, melainkan sesuatu yang harus dipersiapkan dan diciptakan.{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
+            <strong className="text-slate-800 dark:text-white">
               Berakar dari sejarah, beradaptasi dengan zaman, dan bergerak
               menuju masa depan.
             </strong>
@@ -175,7 +178,7 @@ export default function SejarahPage() {
       </section>
 
       {/* Tonggak perjalanan */}
-      <section className="border-y border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-gray-900/50">
+      <section className=" bg-slate-50 dark:border-slate-800 dark:bg-gray-900/50">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
             Tonggak Perjalanan
@@ -184,7 +187,7 @@ export default function SejarahPage() {
             {milestones.map((m) => (
               <li
                 key={m.title}
-                className="relative rounded-2xl border border-slate-200 bg-card p-5 shadow-sm dark:border-slate-800"
+                className="relative rounded-2xl border border-slate-200 bg-card p-5 shadow-sm dark:border-cyan-700/20"
               >
                 <span className="inline-block rounded-full bg-gradient-to-r from-sky-600 to-cyan-500 px-3 py-1 text-xs font-semibold text-white">
                   {m.period}
@@ -192,7 +195,7 @@ export default function SejarahPage() {
                 <h3 className="mt-3 text-lg font-bold text-slate-900 dark:text-white">
                   {m.title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-white/90">
                   {m.desc}
                 </p>
               </li>
@@ -210,7 +213,7 @@ export default function SejarahPage() {
           {gallery.map((img) => (
             <div
               key={img.src}
-              className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800"
+              className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-cyan-700/20"
             >
               <Image
                 src={img.src}

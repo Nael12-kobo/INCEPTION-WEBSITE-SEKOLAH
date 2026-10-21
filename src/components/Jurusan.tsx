@@ -72,7 +72,7 @@ export function Jurusan() {
               <CardHeader>
                 <span
                   data-magnetic
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-300/50"
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-300/50 dark:to-blue-500"
                 >
                   <j.icon className="h-6 w-6" />
                 </span>

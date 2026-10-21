@@ -17,7 +17,39 @@ import { cn } from "@/lib/utils";
 import { SOURCE_META } from "@/lib/chat-sources";
 import { useChat } from "./chat-store";
 import { MarkdownLite } from "./MarkdownLite";
+<<<<<<< HEAD
 import { ChatWelcome } from "./ChatWelcome";
+=======
+
+/** Pertanyaan populer — sesuai topik di knowledge/. Klik = langsung terkirim. */
+const SUGGESTIONS = [
+  "Apa saja jurusan yang ada?",
+  "Berapa biaya PPDB?",
+  "Apa saja syarat pendaftaran?",
+  "Bagaimana cara mendaftar?",
+  "Saya bingung pilih jurusan",
+  "Bagaimana cara menghubungi sekolah?",
+];
+
+function SuggestionChips() {
+  const { sendMessage, isTyping } = useChat();
+  return (
+    <div className="mr-auto flex max-w-[92%] flex-wrap gap-2">
+      {SUGGESTIONS.map((s) => (
+        <button
+          key={s}
+          type="button"
+          disabled={isTyping}
+          onClick={() => void sendMessage(s)}
+          className="min-h-10 rounded-full border border-blue-200 bg-card px-4 py-2 text-[13px] font-medium text-blue-700 shadow-sm transition-colors hover:border-blue-400 hover:bg-blue-50 disabled:opacity-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950"
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+  );
+}
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
 
 /**
  * Tombol 👍/👎 per jawaban AI. Vote disimpan ke /api/chat/feedback dan
@@ -85,7 +117,7 @@ function FeedbackButtons({
 
   return (
     <div className="flex items-center gap-1 pt-0.5">
-      <span className="mr-0.5 text-[10px] text-slate-400">Membantu?</span>
+      <span className="mr-0.5 text-xs text-slate-400">Membantu?</span>
       <button
         type="button"
         onClick={() => void vote("UP")}
@@ -93,7 +125,12 @@ function FeedbackButtons({
         aria-label="Jawaban membantu"
         aria-pressed={voted === "UP"}
         className={cn(
+<<<<<<< HEAD
           "chat-action rounded-md p-1 transition-colors",
+=======
+          // min-h/w-11: target sentuh 44px di HP; kembali ringkas di desktop.
+          "flex min-h-11 min-w-11 items-center justify-center rounded-lg p-1 transition-colors sm:min-h-0 sm:min-w-0 sm:rounded-md",
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
           voted === "UP"
             ? "chat-vote-pop bg-green-100 text-green-600"
             : "text-slate-400 hover:bg-green-50 hover:text-green-600",
@@ -101,7 +138,7 @@ function FeedbackButtons({
           (voted || sending) && "cursor-default opacity-80",
         )}
       >
-        <ThumbsUp className="h-3.5 w-3.5" />
+        <ThumbsUp className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       </button>
       <button
         type="button"
@@ -110,14 +147,18 @@ function FeedbackButtons({
         aria-label="Jawaban tidak membantu"
         aria-pressed={voted === "DOWN"}
         className={cn(
+<<<<<<< HEAD
           "chat-action rounded-md p-1 transition-colors",
+=======
+          "flex min-h-11 min-w-11 items-center justify-center rounded-lg p-1 transition-colors sm:min-h-0 sm:min-w-0 sm:rounded-md",
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
           voted === "DOWN"
             ? "chat-vote-pop bg-red-100 text-red-500"
             : "text-slate-400 hover:bg-red-50 hover:text-red-500",
           (voted || sending) && "cursor-default opacity-80",
         )}
       >
-        <ThumbsDown className="h-3.5 w-3.5" />
+        <ThumbsDown className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       </button>
     </div>
   );
@@ -196,6 +237,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                   <Bot className="h-4 w-4" />
                 )}
               </div>
+<<<<<<< HEAD
               <div className="flex min-w-0 flex-col gap-1">
                 <div
                   className={cn(
@@ -214,6 +256,27 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                   ) : (
                     message.text
                   )}
+=======
+              {message.role === "assistant" && !!message.sources?.length && (
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Sumber:
+                  </span>
+                  {message.sources.map((file) => {
+                    const meta = SOURCE_META[file];
+                    if (!meta) return null;
+                    return (
+                      <Link
+                        key={file}
+                        href={meta.href}
+                        className="inline-flex min-h-9 items-center rounded-full border border-slate-200 bg-card px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-600"
+                      >
+                        {meta.label}
+                      </Link>
+                    );
+                  })}
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
                 </div>
                 {message.role === "assistant" && !!message.sources?.length && (
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
@@ -329,17 +392,28 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
             canSend && "chat-send-ready",
           )}
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-4 w-4 dark:text-white" />
         </Button>
       </div>
+<<<<<<< HEAD
       <div className="mt-5 flex items-center justify-between gap-1">
+=======
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        {/* <p className="text-[10px] text-slate-500">
+          Powered by Gemini 3.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
+        </p> */}
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
         {/* Pengalihan ke petugas: WA resmi hanya lewat tombol di /ppdb
             (nomor dari env) — jangan karang nomor di sini. */}
         <Link
           href="/ppdb"
+<<<<<<< HEAD
           className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+=======
+          className="inline-flex min-h-9 shrink-0 items-center gap-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
         >
-          <Phone className="h-3 w-3" />
+          <Phone className="h-3.5 w-3.5" />
           Hubungi Petugas
         </Link>
         <p
@@ -352,6 +426,12 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
           {value.length}/500
         </p>
       </div>
+<<<<<<< HEAD
+=======
+      <p className="text-right text-xs text-slate-400">
+        {value.length}/500
+      </p>
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
     </div>
   );
 }

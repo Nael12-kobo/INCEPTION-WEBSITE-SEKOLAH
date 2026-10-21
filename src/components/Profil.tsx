@@ -29,7 +29,7 @@ export function Profil() {
           </Badge>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             Mencetak talenta digital yang{" "}
-            <span className="bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text text-transparent dark:to-blue-500">
               kompeten & berkarakter
             </span>
           </h2>

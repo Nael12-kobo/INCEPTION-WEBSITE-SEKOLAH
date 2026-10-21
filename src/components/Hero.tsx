@@ -162,7 +162,7 @@ export function Hero() {
               <AnimatedTitle text={TITLE_TOP} prefix="top" />
             </span>
             <span
-              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text"
+              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text dark:to-blue-500"
               aria-label="Tunas Harapan"
             >
               <AnimatedTitle text={TITLE_BOTTOM} prefix="bottom" />
@@ -207,7 +207,7 @@ export function Hero() {
               ["100%", "Praktik & Magang"],
             ].map(([v, l]) => (
               <div key={l} data-magnetic className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50 dark:to-blue-500">
                   {v === "100%" ? <Award className="h-4 w-4" /> : v}
                 </span>
                 <span className="text-sm font-medium text-slate-600">{l}</span>
@@ -237,7 +237,12 @@ export function Hero() {
         </div>
 
           <div>
-          <Image data-hero-image src="/images/TTH.png" alt="Logo TTH" width={300} height={300} priority className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
+          {/* Tanpa `priority`: kolom ini `hidden lg:block` — di HP gambar
+              tidak pernah tampil, tapi <link rel="preload"> tetap dipancarkan
+              → PNG diunduh sia-sia memboroskan kuota + LCP budget.
+              Tanpa priority juga otomatis lazy → mobile tak mengunduh sama
+              sekali (display:none = tidak pernah dianggap intersect). */}
+          <Image data-hero-image src="/images/TTH.png" alt="Logo TTH" width={300} height={300} sizes="(max-width: 1024px) 100vw, 420px" className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
           </div>
           <div data-magnetic className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15">
             <p className="text-2xl font-extrabold text-sky-700">911+</p>

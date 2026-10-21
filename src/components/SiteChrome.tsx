@@ -1,8 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
-import { ChatBubble } from "@/components/ChatBubble";
+
+// ChatBubble (dan seluruh panel chat: Radix Dialog, ChatPanel, MarkdownLite,
+// chat-store) dimuat sebagai chunk terpisah yang tidak menghambat hydrasi
+// halaman — signifikan untuk TTI di HP kelas menengah.
+const ChatBubble = dynamic(
+  () => import("@/components/ChatBubble").then((m) => m.ChatBubble),
+  { ssr: false }
+);
 
 /**
  * Chrome global (Navbar + tombol chat mengambang) hanya dirender di route

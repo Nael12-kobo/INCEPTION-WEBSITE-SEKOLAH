@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import {
   useCallback,
   useEffect,
@@ -43,11 +44,36 @@ import Image from "next/image";
  * FIX double-close: DialogContent generik punya tombol Close bawaan —
  * disembunyikan via `[&>button.absolute]:hidden`, jadi hanya ada satu X
  * custom di header.
+=======
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { MessageCircle, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+/**
+ * Bubble chat melayang.
+ *
+ * Panel dialog (Radix Dialog + ChatPanel + MarkdownLite) dimuat via
+ * next/dynamic HANYA saat bubble dibuka pertama kali — bundel halaman
+ * situs tidak memikulnya (hemat JS di HP). Setelah ter-mount, panel TIDAK
+ * di-unmount lagi saat menutup supaya animasi `data-state="closed"`
+ * tetap sempat jalan. FIX double-close: tombol Close bawaan Radix
+ * disembunyikan di ChatBubblePanel via `[&_button.absolute]:hidden`.
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
  */
+const ChatBubblePanel = dynamic(() => import("./ChatBubblePanel"), {
+  ssr: false,
+});
+
 function ChatBubbleInner() {
   const [isOpen, setIsOpen] = useState(false);
+<<<<<<< HEAD
   const [expanded, setExpanded] = useState(false);
   const [closing, setClosing] = useState(false);
+=======
+  const [panelLoaded, setPanelLoaded] = useState(false);
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
   const router = useRouter();
 
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -71,6 +97,7 @@ function ChatBubbleInner() {
     }
   };
 
+<<<<<<< HEAD
   useEffect(() => clearCloseTimer, []);
 
   const openChat = useCallback(() => {
@@ -180,11 +207,18 @@ function ChatBubbleInner() {
       fabRef.current?.focus({ preventScroll: true });
     }
   }, [isOpen]);
+=======
+  const open = () => {
+    setPanelLoaded(true);
+    setIsOpen(true);
+  };
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
 
   return (
     <>
       {/* ===== Floating bubble ===== */}
       <button
+<<<<<<< HEAD
         ref={fabRef}
         type="button"
         onClick={openChat}
@@ -192,6 +226,9 @@ function ChatBubbleInner() {
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         title="Tanya asisten sekolah"
+=======
+        onClick={open}
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
         className={cn(
           // bottom dihitung dari env(safe-area-inset-bottom) supaya tombol
           // tidak tertimpa home indicator iPhone (viewportFit=cover aktif).
@@ -205,6 +242,7 @@ function ChatBubbleInner() {
             "pointer-events-none scale-50 rotate-180 opacity-0",
         )}
       >
+<<<<<<< HEAD
         <span className="chat-fab-entry pointer-events-none absolute inset-0">
           <span
             className="chat-fab-halo absolute inset-0 rounded-full"
@@ -368,6 +406,24 @@ function ChatBubbleInner() {
           </div>
         </DialogContent>
       </Dialog>
+=======
+        <div className="relative">
+          <MessageCircle className="h-7 w-7" />
+          <Sparkles className="absolute -right-1 -top-1 h-3 w-3 animate-pulse text-yellow-300" />
+        </div>
+        {/* Badge unread sengaja disembunyikan (permintaan pemilik situs) —
+            struktur dipertahankan agar mudah diaktifkan kembali. Saat
+            diaktifkan, hitung dari useChat().messages lalu tampilkan di sini. */}
+      </button>
+
+      {panelLoaded && (
+        <ChatBubblePanel
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          onFullscreen={goFullscreen}
+        />
+      )}
+>>>>>>> 3645673d9ff3efe884499a0230c44062094b4cdb
     </>
   );
 }

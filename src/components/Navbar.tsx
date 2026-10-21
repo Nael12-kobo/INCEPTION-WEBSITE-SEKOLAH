@@ -170,7 +170,10 @@ export function Navbar() {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
+          {/* flex + nav flex-1 overflow-y-auto: menu mobile harus BISA DI-SCROLL
+              di HP pendek — item bawah ("Masuk", tombol PPDB) muat semua.
+              pb-safe: jauhkan dari home indicator iPhone (viewport-fit cover). */}
+          <SheetContent side="right" className="flex flex-col">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white">
@@ -179,7 +182,7 @@ export function Navbar() {
                 Tunas Harapan
               </SheetTitle>
             </SheetHeader>
-            <nav className="mt-6 flex flex-col gap-1">
+            <nav className="subtle-scroll mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
               {/* Section Profil */}
               <div className="mb-2">
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
