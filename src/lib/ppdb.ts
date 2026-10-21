@@ -5,7 +5,7 @@
  */
 
 export const PPDB_YEAR = "2026/2027";
-// export const PPDB_PHASE = "Gelombang 1";
+export const PPDB_PHASE = "Gelombang 1";
 
 export const JURUSAN_OPTIONS = [
   {
