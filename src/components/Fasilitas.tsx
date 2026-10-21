@@ -90,7 +90,8 @@ const galeri: FasilitasVideo[] = [
     label: "Perpustakaan",
     alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
     description:
-      "Perpustakaan lengkap dengan koleksi buku, jurnal, dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
+      // "Perpustakaan yang menyediakan berbagai jurnal,  dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
+      "Perpustakaan sekolah, merupakan pusat sumber belajar yang menyediakan koleksi buku, jurnal, dan berbagai bahan bacaan untuk menunjang kebutuhan akademik serta memperluas wawasan siswa. Dengan fasilitas membaca yang nyaman, tenang, dan tertata, perpustakaan ini mendukung siswa dalam belajar mandiri, mengerjakan tugas, melakukan riset, dan membangun kebiasaan membaca Koleksinya mencakup beragam bahan bacaan yang dapat dimanfaatkan untuk menunjang pembelajaran maupun memenuhi minat baca siswa. Suasana yang kondusif membantu siswa berkonsentrasi, sementara penataan ruang yang rapi membuat kegiatan membaca dan belajar terasa lebih menyenangkan. Perpustakaan juga menjadi ruang yang mendorong rasa ingin tahu, kreativitas, dan semangat untuk terus belajar Melalui layanan dan fasilitas yang tersedia, perpustakaan diharapkan dapat menjadi bagian penting dari lingkungan pendidikan: tempat siswa memperoleh informasi, mengembangkan kemampuan berpikir, serta menumbuhkan kecintaan terhadap ilmu pengetahuan dan literasi.",
     xmin: 0,
     xmid: 1.5,
     xmax: 2.9,

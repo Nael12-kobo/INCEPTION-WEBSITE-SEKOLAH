@@ -113,6 +113,7 @@ export function ImageModal({
               sizes="(max-width: 768px) 100vw, 70vw"
               className="object-contain"
               priority // Sangat penting agar gambar langsung muncul tanpa delay lazy-loading
+              quality={100}
             />
           )}
         </div>
@@ -124,13 +125,13 @@ export function ImageModal({
               {title && (
                 <h3
                   id="modal-title"
-                  className="text-2xl font-bold tracking-tight text-foreground"
+                  className="text-2xl font-bold tracking-tight text-foreground text-center md:text-left"
                 >
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground whitespace-pre-line">
                   {description}
                 </p>
               )}

@@ -28,7 +28,8 @@ const SUGGESTIONS = [
   "Bagaimana cara menghubungi sekolah?",
 ];
 
-function SuggestionChips() {  const { sendMessage, isTyping } = useChat();
+function SuggestionChips() {
+  const { sendMessage, isTyping } = useChat();
   return (
     <div className="mr-auto flex max-w-[92%] flex-wrap gap-2">
       {SUGGESTIONS.map((s) => (
@@ -125,7 +126,7 @@ function FeedbackButtons({
             ? "bg-green-100 text-green-600"
             : "text-slate-400 hover:bg-green-50 hover:text-green-600",
           !voted && "hover:bg-green-50",
-          (voted || sending) && "cursor-default opacity-80"
+          (voted || sending) && "cursor-default opacity-80",
         )}
       >
         <ThumbsUp className="h-3.5 w-3.5" />
@@ -141,7 +142,7 @@ function FeedbackButtons({
           voted === "DOWN"
             ? "bg-red-100 text-red-500"
             : "text-slate-400 hover:bg-red-50 hover:text-red-500",
-          (voted || sending) && "cursor-default opacity-80"
+          (voted || sending) && "cursor-default opacity-80",
         )}
       >
         <ThumbsDown className="h-3.5 w-3.5" />
@@ -173,98 +174,98 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
         // Mask menyatu dengan scroll container (tanpa overlay yang
         // menutup area sentuh). Prefix -webkit- wajib untuk Safari iOS.
         compact &&
-          "[mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)]"
+          "[mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)]",
       )}
     >
       {messages.map((message, idx) => {
         // Pertanyaan yang memicu jawaban ini = pesan user terakhir sebelumnya.
         const question =
           message.role === "assistant"
-            ? [...messages.slice(0, idx)]
+            ? ([...messages.slice(0, idx)]
                 .reverse()
-                .find((m) => m.role === "user")?.text ?? ""
+                .find((m) => m.role === "user")?.text ?? "")
             : "";
         return (
-        <div
-          key={message.id}
-          className={cn(
-            "flex max-w-[88%] gap-2.5",
-            message.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-          )}
-        >
           <div
+            key={message.id}
             className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white",
-              message.role === "user"
-                ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                : "bg-gradient-to-br from-indigo-500 to-purple-600"
+              "flex max-w-[88%] gap-2.5",
+              message.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto",
             )}
           >
-            {message.role === "user" ? (
-              <User className="h-4 w-4" />
-            ) : (
-              <Bot className="h-4 w-4" />
-            )}
-          </div>
-          <div className="flex min-w-0 flex-col gap-1">
             <div
               className={cn(
-                // break-words + pre-wrap: balasan Gemini sering berisi URL/
-                // token panjang & baris baru tanpa ini memaksa overflow-x
-                // di area pesan (yang cuma overflow-y-auto → scrollbar
-                // horizontal muncul di HP).
-                "break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white",
                 message.role === "user"
-                  ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-                  : "rounded-bl-md border border-slate-200 bg-card text-slate-800"
+                  ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                  : "bg-gradient-to-br from-indigo-500 to-purple-600",
               )}
             >
-              {message.role === "assistant" ? (
-                <MarkdownLite text={message.text} />
+              {message.role === "user" ? (
+                <User className="h-4 w-4" />
               ) : (
-                message.text
+                <Bot className="h-4 w-4" />
               )}
             </div>
-            {message.role === "assistant" && !!message.sources?.length && (
-              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
-                  <ShieldCheck className="h-3 w-3" />
-                  Sumber:
-                </span>
-                {message.sources.map((file) => {
-                  const meta = SOURCE_META[file];
-                  if (!meta) return null;
-                  return (
-                    <Link
-                      key={file}
-                      href={meta.href}
-                      className="rounded-full border border-slate-200 bg-card px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-600"
-                    >
-                      {meta.label}
-                    </Link>
-                  );
-                })}
+            <div className="flex min-w-0 flex-col gap-1">
+              <div
+                className={cn(
+                  // break-words + pre-wrap: balasan Gemini sering berisi URL/
+                  // token panjang & baris baru tanpa ini memaksa overflow-x
+                  // di area pesan (yang cuma overflow-y-auto → scrollbar
+                  // horizontal muncul di HP).
+                  "break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                  message.role === "user"
+                    ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+                    : "rounded-bl-md border border-slate-200 bg-card text-slate-800",
+                )}
+              >
+                {message.role === "assistant" ? (
+                  <MarkdownLite text={message.text} />
+                ) : (
+                  message.text
+                )}
               </div>
-            )}
-            <span
-              className={cn(
-                "text-[10px] text-slate-400",
-                message.role === "user" ? "text-right" : "text-left"
+              {message.role === "assistant" && !!message.sources?.length && (
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
+                    <ShieldCheck className="h-3 w-3" />
+                    Sumber:
+                  </span>
+                  {message.sources.map((file) => {
+                    const meta = SOURCE_META[file];
+                    if (!meta) return null;
+                    return (
+                      <Link
+                        key={file}
+                        href={meta.href}
+                        className="rounded-full border border-slate-200 bg-card px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-600"
+                      >
+                        {meta.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            >
-              {message.timestamp}
-            </span>
-            {message.role === "assistant" &&
-              message.id !== "greeting" &&
-              !!question && (
-                <FeedbackButtons
-                  messageId={message.id}
-                  question={question}
-                  answer={message.text}
-                />
-              )}
+              <span
+                className={cn(
+                  "text-[10px] text-slate-400",
+                  message.role === "user" ? "text-right" : "text-left",
+                )}
+              >
+                {message.timestamp}
+              </span>
+              {message.role === "assistant" &&
+                message.id !== "greeting" &&
+                !!question && (
+                  <FeedbackButtons
+                    messageId={message.id}
+                    question={question}
+                    answer={message.text}
+                  />
+                )}
+            </div>
           </div>
-        </div>
         );
       })}
 
@@ -337,14 +338,14 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
         </Button>
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
-        <p className="text-[10px] text-slate-500">
+        {/* <p className="text-[10px] text-slate-500">
           Powered by Gemini 3.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
-        </p>
+        </p> */}
         {/* Pengalihan ke petugas: WA resmi hanya lewat tombol di /ppdb
             (nomor dari env) — jangan karang nomor di sini. */}
         <Link
           href="/ppdb"
-          className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+          className="inline-flex shrink-0 items-center mt-2.5 gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
         >
           <Phone className="h-3 w-3" />
           Hubungi Petugas

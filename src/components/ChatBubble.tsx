@@ -26,7 +26,7 @@ function ChatBubbleInner() {
   const { messages } = useChat();
   const unread = Math.min(
     Math.max(messages.filter((m) => m.role === "assistant").length, 1),
-    9
+    10,
   );
 
   const goFullscreen = () => {
@@ -46,19 +46,19 @@ function ChatBubbleInner() {
           "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-2xl",
           "transition-all duration-300 ease-out hover:scale-110 hover:shadow-blue-500/50",
           "animate-bounce-slow",
-          isOpen && "scale-0 opacity-0"
+          isOpen && "scale-0 opacity-0",
         )}
-        aria-label="Buka chat"
+        aria-label="Buka Chat"
       >
         <div className="relative">
           <MessageCircle className="h-7 w-7" />
           <Sparkles className="absolute -right-1 -top-1 h-3 w-3 animate-pulse text-yellow-300" />
         </div>
         <span className="absolute -right-1 -top-1 flex h-5 w-5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-          <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold">
+          {/* <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" /> */}
+          {/* <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold">
             {unread}
-          </span>
+          </span> */}
         </span>
       </button>
 
@@ -81,9 +81,9 @@ function ChatBubbleInner() {
                   </DialogTitle>
                   {/* truncate + min-w-0: subtitle dipotong, bukan mendorong
                       tombol close keluar frame di layar 360px */}
-                  <p className="truncate text-[11px] text-blue-100 sm:text-xs">
+                  {/* <p className="truncate text-[11px] text-blue-100 sm:text-xs">
                     Online • AI Gemini 3.5 Flash-Lite
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div className="flex items-center gap-1">
