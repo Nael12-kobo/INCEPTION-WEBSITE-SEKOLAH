@@ -85,6 +85,9 @@ export default function SejarahPage() {
             width={1024}
             height={672}
             priority
+            // Tanpa sizes, browser mengasumsikan 100vw → varian terbesar
+            // diminta; di HP cukup selebar layar.
+            sizes="(max-width: 640px) 100vw, 1152px"
             className="h-auto w-full object-cover"
           />
         </div>

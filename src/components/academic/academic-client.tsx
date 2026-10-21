@@ -140,11 +140,12 @@ export function AcademicClient({ userName }: { userName: string }) {
         />
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+      {/* Navigation Tabs — flex-nowrap + overflow-x-auto: di 360px tab
+          panjang jadi 4 baris (176px hanya navigasi); scrolly 1 baris. */}
+      <div className="subtle-scroll flex gap-2 overflow-x-auto border-b border-slate-200 pb-3">
         <button
           onClick={() => setActiveTab("jadwal")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+          className={`flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "jadwal"
               ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
               : "bg-card text-slate-600 hover:bg-sky-50"
@@ -155,7 +156,7 @@ export function AcademicClient({ userName }: { userName: string }) {
         </button>
         <button
           onClick={() => setActiveTab("nilai")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+          className={`flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "nilai"
               ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
               : "bg-card text-slate-600 hover:bg-sky-50"
@@ -166,7 +167,7 @@ export function AcademicClient({ userName }: { userName: string }) {
         </button>
         <button
           onClick={() => setActiveTab("materi")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+          className={`flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "materi"
               ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
               : "bg-card text-slate-600 hover:bg-sky-50"
@@ -177,7 +178,7 @@ export function AcademicClient({ userName }: { userName: string }) {
         </button>
         <button
           onClick={() => setActiveTab("ujian")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+          className={`flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "ujian"
               ? "bg-primary text-primary-foreground shadow-md shadow-sky-200"
               : "bg-card text-slate-600 hover:bg-sky-50"
@@ -197,7 +198,7 @@ export function AcademicClient({ userName }: { userName: string }) {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`rounded-lg px-3.5 py-1.5 min-h-9 text-xs font-semibold transition-colors ${
+                  className={`min-h-11 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                     selectedDay === day
                       ? "bg-sky-700 text-white shadow-sm"
                       : "bg-card text-slate-600 hover:bg-slate-100 ring-1 ring-slate-200"

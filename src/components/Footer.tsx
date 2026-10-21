@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone, RadioTower } from "lucide-react";
+import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 const jurusanLinks = ["Pengembangan Perangkat Lunak", "Teknik Jaringan Komputer Dan Telekomunikasi", "Desain Komunikasi Visual", "Teknik Kendaraan Ringan Otomotif"];
 const infoLinks = [
@@ -45,7 +45,7 @@ export function Footer() {
           <ul className="mt-4 space-y-0 text-sm sm:space-y-2.5">
             {jurusanLinks.map((j) => (
               <li key={j}>
-                <Link href="#jurusan" className="block py-2 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
+                <Link href="#jurusan" className="block py-3 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
                   {j}
                 </Link>
               </li>
@@ -58,7 +58,7 @@ export function Footer() {
           <ul className="mt-4 space-y-0 text-sm sm:space-y-2.5">
             {infoLinks.map((l) => (
               <li key={l.label}>
-                <Link href={l.href} className="block py-2 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
+                <Link href={l.href} className="block py-3 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
                   {l.label}
                 </Link>
               </li>

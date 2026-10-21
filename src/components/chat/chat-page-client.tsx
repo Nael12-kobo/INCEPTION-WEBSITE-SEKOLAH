@@ -58,6 +58,8 @@ export function ChatPageClient() {
   } = useChat();
   const isDesktop = useIsDesktop();
   const [expanded, setExpanded] = useState(false);
+  const [landscapeMobile, setLandscapeMobile] = useState(false);
+  const [vrmIdle, setVrmIdle] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -83,6 +85,51 @@ export function ChatPageClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchHistory();
   }, [fetchHistory, conversationId]);
+
+  /**
+   * Guard orientasi LANSKAP (HP dipegang mendatar): panel chat 45% hanya
+   * menyisakan ~40px area pesan (kurang dari satu balasan) → paksa panel
+   * membesar otomatis. 1023px: landscape ≥lg tetap layout desktop.
+   */
+  useEffect(() => {
+    const mq = window.matchMedia(
+      "(orientation: landscape) and (max-width: 1023px)",
+    );
+    const apply = () => {
+      setLandscapeMobile(mq.matches);
+      if (mq.matches) setExpanded(true);
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  /**
+   * VRM 17.5MB jangan rebutan bandwidth saat halaman baru dibuka (HP 4G):
+   * mount setelah browser menganggur, fallback 1.5s untuk browser tanpa
+   * requestIdleCallback.
+   */
+  useEffect(() => {
+    const w = window as typeof window & {
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout: number },
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    let timeoutId: number | undefined;
+    let idleId: number | undefined;
+    const start = () => setVrmIdle(true);
+    if (typeof w.requestIdleCallback === "function") {
+      idleId = w.requestIdleCallback(start, { timeout: 2500 });
+    } else {
+      timeoutId = window.setTimeout(start, 1500);
+    }
+    return () => {
+      if (idleId !== undefined) w.cancelIdleCallback?.(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const openHistory = async (id: string) => {
     try {
@@ -131,12 +178,18 @@ export function ChatPageClient() {
         )}
       >
         {/* offsetY di mobile: angkat badan agar wajah di atas panel chat 30%.
-            Dibaca VrmViewer via ref — ganti breakpoint tanpa reload model. */}
-        <VrmViewer
-          speaking={isTyping && voiceEnabled}
-          paused={!showCharacter}
-          framing={{ offsetY: isDesktop ? -0.4 : -0.45, zoomOffset: -3 }}
-        />
+            Dibaca VrmViewer via ref — ganti breakpoint tanpa reload model.
+            `vrmIdle`: model baru di-mount setelah browser menganggur (lihat
+            useEffect di atas) supaya tidak rebutan bandwidth di awal muat. */}
+        {vrmIdle && (
+          <VrmViewer
+            speaking={isTyping && voiceEnabled}
+            // Panel expanded menutupi hampir seluruh karakter → pause render
+            // loop (hemat GPU/thermal) tanpa unmount (kembali instan).
+            paused={!showCharacter || (expanded && !isDesktop)}
+            framing={{ offsetY: isDesktop ? -0.4 : -0.45, zoomOffset: -3 }}
+          />
+        )}
       </div>
 
       {/* ===== DESKTOP overlay: badge + info + panel chat kanan ===== */}
@@ -205,10 +258,14 @@ export function ChatPageClient() {
               asChild
               variant="outline"
               size="sm"
+              aria-label="Kembali ke beranda"
               className="h-11 bg-card/70 backdrop-blur-xl sm:h-8"
             >
               <Link href="/">
-                <ArrowLeft className="h-4 w-4" /> Kembali
+                {/* Label disembunyikan <380px: 4 tombol di kanan + back button
+                    hampir menyentuh margin di layar 360px (apalagi font OS 130%). */}
+                <ArrowLeft className="h-4 w-4" />{" "}
+                <span className="hidden min-[380px]:inline">Kembali</span>
               </Link>
             </Button>
             <div className="flex gap-2">
@@ -293,7 +350,13 @@ export function ChatPageClient() {
               "transition-[height] duration-300",
               // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
               "pb-[env(safe-area-inset-bottom)]",
-              expanded ? "h-[88%]" : "h-[45%]",
+              // Landscape HP: sisakan ruang pesan maksimal (VRM nyaris
+              // tertutup panel — pause juga aktif, lihat VrmViewer paused).
+              landscapeMobile
+                ? "h-[92%]"
+                : expanded
+                  ? "h-[88%]"
+                  : "h-[45%]",
             )}
           >
             {/* Handle + tombol expand */}
@@ -311,7 +374,7 @@ export function ChatPageClient() {
                 )}
               />
               <span className="h-1 w-12 rounded-full bg-slate-400/80" />
-              <span className="mt-0.5 text-[10px] font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]">
+              <span className="mt-0.5 text-xs font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]">
                 {expanded
                   ? "Ketuk untuk mengecilkan"
                   : "Ketuk untuk memperbesar"}
@@ -492,7 +555,7 @@ function HistoryDrawer({
               <p className="truncate text-xs font-medium text-slate-800">
                 {it.title}
               </p>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 {new Date(it.updatedAt).toLocaleString("id-ID")}
               </p>
             </button>

@@ -237,7 +237,12 @@ export function Hero() {
         </div>
 
           <div>
-          <Image data-hero-image src="/images/TTH.png" alt="Logo TTH" width={300} height={300} priority className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
+          {/* Tanpa `priority`: kolom ini `hidden lg:block` — di HP gambar
+              tidak pernah tampil, tapi <link rel="preload"> tetap dipancarkan
+              → PNG diunduh sia-sia memboroskan kuota + LCP budget.
+              Tanpa priority juga otomatis lazy → mobile tak mengunduh sama
+              sekali (display:none = tidak pernah dianggap intersect). */}
+          <Image data-hero-image src="/images/TTH.png" alt="Logo TTH" width={300} height={300} sizes="(max-width: 1024px) 100vw, 420px" className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
           </div>
           <div data-magnetic className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15">
             <p className="text-2xl font-extrabold text-sky-700">911+</p>

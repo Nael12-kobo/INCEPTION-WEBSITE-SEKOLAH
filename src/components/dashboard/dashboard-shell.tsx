@@ -594,7 +594,8 @@ export function DashboardShell({
                   <Button
                     variant="outline"
                     size="icon-sm"
-                    className="lg:hidden"
+                    // h-11: hamburger = kontrol utama di HP; 32px di ≥sm.
+                    className="h-11 w-11 sm:h-8 sm:w-8 lg:hidden"
                     aria-label="Buka menu"
                   >
                     <Menu className="h-4 w-4" />

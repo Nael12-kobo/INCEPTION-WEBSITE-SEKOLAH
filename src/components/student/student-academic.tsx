@@ -71,7 +71,10 @@ async function scheduleSection(
             <div className="bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-700">
               {group.day}
             </div>
-            <table className="w-full">
+            {/* Bungkus tabel dengan overflow-x-auto: kolom guru/mapel
+                dipotong tanpa bisa digeser di 360px tanpa ini. */}
+            <div className="subtle-scroll overflow-x-auto">
+              <table className="w-full min-w-[420px]">
               <tbody>
                 {group.items.map((item) => (
                   <tr key={item.id} className="border-t border-slate-100">
@@ -93,6 +96,7 @@ async function scheduleSection(
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ))}
       </div>
