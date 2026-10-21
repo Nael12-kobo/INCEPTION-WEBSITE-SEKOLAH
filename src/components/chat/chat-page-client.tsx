@@ -76,10 +76,8 @@ export function ChatPageClient() {
   const [historyLoading, setHistoryLoading] = useState(false);
 
   /**
-   * Kembali ke beranda dengan exit transition: halaman menyusut & bergeser
-   * ke sudut kanan bawah (posisi tombol bubble chat) sambil memudar —
-   * kebalikan persis dari animasi masuk `.chat-page-enter`. Baru setelah
-   * animasi selesai route berpindah, jadi terasa seperti panel yang menutup.
+   * Kembali ke beranda dengan exit transition singkat: halaman turun sedikit
+   * dan memudar tanpa rotasi besar atau blur.
    */
   const goHome = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
@@ -96,19 +94,16 @@ export function ChatPageClient() {
         [
           {
             opacity: 1,
-            transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)",
+            transform: "translate3d(0, 0, 0) scale(1)",
             borderRadius: "0px",
-            filter: "blur(0px)",
           },
           {
             opacity: 0,
-            transform: "translate3d(14%, 18%, 0) scale(0.78) rotate(180deg)",
-            borderRadius: "28px",
-            filter: "blur(7px)",
+            transform: "translate3d(0, 10px, 0) scale(0.985)",
+            borderRadius: "16px",
           },
         ],
-        // transform-origin bottom right diatur `.chat-page-enter`;
-        { duration: 420, easing: CHAT_EASE_IN, fill: "forwards" },
+        { duration: 260, easing: CHAT_EASE_IN, fill: "forwards" },
       );
 
       const finish = () => router.push("/");
@@ -179,7 +174,10 @@ export function ChatPageClient() {
     <main
       ref={mainRef}
       aria-busy={leaving}
-      className="chat-page-enter relative flex h-[100dvh] flex-col overflow-hidden bg-background lg:h-[calc(100dvh-0px)]"
+      className={cn(
+        "chat-page-enter relative flex h-[100dvh] flex-col overflow-hidden bg-background lg:h-[calc(100dvh-0px)]",
+        leaving && "pointer-events-none",
+      )}
     >
       {/* ===== SATU VRM permanen — tidak pernah unmount saat pindah breakpoint ===== */}
       {/* Disembunyikan → hanya `hidden` + paused (model tetap mounted, hemat GPU;

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { animate, stagger } from "animejs";
-import { ArrowRight, Award, PlayCircle, Signal, Loader2} from "lucide-react";
+import { ArrowRight, Award, PlayCircle, Signal, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
@@ -27,13 +27,7 @@ const TITLE_BOTTOM = "Tunas Harapan";
  *    (section-nya `overflow-hidden`). Spasi biasa tetap menyediakan peluang
  *    wrap antar kata.
  */
-function AnimatedTitle({
-  text,
-  prefix,
-}: {
-  text: string;
-  prefix: string;
-}) {
+function AnimatedTitle({ text, prefix }: { text: string; prefix: string }) {
   const words = text.split(" ").filter((word) => word.length > 0);
 
   return (
@@ -60,7 +54,10 @@ function AnimatedTitle({
 
 export function Hero() {
   const rootRef = useRef<HTMLElement | null>(null);
-  const contentRef = useAnimeFlowReveal<HTMLDivElement>({ direction: "alternate", distance: 180 });
+  const contentRef = useAnimeFlowReveal<HTMLDivElement>({
+    direction: "alternate",
+    distance: 180,
+  });
   useTiltHover(contentRef, { maxTilt: 7, scale: 1.02 });
 
   useEffect(() => {
@@ -129,7 +126,10 @@ export function Hero() {
       className="relative overflow-hidden bg-transparent"
     >
       {/* dekorasi */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 dark:hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 dark:hidden"
+      >
         <div className="absolute inset-0 bg-grid-sky [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,black,transparent)]" />
         <div
           data-hero-blob
@@ -145,14 +145,13 @@ export function Hero() {
         />
       </div>
 
-      <div ref={contentRef} className="tilt-scene relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24">
+      <div
+        ref={contentRef}
+        className="tilt-scene relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-16 sm:px-6 lg:grid-cols-2 lg:pb-28 lg:pt-24"
+      >
         {/* Kolom teks */}
         <div data-scrub-item data-scrub-dir="left">
-          <Badge
-            data-hero-fade
-            variant="outline"
-            className="glass-chip mb-5"
-          >
+          <Badge data-hero-fade variant="outline" className="glass-chip mb-5">
             <Signal className="h-3.5 w-3.5 text-sky-600" />
             PPDB Tahun Ajaran 2026/2027 Telah Dibuka
           </Badge>
@@ -191,7 +190,12 @@ export function Hero() {
               </Button>
             </span>
             <span data-magnetic className="inline-flex">
-              <Button size="lg" variant="outline" asChild className="glass-chip">
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="glass-chip"
+              >
                 <Link href="#jurusan">
                   <PlayCircle />
                   Jelajahi Jurusan
@@ -206,7 +210,11 @@ export function Hero() {
               ["12+", "Mitra Industri"],
               ["100%", "Praktik & Magang"],
             ].map(([v, l]) => (
-              <div key={l} data-magnetic className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2">
+              <div
+                key={l}
+                data-magnetic
+                className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2"
+              >
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50 dark:to-blue-500">
                   {v === "100%" ? <Award className="h-4 w-4" /> : v}
                 </span>
@@ -220,45 +228,67 @@ export function Hero() {
         {/* Kolom gambar. Jangan pakai `translate-x-50`: di Tailwind v4 itu
             = 200px (spacing × 50), bukan 50% — gambar keluar frame di HP. */}
         <div>
-                  
-        <div data-scrub-item data-scrub-dir="right" data-tilt className="hidden lg:block">
-          
-          <div className="flex relative z-[-50] top-35 justify-center items-center opacity-75">
-        <Loader2 strokeWidth={2} className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 dark:text-sky-400/80 justify-center items-center" />
-        <Loader2 strokeWidth={2} className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center" />
+          <div
+            data-scrub-item
+            data-scrub-dir="right"
+            data-tilt
+            className="relative hidden min-h-[38rem] lg:block"
+          >
+            <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-75">
+              <Loader2
+                strokeWidth={2}
+                className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 dark:text-sky-400/80 justify-center items-center"
+              />
+              <Loader2
+                strokeWidth={2}
+                className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center"
+              />
 
-        <Loader2 strokeWidth={2} className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center" />
-        <Loader2 strokeWidth={1} className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 dark:text-yellow-500/40 justify-center items-center" />
-        <Loader2 strokeWidth={1.25} className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 dark:text-yellow-500/80 justify-center items-center text-shadow-lg" />
+              <Loader2
+                strokeWidth={2}
+                className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center"
+              />
+              <Loader2
+                strokeWidth={1}
+                className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 dark:text-yellow-500/40 justify-center items-center"
+              />
+              <Loader2
+                strokeWidth={1.25}
+                className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 dark:text-yellow-500/80 justify-center items-center text-shadow-lg"
+              />
 
-        <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] " ></div>
-        <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] " ></div>
+              <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] "></div>
+              <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] "></div>
+            </div>
 
-        </div>
-
-          <div>
-          {/* Tanpa `priority`: kolom ini `hidden lg:block` — di HP gambar
-              tidak pernah tampil, tapi <link rel="preload"> tetap dipancarkan
-              → PNG diunduh sia-sia memboroskan kuota + LCP budget.
-              Tanpa priority juga otomatis lazy → mobile tak mengunduh sama
-              sekali (display:none = tidak pernah dianggap intersect). */}
-          <Image data-hero-image src="/images/TTH.png" alt="Logo TTH" width={300} height={300} sizes="(max-width: 1024px) 100vw, 420px" className="relative select-none pointer-events-none glass-hover mx-auto glass-glare overflow-hidden drop-shadow"/>
+            <Image
+              src="/images/TTH.png"
+              alt="Logo SMK Telekomunikasi Tunas Harapan"
+              width={300}
+              height={300}
+              unoptimized
+              loading="eager"
+              className="absolute left-1/2 top-1/2 z-20 block h-auto w-[300px] max-w-[75%] -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none object-contain drop-shadow"
+            />
+            <div
+              data-magnetic
+              className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15"
+            >
+              <p className="text-2xl font-extrabold text-sky-700">911+</p>
+              <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
+            </div>
+            <div
+              data-magnetic
+              className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:right-12"
+            >
+              <p className="text-2xl font-extrabold text-sky-700">96%</p>
+              <p className="text-xs font-medium text-slate-500">
+                Lulusan terserap
+              </p>
+            </div>
           </div>
-          <div data-magnetic className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15">
-            <p className="text-2xl font-extrabold text-sky-700">911+</p>
-            <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
-          </div>
-          <div data-magnetic className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:right-12">
-            <p className="text-2xl font-extrabold text-sky-700">96%</p>
-            <p className="text-xs font-medium text-slate-500">
-              Lulusan terserap
-            </p>
-          </div>
-          </div>
-          
         </div>
       </div>
-
     </section>
   );
 }

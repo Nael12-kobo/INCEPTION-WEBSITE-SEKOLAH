@@ -22,19 +22,18 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ChatInput, ChatMessages } from "@/components/chat/ChatPanel";
 import {
-  dismissPanel,
+  enterPanel,
+  exitPanel,
   morphIn,
-  morphOut,
   prefersReducedMotion,
   softenSwap,
 } from "@/lib/chat-motion";
 import Image from "next/image";
 
 /**
- * Bubble chat melayang dengan transisi shared-element (FLIP):
- * - dibuka → panel tumbuh dari posisi bubble (scale + opacity + radius),
- * - fullscreen → panel morph ukuran & posisi, konten cross-fade,
- * - ditutup → panel menyusut kembali ke bubble lalu memudar.
+ * Bubble chat melayang dengan transisi ringkas:
+ * - dibuka/ditutup → panel naik sedikit sambil fade, tanpa meregang dari bubble,
+ * - fullscreen → panel morph ukuran & posisi, konten berganti dengan lembut.
  *
  * Semua morph memakai transform/opacity (Web Animations API) sehingga
  * tidak ada layout thrash; di perangkat yang meminta reduced-motion
@@ -53,14 +52,9 @@ function ChatBubbleInner() {
   const fabRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  /** Rect awal untuk morph pembukaan (diambil sebelum panel ter-mount). */
-  const openRect = useRef<DOMRect | null>(null);
-  const openAnim = useRef<Animation | null>(null);
-  /** Token per pembukaan — cegah morph dijalankan dua kali oleh Strict Mode. */
-  const openToken = useRef(0);
-  const animatedToken = useRef(-1);
   /** Rect awal untuk morph compact ↔ fullscreen. */
   const toggleRect = useRef<DOMRect | null>(null);
+  const panelAnim = useRef<Animation | null>(null);
   const closeTimer = useRef<number | null>(null);
   const hasOpened = useRef(false);
 
@@ -71,19 +65,25 @@ function ChatBubbleInner() {
     }
   };
 
-  useEffect(() => clearCloseTimer, []);
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+      }
+      panelAnim.current?.cancel();
+    },
+    [],
+  );
 
   const openChat = useCallback(() => {
     if (isOpen) return;
     clearCloseTimer();
-    openRect.current = fabRef.current?.getBoundingClientRect() ?? null;
-    openToken.current += 1;
     hasOpened.current = true;
     setClosing(false);
     setIsOpen(true);
   }, [isOpen]);
 
-  /** Tutup: morph panel kembali ke bubble (compact) atau fade-down (fullscreen). */
+  /** Tutup dengan fade dan gerak pendek ke bawah. */
   const requestClose = useCallback(() => {
     if (!isOpen || closing) return;
     clearCloseTimer();
@@ -98,26 +98,17 @@ function ChatBubbleInner() {
     }
 
     setClosing(true);
-
-    if (expanded) {
-      dismissPanel(el, 260);
-      closeTimer.current = window.setTimeout(() => {
-        setIsOpen(false);
-        setExpanded(false);
-        setClosing(false);
-      }, 260);
-      return;
-    }
-
-    morphOut(el, fabRef.current?.getBoundingClientRect() ?? null, 360);
+    panelAnim.current = exitPanel(el, 220);
     closeTimer.current = window.setTimeout(() => {
       setIsOpen(false);
+      setExpanded(false);
       setClosing(false);
-    }, 360);
-  }, [isOpen, closing, expanded]);
+      panelAnim.current = null;
+    }, 220);
+  }, [isOpen, closing]);
 
   /**
-   * Morph pembukaan dijalankan dari ref callback, bukan useLayoutEffect:
+   * Entrance dijalankan dari ref callback, bukan useLayoutEffect:
    * Radix Dialog menunda mount kontennya (Presence), sehingga ref panel
    * masih null saat layout effect parent berjalan. Ref callback dipanggil
    * tepat ketika panel benar-benar ada di DOM.
@@ -125,28 +116,23 @@ function ChatBubbleInner() {
   const attachPanel = useCallback((node: HTMLDivElement | null) => {
     panelRef.current = node;
     if (!node) return;
-    const from = openRect.current;
-    if (!from) return;
-    if (animatedToken.current === openToken.current) return;
-    animatedToken.current = openToken.current;
-    openAnim.current = morphIn(node, from, {
-      duration: 560,
-      startOpacity: 0.25,
-    });
+    panelAnim.current = enterPanel(node, 320);
   }, []);
 
-  /** Morph compact ↔ fullscreen: ukuran, posisi, dan opacity sinkron. */
+  /** Morph compact ↔ fullscreen: ukuran dan posisi berubah tanpa blur. */
   useLayoutEffect(() => {
     const el = panelRef.current;
     const from = toggleRect.current;
     // Sama seperti pembukaan: biarkan rect tersimpan agar aman terhadap
     // double-invoke effect di Strict Mode (dev). Ditimpa saat toggle berikutnya.
     if (!el || !from) return;
-    const anim = morphIn(el, from, { duration: 540, startOpacity: 0.55 });
-    const fade = softenSwap(contentRef.current, 460);
+    const anim = morphIn(el, from, { duration: 380 });
+    panelAnim.current = anim;
+    const fade = softenSwap(contentRef.current, 200);
     return () => {
       anim?.cancel();
       fade?.cancel();
+      if (panelAnim.current === anim) panelAnim.current = null;
     };
   }, [expanded]);
 
@@ -158,21 +144,27 @@ function ChatBubbleInner() {
 
   /** Tombol "buka halaman chat" — animasikan keluar dulu agar tidak patah. */
   const goFullPage = useCallback(() => {
+    if (closing) return;
+    setClosing(true);
     toggleRect.current = null;
     const finish = () => {
       setIsOpen(false);
       setExpanded(false);
       setClosing(false);
+      clearCloseTimer();
+      panelAnim.current = null;
       router.push("/chat");
     };
     const el = panelRef.current;
-    const anim = el && !prefersReducedMotion() ? dismissPanel(el, 210) : null;
+    panelAnim.current =
+      el && !prefersReducedMotion() ? exitPanel(el, 260) : null;
+    const anim = panelAnim.current;
     if (anim) {
       anim.finished.catch(() => {}).finally(finish);
     } else {
       finish();
     }
-  }, [router]);
+  }, [closing, router]);
 
   // Kembalikan fokus ke bubble setelah panel tertutup (aksesibilitas).
   useEffect(() => {
@@ -198,11 +190,9 @@ function ChatBubbleInner() {
           "chat-fab group fixed bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full",
           "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-2xl shadow-blue-600/30 ring-1 ring-white/30",
           "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-400/40 focus-visible:ring-offset-2",
-          // Saat panel terbuka bubble berputar & mengecil (bukan sekadar
-          // menghilang), lalu kembali dengan spring ketika panel ditutup.
-          isOpen &&
-            !closing &&
-            "pointer-events-none scale-50 rotate-180 opacity-0",
+          // Bubble baru muncul lagi setelah panel selesai menutup agar kedua
+          // elemen tidak bertumpuk di sudut kanan bawah.
+          isOpen && "pointer-events-none scale-90 opacity-0",
         )}
       >
         <span className="chat-fab-entry pointer-events-none absolute inset-0">
@@ -251,11 +241,12 @@ function ChatBubbleInner() {
             // jadi scrim tetap gelap di kedua tema.
             "chat-panel-overlay bg-black/25",
             expanded && "bg-black/45",
-            closing && "opacity-0 transition-opacity duration-300",
+            closing && "opacity-0 transition-opacity duration-200",
           )}
           className={cn(
             "chat-panel-content fixed z-50 m-0 flex flex-col gap-0 overflow-hidden border-0 bg-card p-0 shadow-2xl",
             "translate-x-0 translate-y-0 [&>button.absolute]:hidden",
+            closing && "pointer-events-none",
             expanded
               ? // Mobile: benar-benar fullscreen. Desktop: panel tinggi
                 // menempel kanan (bukan dialog tengah) agar morph terasa
