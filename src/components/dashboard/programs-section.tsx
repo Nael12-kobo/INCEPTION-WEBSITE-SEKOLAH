@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Code2, Megaphone, Network, RadioTower } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Camera, Code2, Engine, Megaphone, Network } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,24 +16,31 @@ import { useAnimeReveal } from "@/hooks/useAnimeReveal";
 const jurusan = [
   {
     icon: Network,
-    nama: "Teknik Jaringan Komputer",
+    nama: "Teknik Jaringan Komputer Dan Telekomunikasi",
     singkatan: "TJKT",
     desc: "Instalasi jaringan LAN/WAN, administrasi server, keamanan siber, dan cloud computing.",
     skills: ["Cisco & Mikrotik", "Linux Server", "Cyber Security"],
   },
   {
-    icon: RadioTower,
-    nama: "Teknik Telekomunikasi",
-    singkatan: "TT",
-    desc: "Fiber optik, teknologi 5G, sistem komunikasi radio, dan instalasi perangkat telekomunikasi.",
-    skills: ["Fiber Optik", "Teknologi 5G", "Radio Komunikasi"],
+    icon: Camera,
+    nama: "Desain Komunikasi Visual",
+    singkatan: "DKV",
+    desc: "Desain grafis, ilustrasi digital, animasi 2D/3D, dan pengembangan media visual untuk industri kreatif.",
+    skills: ["Adobe Creative Suite", "3D Modeling", "Animation"],
   },
   {
     icon: Code2,
-    nama: "Rekayasa Perangkat Lunak",
-    singkatan: "RPL",
+    nama: "Pengembangan Perangkat Lunak Dan Gim",
+    singkatan: "PPLG",
     desc: "Pengembangan web, aplikasi mobile, basis data, dan integrasi layanan digital modern.",
     skills: ["Web & Mobile", "Database", "UI/UX"],
+  },
+  {
+    icon: Engine,
+    nama: "Teknik Kendaraan Ringan Otomotif",
+    singkatan: "TKRO",
+    desc: "Perawatan mesin, sistem listrik, dan troubleshooting kendaraan bermotor.",
+    skills: ["Mesin & Listrik", "Troubleshooting", "Perawatan"],
   },
 ];
 
