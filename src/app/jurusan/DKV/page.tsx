@@ -96,7 +96,7 @@ export default function DKVPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-900 text-white">
         <DKVHeroDecorations />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
           <Link
             href="/#jurusan"
             className="inline-flex items-center gap-2 py-2.5 min-h-11 text-blue-200 hover:text-white transition-colors mb-8"
@@ -118,8 +118,8 @@ export default function DKVPage() {
                 Desain Komunikasi Visual
               </p>
               <p className="text-lg text-blue-100 max-w-lg">
-                Membentuk kreator visual kreatif yang mampu menyampaikan ide
-                dan pesan melalui desain grafis, fotografi, dan media digital.
+                Membentuk kreator visual kreatif yang mampu menyampaikan ide dan
+                pesan melalui desain grafis, fotografi, dan media digital.
               </p>
             </div>
             <div className="flex-shrink-0 select-none">
@@ -156,16 +156,16 @@ export default function DKVPage() {
                   desain grafis dasar hingga produksi media digital modern.
                 </p>
                 <p>
-                  Di era konten digital ini, kebutuhan akan desainer visual
-                  yang handal semakin meningkat. Mulai dari media sosial,
-                  website, hingga kampanye iklan, semuanya membutuhkan desain
-                  yang menarik dan profesional.
+                  Di era konten digital ini, kebutuhan akan desainer visual yang
+                  handal semakin meningkat. Mulai dari media sosial, website,
+                  hingga kampanye iklan, semuanya membutuhkan desain yang
+                  menarik dan profesional.
                 </p>
                 <p>
                   Kurikulum DKV dirancang untuk mengembangkan kreativitas,
-                  pemikiran visual, dan keterampilan teknis yang dibutuhkan
-                  oleh industri kreatif, mulai dari advertising, publishing,
-                  hingga production house.
+                  pemikiran visual, dan keterampilan teknis yang dibutuhkan oleh
+                  industri kreatif, mulai dari advertising, publishing, hingga
+                  production house.
                 </p>
               </div>
             </div>

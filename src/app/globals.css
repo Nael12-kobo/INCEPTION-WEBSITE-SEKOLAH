@@ -577,24 +577,357 @@
   animation: bounce-slow 2s ease-in-out infinite;
 }
 
-.chat-panel-content[data-state="open"] {
-  animation: chat-panel-in 0.25s ease-out;
+/* ================================================================== *
+ * CHAT ASSISTANT MOTION SYSTEM
+ *
+ * Semua animasi memakai transform + opacity (compositor) agar tetap
+ * halus di perangkat menengah. Keyframes entrance memakai
+ * `animation-fill-mode: backwards` (bukan `both`) supaya setelah selesai
+ * elemen kembali ke style normal — hover/active transition tetap jalan.
+ * ================================================================== */
+:root {
+  --chat-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --chat-ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --chat-ease-smooth: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Panel chat: posisi/ukuran/opacity dianimasikan lewat Web Animations API
+   (FLIP morph dari bubble). Matikan animasi bawaan DialogContent supaya
+   tidak berebut properti `transform` dengan morph. */
+.chat-panel-content {
+  animation: none !important;
+  /* DialogContent generik membawa `duration-200` tanpa transition-property
+     (default: all) — matikan agar lebar/inset tidak ikut ber-transisi dan
+     FLIP morph mengukur ukuran final secara akurat. */
+  transition: none !important;
+  transform-origin: center center;
+  backface-visibility: hidden;
+}
+
+.chat-panel-overlay[data-state="open"] {
+  /* `backwards`, bukan `both`: setelah selesai opacity dikembalikan ke style
+     normal sehingga transisi fade-out saat panel ditutup tetap bekerja. */
+  animation: chat-overlay-in 420ms var(--chat-ease-out) backwards;
+}
+.chat-panel-overlay[data-state="closed"] {
+  animation: chat-overlay-out 220ms ease-in forwards;
+}
+@keyframes chat-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes chat-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ---------- Bubble melayang ---------- */
+.chat-fab {
+  transition:
+    transform 380ms var(--chat-ease-spring),
+    scale 320ms var(--chat-ease-spring),
+    rotate 320ms var(--chat-ease-spring),
+    opacity 260ms ease,
+    box-shadow 380ms ease;
+}
+
+/* Ikon di dalam bubble: crossfade + putar saat panel buka/tutup,
+   seperti tombol chat di referensi (pesan ↔ silang). */
+.chat-fab-icon {
+  transition:
+    opacity 220ms ease,
+    transform 360ms var(--chat-ease-spring),
+    rotate 360ms var(--chat-ease-spring),
+    scale 360ms var(--chat-ease-spring);
+}
+@media (hover: hover) {
+  .chat-fab:hover { transform: scale(1.07) rotate(-3deg); }
+}
+.chat-fab:active { transform: scale(0.92); }
+
+.chat-fab-entry {
+  animation: chat-fab-in 620ms var(--chat-ease-spring) backwards;
+}
+.chat-fab-float {
+  animation: chat-fab-float 5.5s ease-in-out 700ms infinite;
+}
+@keyframes chat-fab-in {
+  0% { opacity: 0; transform: translate3d(0, 22px, 0) scale(0.55); }
+  60% { opacity: 1; transform: translate3d(0, -4px, 0) scale(1.06); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes chat-fab-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6px, 0); }
+}
+
+/* Cincin halo di belakang bubble — dua lapis, saling menyusul. */
+.chat-fab-halo::before,
+.chat-fab-halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid rgb(96 165 250 / 0.55);
+  animation: chat-halo 3.6s var(--chat-ease-out) infinite;
+  pointer-events: none;
+}
+.chat-fab-halo::after { animation-delay: 1.8s; }
+@keyframes chat-halo {
+  0% { opacity: 0.55; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.7); }
+}
+
+.chat-sparkle {
+  animation: chat-sparkle 2.6s ease-in-out infinite;
+}
+@keyframes chat-sparkle {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.55; transform: scale(0.82) rotate(18deg); }
+}
+
+/* ---------- Reveal bertingkat (header → pesan → input) ---------- */
+.chat-reveal {
+  animation: chat-reveal-in 520ms var(--chat-ease-out) backwards;
+  animation-delay: calc(var(--reveal-i, 0) * 70ms + 90ms);
+}
+@keyframes chat-reveal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.985);
+    filter: blur(6px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ---------- Pesan ---------- */
+.chat-msg-in-left {
+  animation: chat-msg-left 460ms var(--chat-ease-out) backwards;
+  transform-origin: bottom left;
+}
+.chat-msg-in-right {
+  animation: chat-msg-right 460ms var(--chat-ease-out) backwards;
   transform-origin: bottom right;
 }
+@keyframes chat-msg-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-14px, 10px, 0) scale(0.96);
+    filter: blur(4px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes chat-msg-right {
+  from {
+    opacity: 0;
+    transform: translate3d(14px, 10px, 0) scale(0.96);
+    filter: blur(4px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
 
-.chat-panel-content[data-state="closed"] {
-  animation: chat-panel-out 0.2s ease-in forwards;
+.chat-bubble-surface {
+  transition: transform 320ms var(--chat-ease-out), box-shadow 320ms ease;
+}
+@media (hover: hover) {
+  .chat-bubble-surface:hover { transform: translateY(-1px); }
+}
+
+.chat-avatar-pop {
+  animation: chat-avatar-pop 520ms var(--chat-ease-spring) backwards;
+}
+@keyframes chat-avatar-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Chip saran ---------- */
+.chat-chip {
+  animation: chat-chip-in 440ms var(--chat-ease-out) backwards;
+  animation-delay: calc(var(--chip-i, 0) * 45ms + 120ms);
+}
+@keyframes chat-chip-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.92);
+    filter: blur(4px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ---------- Welcome / empty state chat ---------- */
+/* Ikon melayang pelan sambil berotasi tipis. Entrance-nya ditangani
+   `.chat-reveal` di elemen pembungkus, jadi keyframes ini murni loop
+   transform (composited) dan tidak berebut dengan animasi masuk. */
+.chat-welcome-icon {
+  animation: chat-welcome-float 6.5s ease-in-out 400ms infinite alternate;
+  will-change: transform;
+}
+@keyframes chat-welcome-float {
+  from { transform: translate3d(0, 4px, 0) rotate(-4deg); }
+  to { transform: translate3d(0, -6px, 0) rotate(5deg); }
+}
+
+/* Dua cincin dekoratif yang samar "bernapas" bergantian. */
+.chat-welcome-ring {
+  animation: chat-welcome-ring 6.5s var(--chat-ease-out) 300ms infinite;
+}
+@keyframes chat-welcome-ring {
+  0%, 100% { opacity: 0.3; transform: scale(0.985); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* ---------- Indikator mengetik ---------- */
+.chat-dot {
+  animation: chat-dot-wave 1.15s var(--chat-ease-smooth) infinite;
+}
+.chat-dot:nth-child(2) { animation-delay: 150ms; }
+.chat-dot:nth-child(3) { animation-delay: 300ms; }
+@keyframes chat-dot-wave {
+  0%, 60%, 100% { opacity: 0.4; transform: translate3d(0, 0, 0); }
+  30% { opacity: 1; transform: translate3d(0, -3px, 0); }
+}
+
+/* ---------- Tombol aksi & feedback ---------- */
+.chat-action {
+  transition: transform 220ms var(--chat-ease-spring), background-color 220ms ease, color 220ms ease, opacity 220ms ease;
+}
+@media (hover: hover) {
+  .chat-action:hover { transform: translateY(-1px) scale(1.05); }
+}
+.chat-action:active { transform: scale(0.9); }
+
+.chat-vote-pop {
+  animation: chat-vote-pop 360ms var(--chat-ease-spring);
+}
+@keyframes chat-vote-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Input & tombol kirim ---------- */
+.chat-input-shell {
+  transition: border-color 260ms ease, box-shadow 320ms ease, background-color 320ms ease, transform 320ms var(--chat-ease-out);
+}
+.chat-input-shell:focus-within {
+  border-color: rgb(56 189 248 / 0.7);
+  box-shadow: 0 0 0 3px rgb(56 189 248 / 0.16), 0 12px 30px -16px rgb(37 99 235 / 0.5);
+}
+
+.chat-send {
+  position: relative;
+  transition: transform 240ms var(--chat-ease-spring), box-shadow 260ms ease, opacity 240ms ease;
+}
+@media (hover: hover) {
+  .chat-send:hover:not(:disabled) { transform: translateY(-1px) scale(1.04); }
+}
+.chat-send:active:not(:disabled) { transform: scale(0.9); }
+.chat-send svg { transition: transform 280ms var(--chat-ease-spring); }
+@media (hover: hover) {
+  .chat-send:hover:not(:disabled) svg { transform: translateX(1px) rotate(-10deg); }
+}
+
+/* Cincin halus di sekitar tombol kirim saat siap dikirim (composited). */
+.chat-send-ready::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid rgb(129 140 248 / 0.7);
+  animation: chat-send-ring 2.4s var(--chat-ease-out) infinite;
+  pointer-events: none;
+}
+@keyframes chat-send-ring {
+  0% { opacity: 0.6; transform: scale(0.94); }
+  70%, 100% { opacity: 0; transform: scale(1.22); }
+}
+
+/* ---------- Panel chat halaman /chat ---------- */
+.chat-sheet {
+  transition:
+    height 460ms var(--chat-ease-out),
+    background-color 420ms ease,
+    box-shadow 460ms ease,
+    border-color 420ms ease;
+}
+.chat-sheet-handle {
+  transition: transform 440ms var(--chat-ease-spring), width 440ms var(--chat-ease-spring), opacity 320ms ease;
+}
+
+.chat-aside-in {
+  animation: chat-aside-in 580ms var(--chat-ease-out) backwards;
+}
+@keyframes chat-aside-in {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+    filter: blur(6px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+.chat-topbar {
+  animation: chat-topbar-in 540ms var(--chat-ease-out) backwards;
+}
+@keyframes chat-topbar-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -14px, 0);
+    filter: blur(5px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* Anak-anak langsung dari `.chat-stagger` masuk berurutan. */
+.chat-stagger > * {
+  animation: chat-stagger-in 480ms var(--chat-ease-out) backwards;
+}
+.chat-stagger > *:nth-child(1) { animation-delay: 60ms; }
+.chat-stagger > *:nth-child(2) { animation-delay: 120ms; }
+.chat-stagger > *:nth-child(3) { animation-delay: 180ms; }
+.chat-stagger > *:nth-child(4) { animation-delay: 240ms; }
+.chat-stagger > *:nth-child(5) { animation-delay: 300ms; }
+.chat-stagger > *:nth-child(6) { animation-delay: 360ms; }
+@keyframes chat-stagger-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.94);
+    filter: blur(5px);
+  }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+.chat-page-fade {
+  animation: chat-page-fade 600ms var(--chat-ease-out) backwards;
+}
+@keyframes chat-page-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Halaman /chat tumbuh dari sudut kanan bawah — posisi tombol bubble chat —
+   lalu membesar memenuhi layar. Transform-origin di sudut itu membuat
+   menyusut/membesar selalu mengarah ke tombol chat. Penutupan memakai
+   keyframes terbalik lewat Web Animations API di `goHome`. */
+.chat-page-enter {
+  animation: chat-page-in 560ms var(--chat-ease-out) backwards;
   transform-origin: bottom right;
 }
-
-@keyframes chat-panel-in {
-  from { opacity: 0; transform: translate(24px, 24px) scale(0.96); }
-  to { opacity: 1; transform: translate(0, 0) scale(1); }
+@keyframes chat-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(14%, 18%, 0) scale(0.78) rotate(180deg);
+    border-radius: 28px;
+    filter: blur(7px);
+  }
+  to { opacity: 1; transform: none; border-radius: 0; filter: blur(0); }
 }
 
-@keyframes chat-panel-out {
-  from { opacity: 1; transform: translate(0, 0) scale(1); }
-  to { opacity: 0; transform: translate(24px, 24px) scale(0.96); }
+/* Ikon panah pada tombol kembali ikut bergeser saat hover. */
+.chat-back:hover .chat-back-icon { transform: translate3d(-2px, 0, 0); }
+.chat-back-icon {
+  transition: transform 300ms var(--chat-ease-spring);
 }
 
 /* Reduced motion — disable animations & smooth scroll */
@@ -607,6 +940,16 @@
   }
   .animate-fade-in, .animate-slide-up, .animate-bounce-slow { animation: none !important; opacity: 1 !important; transform: none !important; }
   .hover-lift:hover { transform: none !important; }
+  .chat-fab-float,
+  .chat-fab-halo::before,
+  .chat-fab-halo::after,
+  .chat-sparkle,
+  .chat-send-ready::after,
+  .chat-welcome-icon,
+  .chat-welcome-ring,
+  .chat-dot { animation: none !important; }
+  .chat-fab:hover, .chat-fab:active { transform: none !important; }
+  .chat-sheet { transition: none !important; will-change: auto; }
 }
 
 

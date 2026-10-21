@@ -33,10 +33,13 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
+    /** Kelas tambahan untuk overlay gelap — dipakai panel chat agar scrim
+     *  bisa ikut berubah halus saat panel masuk mode fullscreen. */
+    overlayClassName?: string;
   }
->(({ className, children, showCloseButton = true, ...props }, ref) => (
+>(({ className, children, showCloseButton = true, overlayClassName, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
+    <DialogOverlay className={overlayClassName} />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

@@ -66,7 +66,14 @@ interface VrmViewerProps {
  * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden / karakter
  *   disembunyikan pengguna (prop paused).
  */
-export function VrmViewer({ src, speaking = false, paused = false, framing, globalOffset, className }: VrmViewerProps) {
+export function VrmViewer({
+  src,
+  speaking = false,
+  paused = false,
+  framing,
+  globalOffset,
+  className,
+}: VrmViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const speakingRef = useRef(speaking);
   const pausedRef = useRef(paused);
@@ -81,10 +88,13 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
   const audioObjectUrlRef = useRef<string | null>(null);
   const mediaSourceRef = useRef<MediaSource | null>(null);
   const sourceBufferRef = useRef<SourceBuffer | null>(null);
-  const mediaElementSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const streamReaderRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
+  const mediaElementSourceRef = useRef<MediaElementAudioSourceNode | null>(
+    null,
+  );
+  const streamReaderRef =
+    useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "fallback">(
-    "loading"
+    "loading",
   );
   const [hint, setHint] = useState("");
 
@@ -135,8 +145,11 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       if (!audioContextRef.current) {
         const AudioContextCtor =
           window.AudioContext ||
-          (window as typeof window & { webkitAudioContext?: typeof AudioContext })
-            .webkitAudioContext;
+          (
+            window as typeof window & {
+              webkitAudioContext?: typeof AudioContext;
+            }
+          ).webkitAudioContext;
         if (AudioContextCtor) {
           audioContextRef.current = new AudioContextCtor();
         }
@@ -191,7 +204,8 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
     };
 
     const onAudio = async (event: Event) => {
-      const buffer = (event as CustomEvent<{ buffer?: ArrayBuffer }>).detail?.buffer;
+      const buffer = (event as CustomEvent<{ buffer?: ArrayBuffer }>).detail
+        ?.buffer;
       if (!buffer) return;
 
       try {
@@ -230,7 +244,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
     };
 
     const onAudioStream = async (event: Event) => {
-      const stream = (event as CustomEvent<{ stream?: ReadableStream<Uint8Array> }>).detail?.stream;
+      const stream = (
+        event as CustomEvent<{ stream?: ReadableStream<Uint8Array> }>
+      ).detail?.stream;
       if (!stream) return;
 
       try {
@@ -277,7 +293,7 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
           if (next) {
             const ab = next.buffer.slice(
               next.byteOffset,
-              next.byteOffset + next.byteLength
+              next.byteOffset + next.byteLength,
             );
             sourceBuffer.appendBuffer(ab as ArrayBuffer);
             return;
@@ -314,7 +330,7 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
             });
             appendNext();
           },
-          { once: true }
+          { once: true },
         );
 
         audio.onended = () => {
@@ -358,9 +374,8 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       try {
         const THREE = await import("three");
         if (isCancelled()) return;
-        const { GLTFLoader } = await import(
-          "three/examples/jsm/loaders/GLTFLoader.js"
-        );
+        const { GLTFLoader } =
+          await import("three/examples/jsm/loaders/GLTFLoader.js");
         if (isCancelled()) return;
         const { VRMLoaderPlugin, VRMUtils } = await import("@pixiv/three-vrm");
         if (isCancelled() || !mount.isConnected) return;
@@ -418,7 +433,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
 
         manager = new THREE.LoadingManager();
         const loader = new GLTFLoader(manager);
-        loader.register((parser: unknown) => new VRMLoaderPlugin(parser as never));
+        loader.register(
+          (parser: unknown) => new VRMLoaderPlugin(parser as never),
+        );
 
         let gltf: import("three/examples/jsm/loaders/GLTFLoader.js").GLTF;
         try {
@@ -436,7 +453,7 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
         if (!vrm) {
           throw new Error(
             "File termuat tapi bukan VRM 1.0 yang valid (userData.vrm kosong). " +
-              "Pastikan file adalah VRM 1.0 dari VRoid Studio terbaru."
+              "Pastikan file adalah VRM 1.0 dari VRoid Studio terbaru.",
           );
         }
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
@@ -481,7 +498,8 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
             const fitHeight = Math.max(size.y, 0.5);
             const distFactor = framingNow?.distance ?? 1.45;
             const baseFit =
-              (fitHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) *
+              (fitHeight /
+                (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) *
               distFactor;
             const targetFactor = framingNow?.targetY ?? 0.55;
             baseCam.x = 0;
@@ -489,8 +507,14 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
             baseCam.z = baseFit;
             lookTarget.set(0, fitHeight * targetFactor, 0);
             const zoom =
-              globalOffsetRef.current?.zoomOffset ?? framingNow?.zoomOffset ?? 0;
-            camera.position.set(baseCam.x, baseCam.y, Math.max(0.3, baseCam.z + zoom));
+              globalOffsetRef.current?.zoomOffset ??
+              framingNow?.zoomOffset ??
+              0;
+            camera.position.set(
+              baseCam.x,
+              baseCam.y,
+              Math.max(0.3, baseCam.z + zoom),
+            );
             camera.lookAt(lookTarget);
           }
         } catch {
@@ -516,13 +540,13 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
         };
         if (!isCancelled()) {
           try {
-            const { VRMAnimationLoaderPlugin, createVRMAnimationClip } = await import(
-              "@pixiv/three-vrm-animation"
-            );
+            const { VRMAnimationLoaderPlugin, createVRMAnimationClip } =
+              await import("@pixiv/three-vrm-animation");
             if (!isCancelled()) {
               const animLoader = new GLTFLoader(manager);
               animLoader.register(
-                (parser: unknown) => new VRMAnimationLoaderPlugin(parser as never)
+                (parser: unknown) =>
+                  new VRMAnimationLoaderPlugin(parser as never),
               );
               const loadClip = async (path: string) => {
                 try {
@@ -534,7 +558,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
                   ).vrmAnimations;
                   const first = anims?.[0];
                   if (!first) {
-                    console.warn(`[VrmViewer] ${path} dilewati (bukan .vrma valid).`);
+                    console.warn(
+                      `[VrmViewer] ${path} dilewati (bukan .vrma valid).`,
+                    );
                     return null;
                   }
                   return createVRMAnimationClip(first, vrm);
@@ -638,7 +664,11 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
           const zoom =
             globalOffsetRef.current?.zoomOffset ?? framingNow?.zoomOffset ?? 0;
           if (zoom !== 0) {
-            camera.position.set(baseCam.x, baseCam.y, Math.max(0.3, baseCam.z + zoom));
+            camera.position.set(
+              baseCam.x,
+              baseCam.y,
+              Math.max(0.3, baseCam.z + zoom),
+            );
             camera.lookAt(lookTarget);
           }
           // Global offset (rig parent) — tak tersentuh prosedural/clip.
@@ -664,9 +694,10 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
 
           if (!clipActive && vrm.humanoid) {
             const chest = vrm.humanoid.getNormalizedBoneNode("chest");
-            if (chest) chest.rotation.x = isSpeakingNow
-              ? Math.sin(t * 1.8) * 0.035
-              : Math.sin(t * 1.4) * 0.03;
+            if (chest)
+              chest.rotation.x = isSpeakingNow
+                ? Math.sin(t * 1.8) * 0.035
+                : Math.sin(t * 1.4) * 0.03;
             const head = vrm.humanoid.getNormalizedBoneNode("head");
             if (head) {
               head.rotation.x = isSpeakingNow
@@ -715,7 +746,11 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
               vrm.expressionManager.setValue("blink", blinkValue);
             }
             let mouthOpen = 0;
-            if (audioSpeakingRef.current && analyserRef.current && analyserDataRef.current) {
+            if (
+              audioSpeakingRef.current &&
+              analyserRef.current &&
+              analyserDataRef.current
+            ) {
               const analyser = analyserRef.current;
               const data = analyserDataRef.current;
               analyser.getByteTimeDomainData(data);
@@ -729,11 +764,10 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
             }
 
             if (isSpeakingNow) {
-              const fallback =
-                0.08 + Math.abs(Math.sin(t * 7)) * 0.12;
+              const fallback = 0.08 + Math.abs(Math.sin(t * 7)) * 0.12;
               vrm.expressionManager.setValue(
                 "aa",
-                Math.max(mouthOpen, fallback)
+                Math.max(mouthOpen, fallback),
               );
             } else {
               vrm.expressionManager.setValue("aa", 0);
@@ -760,7 +794,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       } catch (e) {
         // Tampilkan error ASLI agar mudah diagnosis (404, OOM, parse, dsb).
         const msg =
-          e instanceof Error ? e.message : "Gagal memuat model (unknown error).";
+          e instanceof Error
+            ? e.message
+            : "Gagal memuat model (unknown error).";
         console.warn("[VrmViewer] gagal memuat", url, e);
         if (!isCancelled()) {
           setStatus("fallback");
@@ -779,7 +815,8 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
         mixer = null;
         mixerRoot = null;
       }
-      if (onVisibility) document.removeEventListener("visibilitychange", onVisibility);
+      if (onVisibility)
+        document.removeEventListener("visibilitychange", onVisibility);
       if (onResize) window.removeEventListener("resize", onResize);
       window.removeEventListener("nara:unlock-audio", onUnlockAudio);
       window.removeEventListener("nara:audio", onAudio);
@@ -803,8 +840,8 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       // Buang canvas sisa bila init telat selesai setelah unmount.
       effectMount?.querySelectorAll("canvas").forEach((c) => c.remove());
     };
-  // framing sengaja TIDAK jadi dep: dibaca via framingRef agar ganti
-  // breakpoint tidak reload ulang model besar.
+    // framing sengaja TIDAK jadi dep: dibaca via framingRef agar ganti
+    // breakpoint tidak reload ulang model besar.
   }, [url]);
 
   return (
@@ -812,7 +849,7 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       {/* Latar dekoratif */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,rgb(186_230_253/0.5),transparent_70%),radial-gradient(50%_40%_at_70%_80%,rgb(199_210_254/0.45),transparent_70%)]" />
       <div ref={mountRef} className="absolute inset-0" />
-      
+
       {status === "loading" && (
         <div className="absolute inset-0 flex items-center justify-center bg-card">
           <video
@@ -836,7 +873,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
             Karakter 3D gagal dimuat
           </p>
           {hint && (
-            <p className="max-w-md break-words text-xs text-slate-500">{hint}</p>
+            <p className="max-w-md break-words text-xs text-slate-500">
+              {hint}
+            </p>
           )}
           {speaking && (
             <p className="rounded-full bg-blue-600/10 px-3 py-1 text-xs text-blue-700">

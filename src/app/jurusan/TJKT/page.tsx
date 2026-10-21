@@ -96,7 +96,7 @@ export default function TJKTPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 text-white">
         <TJKTHeroDecorations />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
           <Link
             href="/#jurusan"
             className="inline-flex items-center gap-2 py-2.5 min-h-11 text-gray-200 hover:text-white transition-colors mb-8"
@@ -152,24 +152,24 @@ export default function TJKTPage() {
               </h2>
               <div className="space-y-4 text-black dark:text-gray-400 leading-relaxed">
                 <p>
-                  TJKT (Teknologi Jaringan Komputer &amp; Telekomunikasi)
-                  adalah program keahlian yang mempelajari infrastruktur
-                  jaringan komputer dan sistem telekomunikasi. Siswa akan
-                  menguasai instalasi, konfigurasi, dan troubleshooting
-                  jaringan dari skala lokal hingga enterprise.
+                  TJKT (Teknologi Jaringan Komputer &amp; Telekomunikasi) adalah
+                  program keahlian yang mempelajari infrastruktur jaringan
+                  komputer dan sistem telekomunikasi. Siswa akan menguasai
+                  instalasi, konfigurasi, dan troubleshooting jaringan dari
+                  skala lokal hingga enterprise.
                 </p>
                 <p>
                   Di era digital ini, jaringan komputer menjadi tulang punggung
                   seluruh aktivitas bisnis dan komunikasi. Lulusan TJKT sangat
-                  dibutuhkan oleh perusahaan telekomunikasi, ISP, bank,
-                  instansi pemerintah, dan berbagai organisasi yang membutuhkan
+                  dibutuhkan oleh perusahaan telekomunikasi, ISP, bank, instansi
+                  pemerintah, dan berbagai organisasi yang membutuhkan
                   infrastruktur jaringan handal.
                 </p>
                 <p>
-                  Kurikulum TJKT dirancang sesuai standar industri global
-                  dengan fokus pada keamanan jaringan (cyber security),
-                  cloud computing, dan teknologi telekomunikasi terkini
-                  termasuk 5G dan IoT.
+                  Kurikulum TJKT dirancang sesuai standar industri global dengan
+                  fokus pada keamanan jaringan (cyber security), cloud
+                  computing, dan teknologi telekomunikasi terkini termasuk 5G
+                  dan IoT.
                 </p>
               </div>
             </div>
@@ -236,8 +236,8 @@ export default function TJKTPage() {
               Prospek Karir
             </h2>
             <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-              Lulusan TJKT memiliki peluang karir yang sangat dibutuhkan di
-              era digital
+              Lulusan TJKT memiliki peluang karir yang sangat dibutuhkan di era
+              digital
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

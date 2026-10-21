@@ -2,7 +2,15 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from "react";
 import {
   ArrowLeft,
   Bot,
@@ -23,6 +31,8 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@/components/chat/chat-store";
 import { ChatInput, ChatMessages } from "@/components/chat/ChatPanel";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { usePresence } from "@/hooks/usePresence";
+import { CHAT_EASE_IN, prefersReducedMotion } from "@/lib/chat-motion";
 
 const VrmViewer = dynamic(
   () => import("@/components/chat/VrmViewer").then((m) => m.VrmViewer),
@@ -57,10 +67,54 @@ export function ChatPageClient() {
     toggleVoice,
   } = useChat();
   const isDesktop = useIsDesktop();
+  const router = useRouter();
+  const mainRef = useRef<HTMLElement>(null);
+  const [leaving, setLeaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  /**
+   * Kembali ke beranda dengan exit transition: halaman menyusut & bergeser
+   * ke sudut kanan bawah (posisi tombol bubble chat) sambil memudar —
+   * kebalikan persis dari animasi masuk `.chat-page-enter`. Baru setelah
+   * animasi selesai route berpindah, jadi terasa seperti panel yang menutup.
+   */
+  const goHome = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      if (leaving) {
+        e.preventDefault();
+        return;
+      }
+      if (prefersReducedMotion()) return; // biarkan <Link> navigasi normal
+      e.preventDefault();
+      setLeaving(true);
+      const el = mainRef.current;
+      const anim = el?.animate(
+        [
+          {
+            opacity: 1,
+            transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)",
+            borderRadius: "0px",
+            filter: "blur(0px)",
+          },
+          {
+            opacity: 0,
+            transform: "translate3d(14%, 18%, 0) scale(0.78) rotate(180deg)",
+            borderRadius: "28px",
+            filter: "blur(7px)",
+          },
+        ],
+        // transform-origin bottom right diatur `.chat-page-enter`;
+        { duration: 420, easing: CHAT_EASE_IN, fill: "forwards" },
+      );
+      const finish = () => router.push("/");
+      if (anim) anim.finished.catch(() => {}).finally(finish);
+      else finish();
+    },
+    [leaving, router],
+  );
 
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -120,14 +174,21 @@ export function ChatPageClient() {
   );
 
   return (
-    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-sky-100 via-slate-50 to-indigo-100 lg:h-[calc(100dvh-0px)]">
+    <main
+      ref={mainRef}
+      aria-busy={leaving}
+      className="chat-page-enter relative flex h-[100dvh] flex-col overflow-hidden bg-background lg:h-[calc(100dvh-0px)]"
+    >
       {/* ===== SATU VRM permanen — tidak pernah unmount saat pindah breakpoint ===== */}
       {/* Disembunyikan → hanya `hidden` + paused (model tetap mounted, hemat GPU;
           saat ditampilkan lagi instan tanpa unduh ulang). */}
       <div
+        aria-hidden={!showCharacter}
         className={cn(
-          "absolute inset-0 lg:inset-y-0 lg:left-0 lg:right-[440px]",
-          !showCharacter && "hidden",
+          "absolute inset-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:inset-y-0 lg:left-0 lg:right-[440px]",
+          showCharacter
+            ? "scale-100 opacity-100"
+            : "pointer-events-none scale-[0.98] opacity-0",
         )}
       >
         {/* offsetY di mobile: angkat badan agar wajah di atas panel chat 30%.
@@ -142,21 +203,25 @@ export function ChatPageClient() {
       {/* ===== DESKTOP overlay: badge + info + panel chat kanan ===== */}
       {isDesktop && (
         <>
-          <div className="absolute left-6 top-6 flex items-center gap-2">
+          <div className="chat-stagger absolute left-6 top-6 flex items-center gap-2">
             <Button
               asChild
               variant="outline"
               size="sm"
-              className="bg-card/70 backdrop-blur-xl"
+              className="chat-back bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-95"
             >
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" /> Beranda
+              <Link href="/" onClick={goHome}>
+                <ArrowLeft className="chat-back-icon h-4 w-4" /> Beranda
               </Link>
             </Button>
           </div>
-          <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 bg-card/60 p-4 backdrop-blur-xl">
+          <div
+            className="chat-reveal pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-border bg-card/90 p-4 shadow-sm backdrop-blur-xl"
+            style={{ "--reveal-i": 2 } as CSSProperties}
+          >
             <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-              <Bot className="h-4 w-4 text-blue-600" /> Nana AI
+              <Bot className="h-4 w-4 text-blue-600" /> Asisten Chat Sekolah
+              {/* <span className="text-blue-600"> Asisten Chat Sekolah</span> */}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
               Asisten sekolah berbasis AI, dapat membantu menjawab pertanyaan
@@ -165,7 +230,7 @@ export function ChatPageClient() {
           </div>
 
           {/* Kanan — panel chat translucent */}
-          <aside className="absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-white/50 bg-card/60 backdrop-blur-2xl">
+          <aside className="chat-aside-in absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-border bg-background shadow-[-24px_0_60px_-40px_rgb(15_23_42/0.28)]">
             <DesktopHeader
               onHistory={() => setShowHistory((v) => !v)}
               onNew={() => {
@@ -181,16 +246,15 @@ export function ChatPageClient() {
               <ChatMessages />
             </div>
             <ChatInput autoFocus />
-            {showHistory && (
-              <HistoryDrawer
-                items={history}
-                loading={historyLoading}
-                activeId={conversationId}
-                onPick={openHistory}
-                onDelete={deleteHistory}
-                onClose={() => setShowHistory(false)}
-              />
-            )}
+            <HistoryDrawer
+              open={showHistory}
+              items={history}
+              loading={historyLoading}
+              activeId={conversationId}
+              onPick={openHistory}
+              onDelete={deleteHistory}
+              onClose={() => setShowHistory(false)}
+            />
           </aside>
         </>
       )}
@@ -200,18 +264,18 @@ export function ChatPageClient() {
         <>
           {/* Top bar melayang */}
           {/* top aman di bawah status bar iPhone (viewportFit=cover; env=0 di HP lain). */}
-          <div className="absolute left-4 right-4 top-[calc(env(safe-area-inset-top)+1rem)] flex items-center justify-between">
+          <div className="chat-topbar absolute left-4 right-4 top-[calc(env(safe-area-inset-top)+1rem)] flex items-center justify-between">
             <Button
               asChild
               variant="outline"
               size="sm"
-              className="h-11 bg-card/70 backdrop-blur-xl sm:h-8"
+              className="chat-back h-11 bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-95 sm:h-8"
             >
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" /> Kembali
+              <Link href="/" onClick={goHome}>
+                <ArrowLeft className="chat-back-icon h-4 w-4" /> Kembali
               </Link>
             </Button>
-            <div className="flex gap-2">
+            <div className="chat-stagger flex gap-2">
               <Button
                 variant="outline"
                 size="icon-sm"
@@ -222,7 +286,7 @@ export function ChatPageClient() {
                   showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"
                 }
                 aria-pressed={!showCharacter}
-                className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+                className="chat-action h-11 w-11 bg-card/70 backdrop-blur-xl"
                 onClick={toggleCharacter}
               >
                 {showCharacter ? (
@@ -237,7 +301,7 @@ export function ChatPageClient() {
                 aria-label={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
                 title={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
                 aria-pressed={!voiceEnabled}
-                className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+                className="chat-action h-11 w-11 bg-card/70 backdrop-blur-xl"
                 onClick={toggleVoice}
               >
                 {voiceEnabled ? (
@@ -250,7 +314,7 @@ export function ChatPageClient() {
                 variant="outline"
                 size="icon-sm"
                 aria-label="Riwayat"
-                className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+                className="chat-action h-11 w-11 bg-card/70 backdrop-blur-xl"
                 onClick={() => {
                   setShowHistory((v) => !v);
                   if (!showHistory) void fetchHistory();
@@ -261,7 +325,8 @@ export function ChatPageClient() {
               <Button
                 variant="outline"
                 size="icon-sm"
-                className="h-11 w-11 bg-card/70 backdrop-blur-xl"
+                aria-pressed={expanded}
+                className="chat-action h-11 w-11 bg-card/70 backdrop-blur-xl"
                 onClick={() => setExpanded((v) => !v)}
                 aria-label={expanded ? "Kecilkan chat" : "Fullscreen chat"}
               >
@@ -280,17 +345,15 @@ export function ChatPageClient() {
             (kurang dari satu balasan). */}
           <section
             className={cn(
-              "absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t",
-              // Collapsed (45%): kaca hampir bening — gradient putih 25–5%
-              // + blur supaya karakter 3D di belakang panel terlihat jelas.
-              // Expanded (88%): putih opaque penuh, blur dilepas (tak berguna
-              // di atas bg solid + hemat GPU mobile saat panel fullscreen).
-              // Bubble pesan sendiri opaque (bg-card / gradasi biru) jadi teks
-              // tetap kontras; baris input punya lapisan bg-card/20 sendiri.
+              "chat-sheet absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t",
+              // Panel memakai warna latar standar situs (bg-background),
+              // bukan gelas biru transparan: teks pesan harus terbaca jelas
+              // di atas karakter 3D. Collapsed masih diberi blur tipis karena
+              // 5% area karakter tetap mengintip di belakang tepi panel;
+              // expanded dilepas (tak berguna di atas bg solid + hemat GPU).
               expanded
-                ? "border-white bg-card shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
-                : "border-white/30 bg-gradient-to-t from-card/25 via-card/15 to-card/5 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
-              "transition-[height] duration-300",
+                ? "border-border bg-background shadow-[0_-12px_40px_-12px_rgb(15_23_42/0.22)]"
+                : "border-border bg-background/95 shadow-[0_-12px_40px_-12px_rgb(15_23_42/0.28)] backdrop-blur-xl",
               // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
               "pb-[env(safe-area-inset-bottom)]",
               expanded ? "h-[88%]" : "h-[45%]",
@@ -299,19 +362,32 @@ export function ChatPageClient() {
             {/* Handle + tombol expand */}
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="flex w-full flex-col items-center gap-0.5 pb-1 pt-2"
+              className="flex w-full flex-col items-center gap-0.5 pb-1 pt-2 transition-transform duration-300 active:scale-[0.99]"
               aria-label={
                 expanded ? "Kecilkan panel chat" : "Perbesar panel chat"
               }
+              aria-expanded={expanded}
             >
               <ChevronUp
                 className={cn(
-                  "h-5 w-5 text-slate-500 drop-shadow-sm transition-transform",
+                  "h-5 w-5 text-slate-500 drop-shadow-sm transition-transform duration-500 ease-[cubic-bezier(0.34,1.35,0.64,1)]",
                   expanded && "rotate-180",
                 )}
               />
-              <span className="h-1 w-12 rounded-full bg-slate-400/80" />
-              <span className="mt-0.5 text-[10px] font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]">
+              <span
+                className={cn(
+                  "chat-sheet-handle h-1 rounded-full bg-slate-400/80",
+                  expanded ? "w-16 opacity-100" : "w-12 opacity-90",
+                )}
+              />
+              <span
+                className={cn(
+                  "mt-0.5 text-[10px] font-medium text-slate-700 transition-[opacity,transform] duration-300 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]",
+                  expanded
+                    ? "translate-y-0 opacity-60"
+                    : "translate-y-0 opacity-100",
+                )}
+              >
                 {expanded
                   ? "Ketuk untuk mengecilkan"
                   : "Ketuk untuk memperbesar"}
@@ -326,17 +402,16 @@ export function ChatPageClient() {
             </div>
           </section>
 
-          {showHistory && (
-            <HistoryDrawer
-              items={history}
-              loading={historyLoading}
-              activeId={conversationId}
-              onPick={openHistory}
-              onDelete={deleteHistory}
-              onClose={() => setShowHistory(false)}
-              floating
-            />
-          )}
+          <HistoryDrawer
+            open={showHistory}
+            items={history}
+            loading={historyLoading}
+            activeId={conversationId}
+            onPick={openHistory}
+            onDelete={deleteHistory}
+            onClose={() => setShowHistory(false)}
+            floating
+          />
         </>
       )}
     </main>
@@ -359,7 +434,7 @@ function DesktopHeader({
   onToggleVoice: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-white/40 p-4">
+    <div className="chat-stagger flex items-center justify-between border-b border-border bg-card p-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
           <Bot className="h-5 w-5" />
@@ -373,10 +448,11 @@ function DesktopHeader({
           </p> */}
         </div>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="chat-stagger flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon-sm"
+          className="chat-action"
           onClick={onToggleCharacter}
           title={showCharacter ? "Sembunyikan karakter" : "Tampilkan karakter"}
           aria-label={
@@ -393,6 +469,7 @@ function DesktopHeader({
         <Button
           variant="ghost"
           size="icon-sm"
+          className="chat-action"
           onClick={onToggleVoice}
           title={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
           aria-label={voiceEnabled ? "Matikan suara" : "Nyalakan suara"}
@@ -407,6 +484,7 @@ function DesktopHeader({
         <Button
           variant="ghost"
           size="icon-sm"
+          className="chat-action"
           onClick={onNew}
           title="Percakapan baru"
           aria-label="Percakapan baru"
@@ -416,6 +494,7 @@ function DesktopHeader({
         <Button
           variant="ghost"
           size="icon-sm"
+          className="chat-action"
           onClick={onHistory}
           title="Riwayat"
           aria-label="Riwayat"
@@ -428,6 +507,7 @@ function DesktopHeader({
 }
 
 function HistoryDrawer({
+  open,
   items,
   loading,
   activeId,
@@ -436,6 +516,7 @@ function HistoryDrawer({
   onClose,
   floating = false,
 }: {
+  open: boolean;
   items: HistoryItem[];
   loading: boolean;
   activeId: string | null;
@@ -444,13 +525,21 @@ function HistoryDrawer({
   onClose: () => void;
   floating?: boolean;
 }) {
+  const { mounted, visible } = usePresence(open, 260);
+  if (!mounted) return null;
+
   return (
     <div
+      aria-hidden={!open}
       className={cn(
-        "border-white/50 bg-card/85 backdrop-blur-2xl",
+        "border-border bg-card shadow-2xl backdrop-blur-2xl",
+        "transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
         floating
-          ? "absolute inset-x-4 top-16 z-10 max-h-[60%] overflow-hidden rounded-2xl border shadow-2xl"
-          : "absolute inset-x-0 top-0 z-10 max-h-[50%] overflow-hidden rounded-b-2xl border-b shadow-xl",
+          ? "absolute inset-x-4 top-16 z-10 max-h-[60%] origin-top overflow-hidden rounded-2xl border"
+          : "absolute inset-x-0 top-0 z-10 max-h-[50%] origin-top overflow-hidden rounded-b-2xl border-b",
+        visible
+          ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+          : "pointer-events-none -translate-y-3 scale-[0.97] opacity-0",
       )}
     >
       <div className="flex items-center justify-between border-b border-slate-200/70 p-3">
@@ -476,11 +565,12 @@ function HistoryDrawer({
             tersimpan otomatis.
           </p>
         )}
-        {items.map((it) => (
+        {items.map((it, i) => (
           <div
             key={it.id}
+            style={{ "--reveal-i": Math.min(i, 6) } as CSSProperties}
             className={cn(
-              "flex items-center gap-1 rounded-xl pr-1 transition-colors hover:bg-blue-50",
+              "chat-reveal flex items-center gap-1 rounded-xl pr-1 transition-colors hover:bg-blue-50",
               activeId === it.id && "bg-blue-50 ring-1 ring-blue-200",
             )}
           >

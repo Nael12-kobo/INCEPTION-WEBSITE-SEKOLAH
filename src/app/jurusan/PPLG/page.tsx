@@ -105,21 +105,29 @@ const mitra = [
     w: 5116,
     h: 1777,
   },
-  { nama: "Agung Sedayu Group", gambar: "/sponsor/agung-sedayu.png", w: 232, h: 160 },
-  { nama: "PT Ciliandra Perkasa", gambar: "/sponsor/ciliandra-perkasa.png", w: 282, h: 500 },
+  {
+    nama: "Agung Sedayu Group",
+    gambar: "/sponsor/agung-sedayu.png",
+    w: 232,
+    h: 160,
+  },
+  {
+    nama: "PT Ciliandra Perkasa",
+    gambar: "/sponsor/ciliandra-perkasa.png",
+    w: 282,
+    h: 500,
+  },
 ];
 
 export default function PPLGPage() {
   return (
-
-
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-rose-500 via-rose-600 to-red-700 text-white">
         <PPLGHeroDecorations />
         <PPLGHeroDecorationsMobile />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
           <Link
             href="/#jurusan"
             className="inline-flex items-center gap-2 py-2.5 min-h-11 text-blue-200 hover:text-white transition-colors mb-8"
@@ -175,16 +183,16 @@ export default function PPLGPage() {
                 <p>
                   PPLG (Pemrograman Perangkat Lunak & Gim) adalah program
                   keahlian yang mempelajari seluk-beluk pengembangan perangkat
-                  lunak mulai dari aplikasi web, mobile, hingga gim. Siswa
-                  akan diajarkan berbagai bahasa pemrograman modern dan
-                  framework terkini yang banyak digunakan di industri.
+                  lunak mulai dari aplikasi web, mobile, hingga gim. Siswa akan
+                  diajarkan berbagai bahasa pemrograman modern dan framework
+                  terkini yang banyak digunakan di industri.
                 </p>
                 <p>
                   Jurusan ini dirancang untuk menghasilkan lulusan yang siap
                   kerja di bidang teknologi informasi dengan kemampuan coding
-                  yang solid, pemahaman alur kerja pengembangan perangkat
-                  lunak (software development lifecycle), serta keterampilan
-                  problem solving yang tinggi.
+                  yang solid, pemahaman alur kerja pengembangan perangkat lunak
+                  (software development lifecycle), serta keterampilan problem
+                  solving yang tinggi.
                 </p>
                 <p>
                   Dengan perkembangan industri teknologi yang sangat pesat,
@@ -313,7 +321,7 @@ export default function PPLGPage() {
         </div>
       </section>
 
-       {/* bagian mitra / kerjasama industri */}
+      {/* bagian mitra / kerjasama industri */}
       <section
         id="mitra"
         className="py-16 md:py-20 bg-blue-50/60 dark:bg-gray-950 border-b dark:border-gray-800"

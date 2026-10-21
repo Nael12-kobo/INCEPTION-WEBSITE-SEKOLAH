@@ -1,127 +1,371 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Bot, Maximize2, MessageCircle, Sparkles, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { useRouter } from "next/navigation";
+import {
+  Bot,
+  ExternalLink,
+  Maximize2,
+  MessageCircle,
+  Minimize2,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useChat } from "@/components/chat/chat-store";
 import { ChatInput, ChatMessages } from "@/components/chat/ChatPanel";
+import {
+  dismissPanel,
+  morphIn,
+  morphOut,
+  prefersReducedMotion,
+  softenSwap,
+} from "@/lib/chat-motion";
+import Image from "next/image";
 
 /**
- * Bubble chat melayang. FIX double-close: DialogContent generik punya
- * tombol Close bawaan — di sini disembunyikan via
- * `[&_button.absolute]:hidden`, sehingga hanya tersisa 1 tombol X custom
- * di header + 1 tombol fullscreen (Maximize2) ke /chat.
+ * Bubble chat melayang dengan transisi shared-element (FLIP):
+ * - dibuka → panel tumbuh dari posisi bubble (scale + opacity + radius),
+ * - fullscreen → panel morph ukuran & posisi, konten cross-fade,
+ * - ditutup → panel menyusut kembali ke bubble lalu memudar.
+ *
+ * Semua morph memakai transform/opacity (Web Animations API) sehingga
+ * tidak ada layout thrash; di perangkat yang meminta reduced-motion
+ * animasi dilewati dan panel langsung tampil.
+ *
+ * FIX double-close: DialogContent generik punya tombol Close bawaan —
+ * disembunyikan via `[&>button.absolute]:hidden`, jadi hanya ada satu X
+ * custom di header.
  */
 function ChatBubbleInner() {
   const [isOpen, setIsOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [closing, setClosing] = useState(false);
   const router = useRouter();
-  const { messages } = useChat();
-  const unread = Math.min(
-    Math.max(messages.filter((m) => m.role === "assistant").length, 1),
-    10,
-  );
 
-  const goFullscreen = () => {
-    setIsOpen(false);
-    router.push("/chat");
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  /** Rect awal untuk morph pembukaan (diambil sebelum panel ter-mount). */
+  const openRect = useRef<DOMRect | null>(null);
+  const openAnim = useRef<Animation | null>(null);
+  /** Token per pembukaan — cegah morph dijalankan dua kali oleh Strict Mode. */
+  const openToken = useRef(0);
+  const animatedToken = useRef(-1);
+  /** Rect awal untuk morph compact ↔ fullscreen. */
+  const toggleRect = useRef<DOMRect | null>(null);
+  const closeTimer = useRef<number | null>(null);
+  const hasOpened = useRef(false);
+
+  const clearCloseTimer = () => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
   };
+
+  useEffect(() => clearCloseTimer, []);
+
+  const openChat = useCallback(() => {
+    if (isOpen) return;
+    clearCloseTimer();
+    openRect.current = fabRef.current?.getBoundingClientRect() ?? null;
+    openToken.current += 1;
+    hasOpened.current = true;
+    setClosing(false);
+    setIsOpen(true);
+  }, [isOpen]);
+
+  /** Tutup: morph panel kembali ke bubble (compact) atau fade-down (fullscreen). */
+  const requestClose = useCallback(() => {
+    if (!isOpen || closing) return;
+    clearCloseTimer();
+    // Buang rect toggle agar tidak memicu morph saat `expanded` di-reset.
+    toggleRect.current = null;
+
+    const el = panelRef.current;
+    if (!el || prefersReducedMotion()) {
+      setIsOpen(false);
+      setExpanded(false);
+      return;
+    }
+
+    setClosing(true);
+
+    if (expanded) {
+      dismissPanel(el, 260);
+      closeTimer.current = window.setTimeout(() => {
+        setIsOpen(false);
+        setExpanded(false);
+        setClosing(false);
+      }, 260);
+      return;
+    }
+
+    morphOut(el, fabRef.current?.getBoundingClientRect() ?? null, 360);
+    closeTimer.current = window.setTimeout(() => {
+      setIsOpen(false);
+      setClosing(false);
+    }, 360);
+  }, [isOpen, closing, expanded]);
+
+  /**
+   * Morph pembukaan dijalankan dari ref callback, bukan useLayoutEffect:
+   * Radix Dialog menunda mount kontennya (Presence), sehingga ref panel
+   * masih null saat layout effect parent berjalan. Ref callback dipanggil
+   * tepat ketika panel benar-benar ada di DOM.
+   */
+  const attachPanel = useCallback((node: HTMLDivElement | null) => {
+    panelRef.current = node;
+    if (!node) return;
+    const from = openRect.current;
+    if (!from) return;
+    if (animatedToken.current === openToken.current) return;
+    animatedToken.current = openToken.current;
+    openAnim.current = morphIn(node, from, {
+      duration: 560,
+      startOpacity: 0.25,
+    });
+  }, []);
+
+  /** Morph compact ↔ fullscreen: ukuran, posisi, dan opacity sinkron. */
+  useLayoutEffect(() => {
+    const el = panelRef.current;
+    const from = toggleRect.current;
+    // Sama seperti pembukaan: biarkan rect tersimpan agar aman terhadap
+    // double-invoke effect di Strict Mode (dev). Ditimpa saat toggle berikutnya.
+    if (!el || !from) return;
+    const anim = morphIn(el, from, { duration: 540, startOpacity: 0.55 });
+    const fade = softenSwap(contentRef.current, 460);
+    return () => {
+      anim?.cancel();
+      fade?.cancel();
+    };
+  }, [expanded]);
+
+  const toggleExpanded = useCallback(() => {
+    const el = panelRef.current;
+    if (el) toggleRect.current = el.getBoundingClientRect();
+    setExpanded((v) => !v);
+  }, []);
+
+  /** Tombol "buka halaman chat" — animasikan keluar dulu agar tidak patah. */
+  const goFullPage = useCallback(() => {
+    toggleRect.current = null;
+    const finish = () => {
+      setIsOpen(false);
+      setExpanded(false);
+      setClosing(false);
+      router.push("/chat");
+    };
+    const el = panelRef.current;
+    const anim = el && !prefersReducedMotion() ? dismissPanel(el, 210) : null;
+    if (anim) {
+      anim.finished.catch(() => {}).finally(finish);
+    } else {
+      finish();
+    }
+  }, [router]);
+
+  // Kembalikan fokus ke bubble setelah panel tertutup (aksesibilitas).
+  useEffect(() => {
+    if (!isOpen && hasOpened.current) {
+      fabRef.current?.focus({ preventScroll: true });
+    }
+  }, [isOpen]);
 
   return (
     <>
-      {/* Floating button */}
+      {/* ===== Floating bubble ===== */}
       <button
-        onClick={() => setIsOpen(true)}
+        ref={fabRef}
+        type="button"
+        onClick={openChat}
+        aria-label="Buka chat asisten sekolah"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        title="Tanya asisten sekolah"
         className={cn(
           // bottom dihitung dari env(safe-area-inset-bottom) supaya tombol
-          // tidak tertimpa home indicator iPhone (viewportFit=cover aktif)
-          "fixed bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full",
-          "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-2xl",
-          "transition-all duration-300 ease-out hover:scale-110 hover:shadow-blue-500/50",
-          "animate-bounce-slow",
-          isOpen && "scale-0 opacity-0",
+          // tidak tertimpa home indicator iPhone (viewportFit=cover aktif).
+          "chat-fab group fixed bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full",
+          "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-2xl shadow-blue-600/30 ring-1 ring-white/30",
+          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-400/40 focus-visible:ring-offset-2",
+          // Saat panel terbuka bubble berputar & mengecil (bukan sekadar
+          // menghilang), lalu kembali dengan spring ketika panel ditutup.
+          isOpen &&
+            !closing &&
+            "pointer-events-none scale-50 rotate-180 opacity-0",
         )}
-        aria-label="Buka Chat"
       >
-        <div className="relative">
-          <MessageCircle className="h-7 w-7" />
-          <Sparkles className="absolute -right-1 -top-1 h-3 w-3 animate-pulse text-yellow-300" />
-        </div>
-        <span className="absolute -right-1 -top-1 flex h-5 w-5">
-          {/* <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" /> */}
-          {/* <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold">
-            {unread}
-          </span> */}
+        <span className="chat-fab-entry pointer-events-none absolute inset-0">
+          <span
+            className="chat-fab-halo absolute inset-0 rounded-full"
+            aria-hidden
+          />
+          <span className="chat-fab-float relative flex h-full w-full items-center justify-center">
+            {/* Ikon crossfade: pesan ↔ silang, ikut berputar. */}
+            <span className="relative flex h-7 w-7 items-center justify-center">
+              <MessageCircle
+                className={cn(
+                  "chat-fab-icon absolute inset-0 h-7 w-7 drop-shadow-sm",
+                  isOpen
+                    ? "scale-50 -rotate-90 opacity-0"
+                    : "scale-100 rotate-0 opacity-100",
+                )}
+              />
+              <X
+                className={cn(
+                  "chat-fab-icon absolute inset-0 h-6 w-6 drop-shadow-sm",
+                  isOpen
+                    ? "scale-100 rotate-0 opacity-100"
+                    : "scale-50 rotate-90 opacity-0",
+                )}
+              />
+            </span>
+            {/* <Sparkles className="chat-sparkle absolute -right-0.5 -top-0.5 h-4 w-4 text-yellow-300" /> */}
+          </span>
         </span>
       </button>
 
-      {/* Panel chat — tanpa overlay gelap, tanpa close ganda */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {/* ===== Panel chat ===== */}
+      <Dialog
+        open={isOpen}
+        onOpenChange={(next) => {
+          if (next) openChat();
+          else requestClose();
+        }}
+      >
         <DialogContent
+          ref={attachPanel}
           showCloseButton={false}
-          className="chat-panel-content fixed bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] left-auto right-6 top-auto m-0 w-[calc(100vw-2rem)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-2xl border-0 p-0 origin-bottom-right shadow-2xl sm:bottom-6 sm:w-[400px] [&>button.absolute]:hidden"
+          overlayClassName={cn(
+            // `black` tidak ikut di-remap oleh skala warna dark mode,
+            // jadi scrim tetap gelap di kedua tema.
+            "chat-panel-overlay bg-black/25",
+            expanded && "bg-black/45",
+            closing && "opacity-0 transition-opacity duration-300",
+          )}
+          className={cn(
+            "chat-panel-content fixed z-50 m-0 flex flex-col gap-0 overflow-hidden border-0 bg-card p-0 shadow-2xl",
+            "translate-x-0 translate-y-0 [&>button.absolute]:hidden",
+            expanded
+              ? // Mobile: benar-benar fullscreen. Desktop: panel tinggi
+                // menempel kanan (bukan dialog tengah) agar morph terasa
+                // seperti panel yang membesar, bukan halaman baru.
+                "inset-0 h-[100dvh] w-screen max-h-none max-w-none rounded-none sm:inset-y-6 sm:bottom-6 sm:left-auto sm:right-6 sm:top-6 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[min(720px,calc(100vw-3rem))] sm:rounded-3xl"
+              : "bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] left-auto right-6 top-auto h-auto w-[calc(100vw-2rem)] rounded-2xl sm:bottom-6 sm:w-[400px] sm:rounded-2xl",
+          )}
         >
-          {/* Header — SATU-SATUNYA tombol close ada di sini */}
-          <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card/20 backdrop-blur-sm">
-                  <Bot className="h-5 w-5" />
+          <div ref={contentRef} className="flex min-h-0 flex-1 flex-col">
+            {/* ===== Header ===== */}
+            <div
+              className={cn(
+                "chat-reveal relative shrink-0 overflow-hidden bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white",
+                expanded
+                  ? "px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:pt-4"
+                  : "p-4",
+              )}
+              style={{ "--reveal-i": 0 } as CSSProperties}
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full bg-white/12 blur-2xl"
+              />
+              <div className="relative flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="chat-avatar-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 shadow-inner backdrop-blur-sm ring-1 ring-white/30">
+                    {/* <Bot className="h-5 w-5" /> */}
+                    <Image
+                      src="/images/TTH.png"
+                      alt="Logo SMK Telekomunikasi Tunas Harapan"
+                      width={35}
+                      height={35}
+                      quality={100}
+                      className=" drop-shadow-lg"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate text-sm font-semibold">
+                      Asisten Sekolah
+                    </DialogTitle>
+                    <p className="mt-0.5  flex items-center gap-1.5 truncate text-[11px] text-blue-100/90">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                      </span>
+                      Online • Siap membantu
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <DialogTitle className="text-sm font-semibold">
-                    Asisten Sekolah
-                  </DialogTitle>
-                  {/* truncate + min-w-0: subtitle dipotong, bukan mendorong
-                      tombol close keluar frame di layar 360px */}
-                  {/* <p className="truncate text-[11px] text-blue-100 sm:text-xs">
-                    Online • AI Gemini 3.5 Flash-Lite
-                  </p> */}
+                <div className="flex shrink-0 items-center gap-1">
+                  {expanded && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={goFullPage}
+                      aria-label="Buka halaman chat lengkap"
+                      title="Buka halaman chat"
+                      className="chat-action h-9 w-9 text-white hover:bg-white/20 hover:text-white sm:h-8 sm:w-8"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={toggleExpanded}
+                    aria-label={expanded ? "Kecilkan chat" : "Mode fullscreen"}
+                    title={expanded ? "Kecilkan" : "Fullscreen"}
+                    aria-pressed={expanded}
+                    className="chat-action h-9 w-9 text-white hover:bg-white/20 hover:text-white sm:h-8 sm:w-8"
+                  >
+                    {expanded ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={requestClose}
+                    aria-label="Tutup chat"
+                    title="Tutup"
+                    className="chat-action h-9 w-9 text-white hover:bg-white/20 hover:text-white sm:h-8 sm:w-8"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={goFullscreen}
-                  aria-label="Buka fullscreen"
-                  title="Fullscreen"
-                  className="h-9 w-9 text-white hover:bg-card/20 sm:h-8 sm:w-8"
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => setIsOpen(false)}
-                  aria-label="Tutup chat"
-                  title="Tutup"
-                  className="h-9 w-9 text-white hover:bg-card/20 sm:h-8 sm:w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
               </div>
             </div>
-          </div>
 
-          {/* Area pesan — dulu `h-[350px]` tetap: di HP landscape
-              (tinggi ~375px) total dialog melebihi viewport dan
-              terpotong. Dibatasi 50dvh supaya selalu muat. */}
-          <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-card">
-            <ChatMessages compact />
-          </div>
+            {/* ===== Area pesan ===== */}
+            <div
+              className={cn(
+                "chat-reveal flex min-h-0 flex-col bg-background",
+                expanded ? "flex-1" : "h-[min(350px,50dvh)]",
+              )}
+              style={{ "--reveal-i": 1 } as CSSProperties}
+            >
+              <ChatMessages compact={!expanded} />
+            </div>
 
-          <ChatInput />
-          <DialogHeader className="sr-only">
-            <DialogTitle>Panel chat asisten sekolah</DialogTitle>
-          </DialogHeader>
+            {/* ===== Input ===== */}
+            <div
+              className="chat-reveal shrink-0"
+              style={{ "--reveal-i": 2 } as CSSProperties}
+            >
+              <ChatInput />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

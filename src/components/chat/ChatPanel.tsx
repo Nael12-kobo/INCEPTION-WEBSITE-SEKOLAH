@@ -17,35 +17,7 @@ import { cn } from "@/lib/utils";
 import { SOURCE_META } from "@/lib/chat-sources";
 import { useChat } from "./chat-store";
 import { MarkdownLite } from "./MarkdownLite";
-
-/** Pertanyaan populer — sesuai topik di knowledge/. Klik = langsung terkirim. */
-const SUGGESTIONS = [
-  "Apa saja jurusan yang ada?",
-  "Berapa biaya PPDB?",
-  "Apa saja syarat pendaftaran?",
-  "Bagaimana cara mendaftar?",
-  "Saya bingung pilih jurusan",
-  "Bagaimana cara menghubungi sekolah?",
-];
-
-function SuggestionChips() {
-  const { sendMessage, isTyping } = useChat();
-  return (
-    <div className="mr-auto flex max-w-[92%] flex-wrap gap-2">
-      {SUGGESTIONS.map((s) => (
-        <button
-          key={s}
-          type="button"
-          disabled={isTyping}
-          onClick={() => void sendMessage(s)}
-          className="rounded-full border border-blue-200 bg-card px-3.5 py-1.5 text-xs font-medium text-blue-700 shadow-sm transition-colors hover:border-blue-400 hover:bg-blue-50 disabled:opacity-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950"
-        >
-          {s}
-        </button>
-      ))}
-    </div>
-  );
-}
+import { ChatWelcome } from "./ChatWelcome";
 
 /**
  * Tombol 👍/👎 per jawaban AI. Vote disimpan ke /api/chat/feedback dan
@@ -121,9 +93,9 @@ function FeedbackButtons({
         aria-label="Jawaban membantu"
         aria-pressed={voted === "UP"}
         className={cn(
-          "rounded-md p-1 transition-colors",
+          "chat-action rounded-md p-1 transition-colors",
           voted === "UP"
-            ? "bg-green-100 text-green-600"
+            ? "chat-vote-pop bg-green-100 text-green-600"
             : "text-slate-400 hover:bg-green-50 hover:text-green-600",
           !voted && "hover:bg-green-50",
           (voted || sending) && "cursor-default opacity-80",
@@ -138,9 +110,9 @@ function FeedbackButtons({
         aria-label="Jawaban tidak membantu"
         aria-pressed={voted === "DOWN"}
         className={cn(
-          "rounded-md p-1 transition-colors",
+          "chat-action rounded-md p-1 transition-colors",
           voted === "DOWN"
-            ? "bg-red-100 text-red-500"
+            ? "chat-vote-pop bg-red-100 text-red-500"
             : "text-slate-400 hover:bg-red-50 hover:text-red-500",
           (voted || sending) && "cursor-default opacity-80",
         )}
@@ -153,19 +125,26 @@ function FeedbackButtons({
 
 export function ChatMessages({ compact = false }: { compact?: boolean }) {
   const { messages, isTyping } = useChat();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, isTyping]);
-
-  // Chat masih baru (hanya sapaan) → tampilkan pertanyaan populer
+  // Chat masih baru (hanya sapaan) → tampilkan welcome bertahap + saran
   // agar user bisa mulai tanpa perlu mengetik.
-  const showSuggestions =
-    !isTyping && messages.length <= 1 && messages[0]?.id === "greeting";
+  const isFresh = messages.length <= 1 && messages[0]?.id === "greeting";
+
+  useEffect(() => {
+    // Welcome dimulai dari atas (jangan auto-scroll ke sentinel bawah),
+    // sedangkan percakapan berjalan tetap menempel ke pesan terbaru.
+    if (isFresh) {
+      scrollRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, isTyping, isFresh]);
 
   return (
     <div
+      ref={scrollRef}
       className={cn(
         "flex-1 space-y-4 overflow-y-auto subtle-scroll",
         compact ? "p-4" : "p-4 sm:p-6",
@@ -173,121 +152,126 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
         // ke-scroll ke atas memudar halus ~56px, bukan terpotong mendadak.
         // Mask menyatu dengan scroll container (tanpa overlay yang
         // menutup area sentuh). Prefix -webkit- wajib untuk Safari iOS.
+        // Mask hanya saat sudah ada pesan — welcome tidak boleh ikut
+        // memudar di tepi atas panel compact.
         compact &&
+          !isFresh &&
           "[mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)]",
+        // Fullscreen + belum ada pesan: welcome diletakkan di tengah area.
+        // Compact sengaja rata atas — flex centering + overflow akan
+        // memotong sisi atas saat konten lebih tinggi dari panel.
+        isFresh && !compact && "flex flex-col justify-center",
       )}
     >
-      {messages.map((message, idx) => {
-        // Pertanyaan yang memicu jawaban ini = pesan user terakhir sebelumnya.
-        const question =
-          message.role === "assistant"
-            ? ([...messages.slice(0, idx)]
-                .reverse()
-                .find((m) => m.role === "user")?.text ?? "")
-            : "";
-        return (
-          <div
-            key={message.id}
-            className={cn(
-              "flex max-w-[88%] gap-2.5",
-              message.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto",
-            )}
-          >
+      {!isFresh &&
+        messages.map((message, idx) => {
+          // Pertanyaan yang memicu jawaban ini = pesan user terakhir sebelumnya.
+          const question =
+            message.role === "assistant"
+              ? ([...messages.slice(0, idx)]
+                  .reverse()
+                  .find((m) => m.role === "user")?.text ?? "")
+              : "";
+          return (
             <div
+              key={message.id}
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white",
+                "flex max-w-[88%] gap-2.5",
                 message.role === "user"
-                  ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                  : "bg-gradient-to-br from-indigo-500 to-purple-600",
+                  ? "chat-msg-in-right ml-auto flex-row-reverse"
+                  : "chat-msg-in-left mr-auto",
               )}
             >
-              {message.role === "user" ? (
-                <User className="h-4 w-4" />
-              ) : (
-                <Bot className="h-4 w-4" />
-              )}
-            </div>
-            <div className="flex min-w-0 flex-col gap-1">
               <div
                 className={cn(
-                  // break-words + pre-wrap: balasan Gemini sering berisi URL/
-                  // token panjang & baris baru tanpa ini memaksa overflow-x
-                  // di area pesan (yang cuma overflow-y-auto → scrollbar
-                  // horizontal muncul di HP).
-                  "break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                  "chat-avatar-pop flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ring-1 ring-black/5",
                   message.role === "user"
-                    ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-                    : "rounded-bl-md border border-slate-200 bg-card text-slate-800",
+                    ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                    : "bg-gradient-to-br from-indigo-500 to-purple-600",
                 )}
               >
-                {message.role === "assistant" ? (
-                  <MarkdownLite text={message.text} />
+                {message.role === "user" ? (
+                  <User className="h-4 w-4" />
                 ) : (
-                  message.text
+                  <Bot className="h-4 w-4" />
                 )}
               </div>
-              {message.role === "assistant" && !!message.sources?.length && (
-                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
-                    <ShieldCheck className="h-3 w-3" />
-                    Sumber:
-                  </span>
-                  {message.sources.map((file) => {
-                    const meta = SOURCE_META[file];
-                    if (!meta) return null;
-                    return (
-                      <Link
-                        key={file}
-                        href={meta.href}
-                        className="rounded-full border border-slate-200 bg-card px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-600"
-                      >
-                        {meta.label}
-                      </Link>
-                    );
-                  })}
+              <div className="flex min-w-0 flex-col gap-1">
+                <div
+                  className={cn(
+                    // break-words + pre-wrap: balasan Gemini sering berisi URL/
+                    // token panjang & baris baru tanpa ini memaksa overflow-x
+                    // di area pesan (yang cuma overflow-y-auto → scrollbar
+                    // horizontal muncul di HP).
+                    "chat-bubble-surface break-words whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                    message.role === "user"
+                      ? "rounded-br-md bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/20"
+                      : "rounded-bl-md border border-slate-200 bg-card text-slate-800",
+                  )}
+                >
+                  {message.role === "assistant" ? (
+                    <MarkdownLite text={message.text} />
+                  ) : (
+                    message.text
+                  )}
                 </div>
-              )}
-              <span
-                className={cn(
-                  "text-[10px] text-slate-400",
-                  message.role === "user" ? "text-right" : "text-left",
+                {message.role === "assistant" && !!message.sources?.length && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
+                      <ShieldCheck className="h-3 w-3" />
+                      Sumber:
+                    </span>
+                    {message.sources.map((file) => {
+                      const meta = SOURCE_META[file];
+                      if (!meta) return null;
+                      return (
+                        <Link
+                          key={file}
+                          href={meta.href}
+                          className="rounded-full border border-slate-200 bg-card px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-600"
+                        >
+                          {meta.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                {message.timestamp}
-              </span>
-              {message.role === "assistant" &&
-                message.id !== "greeting" &&
-                !!question && (
-                  <FeedbackButtons
-                    messageId={message.id}
-                    question={question}
-                    answer={message.text}
-                  />
-                )}
+                <span
+                  className={cn(
+                    "text-[10px] text-slate-400",
+                    message.role === "user" ? "text-right" : "text-left",
+                  )}
+                >
+                  {message.timestamp}
+                </span>
+                {message.role === "assistant" &&
+                  message.id !== "greeting" &&
+                  !!question && (
+                    <FeedbackButtons
+                      messageId={message.id}
+                      question={question}
+                      answer={message.text}
+                    />
+                  )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      {showSuggestions && <SuggestionChips />}
+      {isFresh && <ChatWelcome compact={compact} />}
 
       {isTyping && (
-        <div className="mr-auto flex max-w-[88%] gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+        <div className="chat-msg-in-left mr-auto flex max-w-[88%] gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm ring-1 ring-black/5">
             <Bot className="h-4 w-4" />
           </div>
           <div className="rounded-2xl rounded-bl-md border border-slate-200 bg-card px-4 py-3 shadow-sm">
-            <div className="flex gap-1">
-              <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
-              <span
-                className="h-2 w-2 animate-bounce rounded-full bg-slate-400"
-                style={{ animationDelay: "150ms" }}
-              />
-              <span
-                className="h-2 w-2 animate-bounce rounded-full bg-slate-400"
-                style={{ animationDelay: "300ms" }}
-              />
+            <div className="flex items-center gap-1" aria-hidden>
+              <span className="chat-dot h-2 w-2 rounded-full bg-slate-400" />
+              <span className="chat-dot h-2 w-2 rounded-full bg-slate-400" />
+              <span className="chat-dot h-2 w-2 rounded-full bg-slate-400" />
             </div>
+            <span className="sr-only">Asisten sedang mengetik…</span>
           </div>
         </div>
       )}
@@ -299,6 +283,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
 export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
   const { sendMessage, isTyping } = useChat();
   const [value, setValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const submit = () => {
     if (!value.trim() || isTyping) return;
@@ -308,12 +293,18 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
     }
     void sendMessage(value);
     setValue("");
+    // Kembalikan fokus agar bisa langsung lanjut mengetik.
+    inputRef.current?.focus();
   };
 
+  const canSend = !!value.trim() && !isTyping;
+  const nearLimit = value.length > 450;
+
   return (
-    <div className="border-t border-white/20 bg-card/20 p-3 backdrop-blur-xl sm:p-4">
-      <div className="flex gap-2">
+    <div className="border-t border-border bg-card p-3 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+      <div className="chat-input-shell flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-card/90 p-1.5 shadow-sm">
         <Input
+          ref={inputRef}
           placeholder="Ketik pesan Anda..."
           value={value}
           autoFocus={autoFocus}
@@ -325,35 +316,42 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
               submit();
             }
           }}
-          className="flex-1 rounded-xl border-slate-200 bg-card/80 focus:border-blue-500"
+          className="h-10 flex-1 rounded-xl border-0 bg-transparent px-2.5 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+          aria-label="Tulis pesan untuk asisten"
         />
         <Button
           onClick={submit}
-          disabled={!value.trim() || isTyping}
+          disabled={!canSend}
           size="icon"
           aria-label="Kirim pesan"
-          className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg hover:from-blue-600 hover:to-indigo-700"
+          className={cn(
+            "chat-send h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-indigo-700",
+            canSend && "chat-send-ready",
+          )}
         >
           <Send className="h-4 w-4" />
         </Button>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        {/* <p className="text-[10px] text-slate-500">
-          Powered by Gemini 3.5 Flash-Lite • SMK Telekomunikasi Tunas Harapan
-        </p> */}
+      <div className="mt-5 flex items-center justify-between gap-1">
         {/* Pengalihan ke petugas: WA resmi hanya lewat tombol di /ppdb
             (nomor dari env) — jangan karang nomor di sini. */}
         <Link
           href="/ppdb"
-          className="inline-flex shrink-0 items-center mt-2.5 gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
         >
           <Phone className="h-3 w-3" />
           Hubungi Petugas
         </Link>
+        <p
+          className={cn(
+            "text-right text-[10px] tabular-nums transition-colors duration-300",
+            nearLimit ? "text-amber-600" : "text-slate-400",
+          )}
+        >
+          <span>Maksimal Teks </span>
+          {value.length}/500
+        </p>
       </div>
-      <p className="text-right text-[10px] text-slate-400">
-        {value.length}/500
-      </p>
     </div>
   );
 }

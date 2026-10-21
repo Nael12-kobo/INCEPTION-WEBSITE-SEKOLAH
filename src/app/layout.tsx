@@ -42,7 +42,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
-      // Class `.dark` ditulis script di <head> sebelum hydration.
       suppressHydrationWarning
     >
       <head>

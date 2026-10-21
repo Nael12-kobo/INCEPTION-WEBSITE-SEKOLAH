@@ -97,8 +97,9 @@ export default function TKROPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-red-600 via-orange-600 to-yellow-700 text-white">
         <TKROHeroDecorations />
         <TKROHeroDecorationsMobile />
-        
-        <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28">
+
+        {/* <div className="relative max-w-6xl mx-auto px-6 py-12 sm:py-16 md:py-28"> */}
+        <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
           <Link
             href="/#jurusan"
             className="inline-flex items-center gap-2 py-2.5 min-h-11 text-orange-200 hover:text-white transition-colors mb-8"
@@ -120,8 +121,8 @@ export default function TKROPage() {
                 Teknik Kendaraan Ringan Otomotif
               </p>
               <p className="text-lg text-orange-100 max-w-lg">
-                Membentuk teknisi otomotif profesional yang menguasai
-                perawatan, perbaikan, dan diagnostik kendaraan ringan modern.
+                Membentuk teknisi otomotif profesional yang menguasai perawatan,
+                perbaikan, dan diagnostik kendaraan ringan modern.
               </p>
             </div>
             <div className="flex-shrink-0">
@@ -156,23 +157,23 @@ export default function TKROPage() {
               <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
                 <p>
                   TKRO (Teknik Kendaraan Ringan Otomotif) adalah program
-                  keahlian yang mempelajari seluk-beluk perawatan dan
-                  perbaikan kendaraan bermotor ringan seperti mobil penumpang
-                  dan niaga ringan. Siswa akan dibekali pengetahuan teknis
-                  dan keterampilan praktis di bengkel.
+                  keahlian yang mempelajari seluk-beluk perawatan dan perbaikan
+                  kendaraan bermotor ringan seperti mobil penumpang dan niaga
+                  ringan. Siswa akan dibekali pengetahuan teknis dan
+                  keterampilan praktis di bengkel.
                 </p>
                 <p>
-                  Indonesia merupakan salah satu pasar otomotif terbesar di
-                  Asia Tenggara. Dengan jumlah kendaraan yang terus bertambah,
+                  Indonesia merupakan salah satu pasar otomotif terbesar di Asia
+                  Tenggara. Dengan jumlah kendaraan yang terus bertambah,
                   kebutuhan akan teknisi otomotif terampil dan bersertifikat
-                  sangat tinggi. Lulusan TKRO memiliki peluang kerja yang
-                  sangat luas.
+                  sangat tinggi. Lulusan TKRO memiliki peluang kerja yang sangat
+                  luas.
                 </p>
                 <p>
                   Kurikulum TKRO mengikuti perkembangan teknologi otomotif
                   terkini termasuk sistem injeksi, diagnostik elektronik, dan
-                  teknologi kendaraan listrik (EV) yang sedang berkembang
-                  pesat di Indonesia.
+                  teknologi kendaraan listrik (EV) yang sedang berkembang pesat
+                  di Indonesia.
                 </p>
               </div>
             </div>
