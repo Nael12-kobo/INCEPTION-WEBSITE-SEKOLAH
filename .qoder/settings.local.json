@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) | head -100 && echo \"--- total files:\" && find src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) | wc -l && echo \"--- biggest files:\" && find src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -printf \"%s %p\\\\n\" | sort -rn | head -25)",
+      "Bash(echo \"=== public sizes ===\" && du -sh public/* 2>/dev/null | sort -rh | head -30 && echo \"=== image files by size ===\" && find public -type f -printf \"%s %p\\\\n\" | sort -rn | head -25 && echo \"=== next.config ===\" && cat next.config.ts)",
+      "Bash(echo \"=== raw <img usage count ===\" && grep -rn \"<img\" src --include=*.tsx | wc -l && echo \"=== next/image usage ===\" && grep -rln \"from \\\\\"next/image\\\\\"\" src | wc -l && echo \"=== files with <img ===\" && grep -rln \"<img\" src --include=*.tsx && echo \"=== dynamic imports ===\" && grep -rn \"next/dynamic\\\\|lazy\\(\" src --include=*.tsx --include=*.ts | head -20 && echo \"=== three imports ===\" && grep -rn \"from \\\\\"three\\\\|@pixiv\" src --include=*.tsx --include=*.ts | head -20)",
+      "Bash(ls node_modules/next/dist/docs/ | head -50)",
+      "Bash(find node_modules/next/dist/docs -maxdepth 2 -type f | head -60; echo \"=== .next build present? ===\"; ls .next 2>/dev/null | head -20)"
+    ]
+  }
+}
