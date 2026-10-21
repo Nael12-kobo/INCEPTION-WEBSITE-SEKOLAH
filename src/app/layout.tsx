@@ -7,6 +7,7 @@ import {
   ThemeProvider,
   themeInitScript,
 } from "@/components/theme/theme-provider";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,8 +46,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </head>
+
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider>
           <ChatProvider>
