@@ -117,7 +117,7 @@ export function Berita({ posts = [] }: { posts?: BeritaItem[] }) {
               data-tilt
               className="glass glass-hover glass-glare flex flex-col overflow-hidden"
             >
-              <div className="h-2.5 bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400" />
+              <div className="h-2.5 bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400 dark:to-blue-400" />
               {b.gambar ? (
                 <BeritaImage src={b.gambar} alt={b.judul} />
               ) : (

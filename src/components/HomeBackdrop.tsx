@@ -11,7 +11,7 @@ export function HomeBackdrop() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 overflow-hidden z-0 dark:opacity-25"
+      className="pointer-events-none fixed inset-0 overflow-hidden z-0 dark:opacity-25 "
     >
       <div className="absolute inset-0 bg-gradient-to-br from-sky-200/70 via-sky-100/50 to-cyan-100/60" />
       <div className="absolute inset-0 bg-grid-sky opacity-70 [mask-image:radial-gradient(ellipse_80%_70%_at_50%_0%,black,transparent)]" />

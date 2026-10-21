@@ -50,11 +50,18 @@ interface VrmViewerProps {
   className?: string;
 }
 
+const LOADING_FRAME_COUNT = 90;
+const LOADING_FRAME_RATE = 24;
+const LOADING_FRAME_PATHS = Array.from(
+  { length: LOADING_FRAME_COUNT },
+  (_, index) => `/animated/LoadingScreen/Nana_${String(index).padStart(2, "0")}.png`,
+);
+
 /**
  * Viewer karakter VRM (three + @pixiv/three-vrm), VRM 1.0.
  * - src default dari NEXT_PUBLIC_VRM_URL (/models/character.vrm).
  * - File ±17.5MB (aslinya 149MB, dipangkas oleh scripts/optimize-vrm.mjs):
- *   saat memuat tampilkan GIF /animated/loading.gif, tanpa timeout agresif.
+ *   saat memuat tampilkan PNG sequence, tanpa timeout agresif.
  * - Cache di-bust via query `?v=` (lihat cacheVersion di bawah).
  * - Auto-frame bounding box agar karakter selalu masuk frame.
  * - Offset global (prop globalOffset: offsetX/offsetY/rotationYOffset/
@@ -87,6 +94,7 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
     "loading"
   );
   const [hint, setHint] = useState("");
+  const [loadingFrame, setLoadingFrame] = useState(0);
 
   useEffect(() => {
     speakingRef.current = speaking;
@@ -106,6 +114,23 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
   useEffect(() => {
     globalOffsetRef.current = globalOffset;
   }, [globalOffset]);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+
+    let animationFrame = 0;
+    const startedAt = performance.now();
+    const frameDuration = 1000 / LOADING_FRAME_RATE;
+
+    const animate = (now: number) => {
+      const elapsed = now - startedAt;
+      setLoadingFrame(Math.floor(elapsed / frameDuration) % LOADING_FRAME_COUNT);
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [status]);
 
   /**
    * Versi cache model. Ganti angka ini (atau set NEXT_PUBLIC_VRM_VERSION)
@@ -815,13 +840,9 @@ export function VrmViewer({ src, speaking = false, paused = false, framing, glob
       
       {status === "loading" && (
         <div className="absolute inset-0 flex items-center justify-center bg-card">
-          <video
-            src="/animated/loading.webm"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
+          <img
+            src={LOADING_FRAME_PATHS[loadingFrame]}
+            alt="Memuat karakter 3D..."
             aria-label="Memuat karakter 3D..."
             className="h-60 w-60 translate-y-[-60%] object-contain md:h-100 md:w-100 md:translate-y-0"
           />

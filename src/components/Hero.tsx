@@ -162,7 +162,7 @@ export function Hero() {
               <AnimatedTitle text={TITLE_TOP} prefix="top" />
             </span>
             <span
-              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text"
+              className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text dark:to-blue-500"
               aria-label="Tunas Harapan"
             >
               <AnimatedTitle text={TITLE_BOTTOM} prefix="bottom" />
@@ -207,7 +207,7 @@ export function Hero() {
               ["100%", "Praktik & Magang"],
             ].map(([v, l]) => (
               <div key={l} data-magnetic className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50 dark:to-blue-500">
                   {v === "100%" ? <Award className="h-4 w-4" /> : v}
                 </span>
                 <span className="text-sm font-medium text-slate-600">{l}</span>
