@@ -119,7 +119,7 @@ export default function ChatBubblePanel({
         {/* Area pesan — dulu `h-[350px]` tetap: di HP landscape
             (tinggi ~375px) total dialog melebihi viewport dan
             terpotong. Dibatasi 50dvh supaya selalu muat. */}
-        <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-white">
+        <div className="flex h-[min(350px,50dvh)] flex-col bg-gradient-to-b from-slate-50 to-slate-200/30">
           <ChatMessages compact />
         </div>
 

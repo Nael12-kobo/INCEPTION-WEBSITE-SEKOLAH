@@ -167,7 +167,7 @@ export function ChatPageClient() {
   );
 
   return (
-    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-sky-100 via-slate-50 to-indigo-100 lg:h-[calc(100dvh-0px)]">
+    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-sky-100/50 via-slate-50 to-indigo-100/10 lg:h-[calc(100dvh-0px)]">
       {/* ===== SATU VRM permanen — tidak pernah unmount saat pindah breakpoint ===== */}
       {/* Disembunyikan → hanya `hidden` + paused (model tetap mounted, hemat GPU;
           saat ditampilkan lagi instan tanpa unduh ulang). */}
@@ -207,7 +207,7 @@ export function ChatPageClient() {
               </Link>
             </Button>
           </div>
-          <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 bg-card/60 p-4 backdrop-blur-xl">
+          <div className="pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-white/50 dark:border-cyan-900/20 bg-card/60 p-4 backdrop-blur-xl">
             <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
               <Bot className="h-4 w-4 text-blue-600" /> Nana AI
             </p>
@@ -218,7 +218,7 @@ export function ChatPageClient() {
           </div>
 
           {/* Kanan — panel chat translucent */}
-          <aside className="absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-white/50 bg-card/60 backdrop-blur-2xl">
+          <aside className="absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-white/50 dark:border-cyan-900/20 bg-card/60 backdrop-blur-2xl">
             <DesktopHeader
               onHistory={() => setShowHistory((v) => !v)}
               onNew={() => {
@@ -345,8 +345,8 @@ export function ChatPageClient() {
               // Bubble pesan sendiri opaque (bg-card / gradasi biru) jadi teks
               // tetap kontras; baris input punya lapisan bg-card/20 sendiri.
               expanded
-                ? "border-white bg-card shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
-                : "border-white/30 bg-gradient-to-t from-card/25 via-card/15 to-card/5 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
+                ? "border-white dark:border-cyan-900/20 bg-card shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.25)]"
+                : "border-white/30 dark:border-cyan-900/20 bg-gradient-to-t from-card/65 via-card/55 to-card/45 shadow-[0_-12px_40px_-12px_rgb(2_132_199/0.35)] backdrop-blur-sm",
               "transition-[height] duration-300",
               // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
               "pb-[env(safe-area-inset-bottom)]",
@@ -374,7 +374,7 @@ export function ChatPageClient() {
                 )}
               />
               <span className="h-1 w-12 rounded-full bg-slate-400/80" />
-              <span className="mt-0.5 text-xs font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)]">
+              <span className="mt-0.5 text-xs font-medium text-slate-700 [text-shadow:0_1px_8px_rgb(255_255_255/0.9),0_0_2px_rgb(255_255_255/1)] dark:[text-shadow:0_1px_8px_rgb(0_0_0/0.9),0_0_2px_rgb(0_0_0/1)]">
                 {expanded
                   ? "Ketuk untuk mengecilkan"
                   : "Ketuk untuk memperbesar"}
@@ -422,7 +422,7 @@ function DesktopHeader({
   onToggleVoice: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-white/40 p-4">
+    <div className="flex items-center justify-between border-b border-white/40 dark:border-black/40 p-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
           <Bot className="h-5 w-5" />
@@ -516,7 +516,7 @@ function HistoryDrawer({
           : "absolute inset-x-0 top-0 z-10 max-h-[50%] overflow-hidden rounded-b-2xl border-b shadow-xl",
       )}
     >
-      <div className="flex items-center justify-between border-b border-slate-200/70 p-3">
+      <div className="flex items-center justify-between border-b border-slate-200/70  p-3">
         <p className="text-xs font-semibold text-slate-700">
           Riwayat Percakapan
         </p>

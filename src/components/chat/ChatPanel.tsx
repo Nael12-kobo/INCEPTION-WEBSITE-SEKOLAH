@@ -335,7 +335,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
           aria-label="Kirim pesan"
           className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg hover:from-blue-600 hover:to-indigo-700"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-4 w-4 dark:text-white" />
         </Button>
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
