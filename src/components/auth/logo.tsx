@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  */
 const LOGO_SRC = "/images/logo.svg";
 
-export function AuthLogo({
+export function   AuthLogo({
   className,
   width = 44,
   height = 44,

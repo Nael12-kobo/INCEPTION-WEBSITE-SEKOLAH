@@ -40,7 +40,11 @@ export function AuthBrandPanel() {
   }, []);
 
   return (
-    <div ref={rootRef} data-auth-panel className="relative flex h-full flex-col">
+    <div
+      ref={rootRef}
+      data-auth-panel
+      className="relative flex h-full flex-col"
+    >
       {/* Dekorasi latar */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-grid-sky [mask-image:radial-gradient(ellipse_75%_65%_at_40%_40%,black,transparent)]" />
@@ -78,7 +82,9 @@ export function AuthBrandPanel() {
         <p className="text-balance text-xl font-semibold leading-relaxed text-slate-800 xl:text-2xl">
           {t("panel.quote")}
         </p>
-        <p className="mt-4 text-sm font-medium text-slate-500">{t("panel.caption")}</p>
+        <p className="mt-4 text-sm font-medium text-slate-500">
+          {t("panel.caption")}
+        </p>
       </div>
 
       {/* Footer panel + toggle bahasa */}
