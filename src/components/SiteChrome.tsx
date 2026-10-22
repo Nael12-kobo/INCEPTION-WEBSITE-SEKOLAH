@@ -56,8 +56,16 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-card focus:px-4 focus:py-3 focus:font-semibold focus:text-foreground focus:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        Lewati ke konten utama
+      </a>
       {isSite && <Navbar />}
-      {children}
+      <div id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+        {children}
+      </div>
       {isSite && !isChat && <ChatBubble />}
     </>
   );

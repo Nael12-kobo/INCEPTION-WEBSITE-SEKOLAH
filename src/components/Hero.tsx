@@ -62,7 +62,7 @@ export function Hero() {
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return;  
+    if (!root) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const letters = root.querySelectorAll<HTMLElement>("[data-hero-letter]");
@@ -77,7 +77,7 @@ export function Hero() {
         translateY: [36, 0],
         rotateX: [-70, 0],
         duration: 700,
-        delay: stagger(28),
+        delay: stagger(280),
         ease: "outExpo",
       }),
     );
@@ -232,7 +232,7 @@ export function Hero() {
             data-scrub-item
             data-scrub-dir="right"
             data-tilt
-            className="relative hidden min-h-[38rem] lg:block translate-x-35"
+            className="relative hidden min-h-[38rem] lg:block translate-x-8"
           >
             <div
               className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"

@@ -132,7 +132,7 @@ function formatDate(iso: string): string {
 
 /**
  * Ambil N berita terbaru. Gagal fetch TIDAK melempar error — mengembalikan
- * `[]` supaya homepage tetap tampil (kartu berita fallback dipakai).
+ * `[]` supaya homepage tetap tampil dengan empty state yang mengarah ke situs berita resmi.
  */
 export async function ambilBerita(limit = 9): Promise<Berita[]> {
   try {

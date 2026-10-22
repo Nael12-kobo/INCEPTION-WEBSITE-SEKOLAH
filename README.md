@@ -25,7 +25,9 @@ Tailwind CSS.
   desain glassmorphism (anime.js), responsif untuk HP 360–430px.
 - **Berita otomatis** — ditarik dari blog WordPress sekolah
   (`tunasharapan.info/official/blog`) lewat REST API, cache 1 jam, kartu
-  menampilkan foto, kategori, tanggal, dan link ke artikel asli.
+  menampilkan foto, kategori, tanggal, dan link ke artikel asli. Jika sumber
+  tidak tersedia, homepage menampilkan tautan ke situs berita tanpa membuat
+  artikel pengganti.
 - **Galeri fasilitas** (13 foto dokumentasi) dan halaman **Guru & Karyawan**
   (50 foto tenaga pendidik).
 - **Halaman jurusan** PPLG, TJKT, DKV, TKRO; halaman **PPDB**; kebijakan
@@ -154,8 +156,8 @@ Direkomendasikan lewat [Vercel](https://vercel.com/new):
 
 Catatan:
 
-- **Berita** ditarik dari WordPress sekolah saat build lalu di-cache 1 jam;
-  kalau situs sumber sedang down, homepage tetap tampil (fallback statis).
+- **Berita** ditarik dari WordPress sekolah dan di-cache 1 jam; kalau sumber
+  tidak bisa diakses, homepage menampilkan empty state dengan tautan ke blog.
 - Foto guru ada di `public/guru-karyawan/` dan terdaftar di
   `src/lib/guru-karyawan.ts` (tambah foto = tambah entri di sana).
 - Skema database diatur lewat `prisma/schema.prisma` (tidak ada folder

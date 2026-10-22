@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Code2, Wifi, Palette, Wrench } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Program Keahlian — SMK Telekomunikasi Tunas Harapan",
+  description:
+    "Jelajahi program PPLG, TJKT, DKV, dan TKRO di SMK Telekomunikasi Tunas Harapan.",
+};
 
 const jurusan = [
   {

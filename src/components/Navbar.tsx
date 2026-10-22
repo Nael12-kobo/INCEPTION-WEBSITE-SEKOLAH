@@ -14,6 +14,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import {
+  SheetClose,
   Sheet,
   SheetContent,
   SheetHeader,
@@ -31,8 +32,8 @@ const profilLinks = [
 const programLinks = [
   { href: "/jurusan/PPLG", title: "Pengembangan Perangkat Lunak Dan Gim", desc: "Web, mobile, dan cloud." },
   { href: "/jurusan/TJKT", title: "Teknik Jaringan Komputer Dan Telekomunikasi", desc: "Jaringan, Fiber optik, 5G, dan sistem komunikasi." },
-  { href: "/jurusan/DKV", title: "Desain Komunikasi Visual", desc: "Fotografi, Videografi, " },
-  { href: "/jurusan/TKRO", title: "Teknik Kendaraan Ringan Otomotif", desc: "Fotografi, Videografi, " },
+  { href: "/jurusan/DKV", title: "Desain Komunikasi Visual", desc: "Desain grafis, fotografi, dan videografi." },
+  { href: "/jurusan/TKRO", title: "Teknik Kendaraan Ringan Otomotif", desc: "Perawatan dan perbaikan kendaraan ringan." },
 ];
 
 const mobileLinks = [
@@ -120,7 +121,7 @@ export function Navbar() {
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link
-                  href="#fasilitas"
+                  href="/#fasilitas"
                   className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-sky-100 "
                 >
                   Fasilitas
@@ -130,7 +131,7 @@ export function Navbar() {
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link
-                  href="#berita"
+                  href="/#berita"
                   className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-sky-100"
                 >
                   Berita
@@ -142,7 +143,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <Button variant="ghost" asChild>
-            <Link href="#profil">
+            <Link href="/#profil">
               <GraduationCap />
               Tentang
             </Link>
@@ -158,7 +159,7 @@ export function Navbar() {
           </Button>
           <ThemeToggle />
           <Button asChild className="dark:bg-sky-200 glass-hover hover:dark:bg-sky-300">
-            <Link href="#ppdb" className="text-white dark:text-gray-300">
+            <Link href="/#ppdb" className="text-white dark:text-gray-300">
               PPDB 2026
             </Link>
           </Button>
@@ -173,7 +174,7 @@ export function Navbar() {
           {/* flex + nav flex-1 overflow-y-auto: menu mobile harus BISA DI-SCROLL
               di HP pendek — item bawah ("Masuk", tombol PPDB) muat semua.
               pb-safe: jauhkan dari home indicator iPhone (viewport-fit cover). */}
-          <SheetContent side="right" className="flex flex-col">
+          <SheetContent side="right" className="z-[60] flex flex-col">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white">
@@ -190,13 +191,17 @@ export function Navbar() {
                 </p>
                 {/* 4 item: Profil Sekolah, Data & Statistik, Fasilitas, Sejarah */}
                 {mobileLinks.slice(0, 4).map((l) => (
-                  <Link
+                  <SheetClose
                     key={l.href + l.label}
-                    href={l.href}
-                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    asChild
                   >
-                    {l.label}
-                  </Link>
+                    <Link
+                      href={l.href}
+                      className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    >
+                      {l.label}
+                    </Link>
+                  </SheetClose>
                 ))}
               </div>
 
@@ -206,13 +211,17 @@ export function Navbar() {
                   Program Keahlian
                 </p>
                 {mobileLinks.slice(4, 8).map((l) => (
-                  <Link
+                  <SheetClose
                     key={l.href + l.label}
-                    href={l.href}
-                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    asChild
                   >
-                    {l.label}
-                  </Link>
+                    <Link
+                      href={l.href}
+                      className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    >
+                      {l.label}
+                    </Link>
+                  </SheetClose>
                 ))}
               </div>
 
@@ -222,13 +231,17 @@ export function Navbar() {
                   Lainnya
                 </p>
                 {mobileLinks.slice(8).map((l) => (
-                  <Link
+                  <SheetClose
                     key={l.href + l.label}
-                    href={l.href}
-                    className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    asChild
                   >
-                    {l.label}
-                  </Link>
+                    <Link
+                      href={l.href}
+                      className="block rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+                    >
+                      {l.label}
+                    </Link>
+                  </SheetClose>
                 ))}
               </div>
 
@@ -240,9 +253,11 @@ export function Navbar() {
                 <ThemeToggle />
               </div>
 
-              <Button asChild className="mt-4 w-full">
-                <Link href="#ppdb">PPDB 2026</Link>
-              </Button>
+              <SheetClose asChild>
+                <Button asChild className="mt-4 w-full">
+                  <Link href="/#ppdb">PPDB 2026</Link>
+                </Button>
+              </SheetClose>
             </nav>
           </SheetContent>
         </Sheet>

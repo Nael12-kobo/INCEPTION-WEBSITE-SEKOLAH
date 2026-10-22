@@ -16,43 +16,6 @@ import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
 import { BLOG_URL, type Berita as BeritaItem } from "@/lib/blog";
 
-/**
- * Fallback kalau API situs resmi (tunasharapan.info) tidak bisa dijangkau —
- * section berita tidak pernah kosong/error di homepage.
- */
-const beritaFallback: BeritaItem[] = [
-  {
-    id: -1,
-    kategori: "Prestasi",
-    tanggal: "12 Sep 2026",
-    judul: "Siswa TJKT juara 1 lomba jaringan tingkat provinsi",
-    ringkasan:
-      "Tim network school mengalahkan 24 sekolah dalam kompetisi konfigurasi jaringan dan keamanan server.",
-    url: BLOG_URL,
-    gambar: null,
-  },
-  {
-    id: -2,
-    kategori: "Kegiatan",
-    tanggal: "28 Agu 2026",
-    judul: "Penandatanganan MoU magang dengan 3 perusahaan telekomunikasi",
-    ringkasan:
-      "Kerja sama pemagangan dan rekrutmen langsung untuk siswa kelas XI dan XII semua jurusan.",
-    url: BLOG_URL,
-    gambar: null,
-  },
-  {
-    id: -3,
-    kategori: "PPDB",
-    tanggal: "10 Agu 2026",
-    judul: "Beasiswa penuh bagi 20 pendaftar gelombang pertama",
-    ringkasan:
-      "Beasiswa SPP satu tahun untuk calon siswa berprestasi akademik dan non-akademik.",
-    url: BLOG_URL,
-    gambar: null,
-  },
-];
-
 /** Foto dari WP; kalau URL-nya mati/404, jatuh ke placeholder. */
 function BeritaImage({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
@@ -84,8 +47,6 @@ export function Berita({ posts = [] }: { posts?: BeritaItem[] }) {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 170 });
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
 
-  const items = posts.length > 0 ? posts : beritaFallback;
-
   return (
     <section id="berita" ref={ref} className="overflow-hidden bg-transparent">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
@@ -109,58 +70,82 @@ export function Berita({ posts = [] }: { posts?: BeritaItem[] }) {
           </a>
         </div>
 
-        <div className="tilt-scene mt-10 grid gap-5 md:grid-cols-3">
-          {items.map((b) => (
-            <Card
-              key={b.id}
-              data-scrub-item
-              data-tilt
-              className="glass glass-hover glass-glare flex flex-col overflow-hidden"
-            >
-              <div className="h-2.5 bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400 dark:to-blue-400" />
-              {b.gambar ? (
-                <BeritaImage src={b.gambar} alt={b.judul} />
-              ) : (
-                <BeritaPlaceholder />
-              )}
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Badge>{b.kategori}</Badge>
-                  <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    {b.tanggal}
-                  </span>
-                </div>
-                <CardTitle className="mt-3 line-clamp-2 text-lg leading-snug">
+        {posts.length > 0 ? (
+          <div className="tilt-scene mt-10 grid gap-5 md:grid-cols-3">
+            {posts.map((b) => (
+              <Card
+                key={b.id}
+                data-scrub-item
+                data-tilt
+                className="glass glass-hover glass-glare flex flex-col overflow-hidden"
+              >
+                <div className="h-2.5 bg-gradient-to-r from-sky-400 via-sky-500 to-cyan-400 dark:to-blue-400" />
+                {b.gambar ? (
+                  <BeritaImage src={b.gambar} alt={b.judul} />
+                ) : (
+                  <BeritaPlaceholder />
+                )}
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Badge>{b.kategori}</Badge>
+                    <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {b.tanggal}
+                    </span>
+                  </div>
+                  <CardTitle className="mt-3 line-clamp-2 text-lg leading-snug">
+                    <a
+                      href={b.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-sky-700"
+                    >
+                      {b.judul}
+                    </a>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <CardDescription className="line-clamp-3 text-sm leading-relaxed">
+                    {b.ringkasan}
+                  </CardDescription>
+                </CardContent>
+                <CardFooter>
                   <a
+                    data-magnetic
                     href={b.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="transition-colors hover:text-sky-700"
+                    className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
                   >
-                    {b.judul}
+                    Baca selengkapnya <ArrowRight className="h-4 w-4" />
                   </a>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <CardDescription className="line-clamp-3 text-sm leading-relaxed">
-                  {b.ringkasan}
-                </CardDescription>
-              </CardContent>
-              <CardFooter>
-                <a
-                  data-magnetic
-                  href={b.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
-                >
-                  Baca selengkapnya <ArrowRight className="h-4 w-4" />
-                </a>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div
+            data-scrub-item
+            className="mt-10 flex flex-col items-center rounded-3xl border border-sky-100 bg-card/70 px-6 py-10 text-center shadow-sm sm:py-12"
+            role="status"
+          >
+            <Newspaper className="h-9 w-9 text-sky-500" aria-hidden="true" />
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">
+              Berita belum dapat dimuat
+            </h3>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-600">
+              Kunjungi situs berita resmi sekolah untuk membaca kabar terbaru.
+            </p>
+            <a
+              href={BLOG_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+            >
+              Buka berita resmi <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

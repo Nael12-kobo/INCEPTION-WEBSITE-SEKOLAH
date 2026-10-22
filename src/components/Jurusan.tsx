@@ -1,9 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Code2, Network, RadioTower,Camera, Engine } from "lucide-react";
+import {
+  ArrowUpRight,
+  Code2,
+  Network,
+  RadioTower,
+  Camera,
+  Engine,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
 
@@ -32,7 +46,7 @@ const jurusan = [
     skills: ["Fotografi", "Videografi", "Broadcasting", "Illustrasi Digital"],
     link: "/jurusan/DKV",
   },
-    {
+  {
     icon: Engine,
     nama: "Teknik Kendaraan Ringan Otomotif",
     singkatan: "TKRO",
@@ -40,14 +54,20 @@ const jurusan = [
     skills: ["Perawatan", "Perbaikan", "Sistem Elektrik"],
     link: "/jurusan/TKRO",
   },
-
 ];
 
 export function Jurusan() {
-  const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 170 });
+  const ref = useAnimeFlowReveal<HTMLElement>({
+    direction: "right",
+    distance: 170,
+  });
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
   return (
-    <section id="jurusan" ref={ref} className="relative overflow-hidden bg-transparent">
+    <section
+      id="jurusan"
+      ref={ref}
+      className="relative overflow-hidden bg-transparent"
+    >
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="mx-auto max-w-2xl text-center">
           <Badge variant="secondary" className="glass-chip border-white/60">
@@ -57,11 +77,12 @@ export function Jurusan() {
             Empat Program Keahlian Unggulan
           </h2>
           <p className="mt-3 text-slate-600">
-            Kurikulum berbasis industri dengan sertifikasi kompetensi dan kelas praktik intensif.
+            Kurikulum berbasis industri dengan sertifikasi kompetensi dan kelas
+            praktik intensif.
           </p>
         </div>
 
-        <div className="tilt-scene mt-10 grid gap-5 md:grid-cols-3">
+        <div className="tilt-scene mt-10 grid gap-5 md:grid-cols-2">
           {jurusan.map((j) => (
             <Card
               key={j.singkatan}
@@ -82,10 +103,16 @@ export function Jurusan() {
                 <CardTitle className="mt-2 text-xl">{j.nama}</CardTitle>
               </CardHeader>
               <CardContent className="flex-1">
-                <CardDescription className="text-sm leading-relaxed">{j.desc}</CardDescription>
+                <CardDescription className="text-sm leading-relaxed">
+                  {j.desc}
+                </CardDescription>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {j.skills.map((s) => (
-                    <Badge key={s} variant="outline" className="glass-chip font-normal">
+                    <Badge
+                      key={s}
+                      variant="outline"
+                      className="glass-chip font-normal"
+                    >
                       {s}
                     </Badge>
                   ))}

@@ -29,6 +29,8 @@ import {
   softenSwap,
 } from "@/lib/chat-motion";
 import Image from "next/image";
+// import dynamic from "next/dynamic";
+// import { mod } from "three/src/nodes/TSL.js";
 
 /**
  * Bubble chat melayang dengan transisi ringkas:
@@ -43,6 +45,11 @@ import Image from "next/image";
  * disembunyikan via `[&>button.absolute]:hidden`, jadi hanya ada satu X
  * custom di header.
  */
+// const ChatBubble = dynamic(
+//   () => import("@/components/ChatBubble").then((mod) => mod.ChatBubble),
+//   { ssr: false },
+// );
+
 function ChatBubbleInner() {
   const [isOpen, setIsOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);

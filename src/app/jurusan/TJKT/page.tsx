@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +14,12 @@ import {
   Router,
 } from "lucide-react";
 import TJKTHeroDecorations from "@/components/tjkt-hero-decorations";
+
+export const metadata: Metadata = {
+  title: "TJKT — Jaringan Komputer & Telekomunikasi | SMK Tunas Harapan",
+  description:
+    "Pelajari program TJKT SMK Telekomunikasi Tunas Harapan, mencakup jaringan komputer, keamanan jaringan, telekomunikasi, dan infrastruktur digital.",
+};
 
 const kompetensi = [
   {

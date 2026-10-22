@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,6 +15,12 @@ import {
 } from "lucide-react";
 import TKROHeroDecorations from "@/components/tkro-hero-decorations";
 import TKROHeroDecorationsMobile from "@/components/tkro-hero-decorations-buatmobile";
+
+export const metadata: Metadata = {
+  title: "TKRO — Teknik Kendaraan Ringan Otomotif | SMK Tunas Harapan",
+  description:
+    "Pelajari program TKRO SMK Telekomunikasi Tunas Harapan: perawatan dan perbaikan kendaraan ringan, diagnostik, sistem otomotif, dan teknologi kendaraan listrik.",
+};
 
 const kompetensi = [
   {

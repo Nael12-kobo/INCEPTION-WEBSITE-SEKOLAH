@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,6 +15,13 @@ import {
 } from "lucide-react";
 import PPLGHeroDecorations from "@/components/pplg-hero-decorations";
 import PPLGHeroDecorationsMobile from "@/components/pplg-hero-decorations-buatmobile";
+
+export const metadata: Metadata = {
+  title: "PPLG — Pemrograman Perangkat Lunak & Gim | SMK Tunas Harapan",
+  description:
+    "Pelajari program PPLG SMK Telekomunikasi Tunas Harapan: pemrograman web dan mobile, pengembangan gim, basis data, UI/UX, serta cloud.",
+};
+
 const kompetensi = [
   {
     judul: "Pemrograman Web",

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/Hero";
 import { Stats } from "@/components/Stats";
 import { Profil } from "@/components/Profil";
@@ -8,6 +9,12 @@ import { CtaPpdb } from "@/components/CtaPpdb";
 import { Footer } from "@/components/Footer";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { ambilBerita } from "@/lib/blog";
+
+export const metadata: Metadata = {
+  title: "SMK Telekomunikasi Tunas Harapan | Profil, Program, dan PPDB",
+  description:
+    "Kenali SMK Telekomunikasi Tunas Harapan, empat program keahlian, fasilitas sekolah, dan informasi penerimaan peserta didik baru.",
+};
 
 export default async function Home() {
   // Berita terbaru dari situs resmi sekolah — di-cache 1 jam oleh Next,

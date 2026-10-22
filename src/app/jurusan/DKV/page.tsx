@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +14,12 @@ import {
   Layers,
 } from "lucide-react";
 import DKVHeroDecorations from "@/components/dkv-hero-decorations";
+
+export const metadata: Metadata = {
+  title: "DKV — Desain Komunikasi Visual | SMK Tunas Harapan",
+  description:
+    "Pelajari program DKV SMK Telekomunikasi Tunas Harapan, mencakup desain grafis, UI/UX, fotografi, videografi, dan komunikasi visual.",
+};
 
 const kompetensi = [
   {
