@@ -58,7 +58,7 @@ export function Hero() {
     direction: "alternate",
     distance: 180,
   });
-  useTiltHover(contentRef, { maxTilt: 50, scale: 1.02 });
+  useTiltHover(contentRef, { maxTilt: 35, scale: 1.02 });
 
   useEffect(() => {
     const root = rootRef.current;
@@ -232,7 +232,7 @@ export function Hero() {
             data-scrub-item
             data-scrub-dir="right"
             data-tilt
-            className="relative hidden min-h-[38rem] lg:block"
+            className="relative hidden min-h-[38rem] lg:block translate-x-35"
           >
             <div
               className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
