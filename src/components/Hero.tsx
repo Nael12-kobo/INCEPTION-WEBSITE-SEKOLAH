@@ -58,7 +58,7 @@ export function Hero() {
     direction: "alternate",
     distance: 180,
   });
-  useTiltHover(contentRef, { maxTilt: 7, scale: 1.02 });
+  useTiltHover(contentRef, { maxTilt: 50, scale: 1.02 });
 
   useEffect(() => {
     const root = rootRef.current;
@@ -234,33 +234,50 @@ export function Hero() {
             data-tilt
             className="relative hidden min-h-[38rem] lg:block"
           >
-            <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-75">
+            <div
+              className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+              style={{ transformStyle: "preserve-3d" }}
+            >
               <Loader2
                 strokeWidth={2}
-                className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 dark:text-sky-400/80 justify-center items-center"
+                className="m-auto absolute size-180 animate-[spin_10s_linear_infinite] text-sky-400/50 dark:text-sky-400/80 justify-center items-center opacity-75"
+                style={{ translate: "0 0 -74px" }}
               />
               <Loader2
                 strokeWidth={2}
-                className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center"
+                className="m-auto absolute size-140 animate-[spin_20s_linear_infinite_reverse] text-sky-400/20 justify-center items-center opacity-75"
+                style={{ translate: "0 0 -48px" }}
               />
 
               <Loader2
                 strokeWidth={2}
-                className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center"
+                className="m-auto absolute size-160 animate-[spin_15s_linear_infinite_reverse] text-sky-400/80 justify-center items-center opacity-75"
+                style={{ translate: "0 0 0px" }}
               />
               <Loader2
                 strokeWidth={1}
-                className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 dark:text-yellow-500/40 justify-center items-center"
+                className="m-auto absolute size-180 animate-[spin_30s_linear_infinite_reverse] text-yellow-800/20 dark:text-yellow-500/40 justify-center items-center opacity-75"
+                style={{ translate: "0 0 24px" }}
               />
               <Loader2
                 strokeWidth={1.25}
-                className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 dark:text-yellow-500/80 justify-center items-center text-shadow-lg"
+                className="m-auto absolute size-160 animate-[spin_20s_linear_infinite] text-yellow-400/60 dark:text-yellow-500/80 justify-center items-center text-shadow-lg opacity-75"
+                style={{ translate: "0 0 48px" }}
               />
 
-              <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] "></div>
-              <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] "></div>
+              <div className="w-16 h-16 absolute rounded-full outline-offset-240 outline-dashed outline-2 outline-yellow-300/80 animate-[spin_120s_linear_infinite] opacity-75"></div>
+              <div className="w-16 h-16 absolute rounded-full outline-offset-280 outline-dashed outline-3 outline-sky-400/80 animate-[spin_60s_linear_infinite_reverse] opacity-75"></div>
             </div>
-
+            <Image
+              src="/images/TTH.png"
+              alt="Logo SMK Telekomunikasi Tunas Harapan"
+              width={300}
+              height={300}
+              unoptimized
+              loading="eager"
+              className="absolute left-1/2 top-1/2 z-20 block h-auto w-[300px] max-w-[75%] bottom-50000 -translate-x-1/2 -translate-y-1/2 select-none brightness-50 pointer-events-none object-contain drop-shadow"
+              style={{ translate: "-150px -150px -25px" }}
+            />
             <Image
               src="/images/TTH.png"
               alt="Logo SMK Telekomunikasi Tunas Harapan"
@@ -273,6 +290,7 @@ export function Hero() {
             <div
               data-magnetic
               className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15"
+              style={{ translate: "0 0 64px" }}
             >
               <p className="text-2xl font-extrabold text-sky-700">911+</p>
               <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
@@ -280,6 +298,7 @@ export function Hero() {
             <div
               data-magnetic
               className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:right-12"
+              style={{ translate: "0 0 64px" }}
             >
               <p className="text-2xl font-extrabold text-sky-700">96%</p>
               <p className="text-xs font-medium text-slate-500">

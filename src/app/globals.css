@@ -109,25 +109,29 @@
 
   /* Elevation / Shadow scale 0-4 */
   --shadow-0: 0 0 #0000;
-  --shadow-1: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 1px 0 rgb(15 23 42 / 0.03);
-  --shadow-2: 0 4px 10px -2px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
-  --shadow-3: 0 10px 20px -5px rgb(15 23 42 / 0.08), 0 4px 8px -4px rgb(15 23 42 / 0.05);
-  --shadow-4: 0 20px 40px -10px rgb(15 23 42 / 0.12), 0 8px 16px -8px rgb(15 23 42 / 0.08);
+  --shadow-1:
+    0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 1px 0 rgb(15 23 42 / 0.03);
+  --shadow-2:
+    0 4px 10px -2px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
+  --shadow-3:
+    0 10px 20px -5px rgb(15 23 42 / 0.08), 0 4px 8px -4px rgb(15 23 42 / 0.05);
+  --shadow-4:
+    0 20px 40px -10px rgb(15 23 42 / 0.12), 0 8px 16px -8px rgb(15 23 42 / 0.08);
 
   /* Surface subtle — for cards elevation */
   --surface-1: linear-gradient(to bottom, #ffffff, #fafbfc);
   --surface-2: linear-gradient(to bottom, #ffffff, #f8fafc);
 
   /* Typography scale */
-  --font-display: 2.5rem;        /* 40px */
-  --font-h1: 2rem;                /* 32px */
-  --font-h2: 1.5rem;              /* 24px */
-  --font-h3: 1.25rem;             /* 20px */
-  --font-h4: 1.125rem;            /* 18px */
-  --font-body-lg: 1rem;           /* 16px */
-  --font-body: 0.875rem;          /* 14px */
-  --font-caption: 0.75rem;        /* 12px */
-  --font-overline: 0.6875rem;     /* 11px */
+  --font-display: 2.5rem; /* 40px */
+  --font-h1: 2rem; /* 32px */
+  --font-h2: 1.5rem; /* 24px */
+  --font-h3: 1.25rem; /* 20px */
+  --font-h4: 1.125rem; /* 18px */
+  --font-body-lg: 1rem; /* 16px */
+  --font-body: 0.875rem; /* 14px */
+  --font-caption: 0.75rem; /* 12px */
+  --font-overline: 0.6875rem; /* 11px */
 
   /* Line-height */
   --leading-display: 1.1;
@@ -141,8 +145,8 @@
   --tracking-overline: 0.08em;
 
   /* Spacing extended */
-  --space-18: 4.5rem;  /* 72px */
-  --space-22: 5.5rem;  /* 88px */
+  --space-18: 4.5rem; /* 72px */
+  --space-22: 5.5rem; /* 88px */
 }
 
 /* ------------------------------------------------------------------ *
@@ -184,9 +188,12 @@
   --violet: #a78bfa;
   --violet-foreground: #2e1065;
   --shadow-1: 0 1px 2px 0 rgb(2 6 23 / 0.5), 0 1px 1px 0 rgb(2 6 23 / 0.3);
-  --shadow-2: 0 4px 10px -2px rgb(2 6 23 / 0.6), 0 2px 4px -2px rgb(2 6 23 / 0.4);
-  --shadow-3: 0 10px 20px -5px rgb(2 6 23 / 0.7), 0 4px 8px -4px rgb(2 6 23 / 0.5);
-  --shadow-4: 0 20px 40px -10px rgb(2 6 23 / 0.8), 0 8px 16px -8px rgb(2 6 23 / 0.6);
+  --shadow-2:
+    0 4px 10px -2px rgb(2 6 23 / 0.6), 0 2px 4px -2px rgb(2 6 23 / 0.4);
+  --shadow-3:
+    0 10px 20px -5px rgb(2 6 23 / 0.7), 0 4px 8px -4px rgb(2 6 23 / 0.5);
+  --shadow-4:
+    0 20px 40px -10px rgb(2 6 23 / 0.8), 0 8px 16px -8px rgb(2 6 23 / 0.6);
 
   --surface-1: linear-gradient(to bottom, #0f172a, #0a1220);
   --surface-2: linear-gradient(to bottom, #0f172a, #071120);
@@ -397,11 +404,32 @@
        tapi position: sticky Navbar tetap berfungsi. */
     overflow-x: clip;
   }
-  h1 { font-size: var(--font-h1); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }
-  h2 { font-size: var(--font-h2); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }
-  h3 { font-size: var(--font-h3); line-height: var(--leading-tight); font-weight: 600; }
-  h4 { font-size: var(--font-h4); line-height: var(--leading-tight); font-weight: 600; }
-  ::selection { background: var(--sky-200); color: var(--slate-900); }
+  h1 {
+    font-size: var(--font-h1);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    font-weight: 700;
+  }
+  h2 {
+    font-size: var(--font-h2);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    font-weight: 700;
+  }
+  h3 {
+    font-size: var(--font-h3);
+    line-height: var(--leading-tight);
+    font-weight: 600;
+  }
+  h4 {
+    font-size: var(--font-h4);
+    line-height: var(--leading-tight);
+    font-weight: 600;
+  }
+  ::selection {
+    background: var(--sky-200);
+    color: var(--slate-900);
+  }
 }
 
 @layer utilities {
@@ -417,31 +445,84 @@
       linear-gradient(to bottom, rgb(148 163 184 / 0.08) 1px, transparent 1px);
     background-size: 2.5rem 2.5rem;
   }
-  .text-balance { text-wrap: balance; }
-  .text-pretty { text-wrap: pretty; }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
 
   /* Elevation utility classes */
-  .elevation-0 { box-shadow: var(--shadow-0); }
-  .elevation-1 { box-shadow: var(--shadow-1); }
-  .elevation-2 { box-shadow: var(--shadow-2); }
-  .elevation-3 { box-shadow: var(--shadow-3); }
-  .elevation-4 { box-shadow: var(--shadow-4); }
+  .elevation-0 {
+    box-shadow: var(--shadow-0);
+  }
+  .elevation-1 {
+    box-shadow: var(--shadow-1);
+  }
+  .elevation-2 {
+    box-shadow: var(--shadow-2);
+  }
+  .elevation-3 {
+    box-shadow: var(--shadow-3);
+  }
+  .elevation-4 {
+    box-shadow: var(--shadow-4);
+  }
 
   /* Typography utilities */
-  .font-display { font-size: var(--font-display); line-height: var(--leading-display); letter-spacing: var(--tracking-display); font-weight: 800; }
-  .font-h1 { font-size: var(--font-h1); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }
-  .font-h2 { font-size: var(--font-h2); line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); font-weight: 700; }
-  .font-h3 { font-size: var(--font-h3); line-height: var(--leading-tight); font-weight: 600; }
-  .font-h4 { font-size: var(--font-h4); line-height: var(--leading-tight); font-weight: 600; }
-  .font-body-lg { font-size: var(--font-body-lg); line-height: var(--leading-body); }
-  .font-body { font-size: var(--font-body); line-height: var(--leading-body); }
-  .font-caption { font-size: var(--font-caption); line-height: var(--leading-tight); }
-  .font-overline { font-size: var(--font-overline); line-height: var(--leading-tight); letter-spacing: var(--tracking-overline); text-transform: uppercase; font-weight: 600; }
+  .font-display {
+    font-size: var(--font-display);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    font-weight: 800;
+  }
+  .font-h1 {
+    font-size: var(--font-h1);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    font-weight: 700;
+  }
+  .font-h2 {
+    font-size: var(--font-h2);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    font-weight: 700;
+  }
+  .font-h3 {
+    font-size: var(--font-h3);
+    line-height: var(--leading-tight);
+    font-weight: 600;
+  }
+  .font-h4 {
+    font-size: var(--font-h4);
+    line-height: var(--leading-tight);
+    font-weight: 600;
+  }
+  .font-body-lg {
+    font-size: var(--font-body-lg);
+    line-height: var(--leading-body);
+  }
+  .font-body {
+    font-size: var(--font-body);
+    line-height: var(--leading-body);
+  }
+  .font-caption {
+    font-size: var(--font-caption);
+    line-height: var(--leading-tight);
+  }
+  .font-overline {
+    font-size: var(--font-overline);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
 
   /* Micro interactions — Hover lift */
   .hover-lift {
-    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   .hover-lift:hover {
     transform: translateY(-1px);
@@ -455,77 +536,142 @@
   .animate-slide-up {
     animation: slideUp 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Scrollbar styling — subtle */
-  .subtle-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-  .subtle-scroll::-webkit-scrollbar-track { background: transparent; }
+  .subtle-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .subtle-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
   .subtle-scroll::-webkit-scrollbar-thumb {
     background: var(--slate-300);
     border-radius: 3px;
   }
-  .subtle-scroll::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+  .subtle-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-400);
+  }
 
   /* Surface gradient backgrounds */
-  .surface-1 { background-image: var(--surface-1); }
-  .surface-2 { background-image: var(--surface-2); }
+  .surface-1 {
+    background-image: var(--surface-1);
+  }
+  .surface-2 {
+    background-image: var(--surface-2);
+  }
 
   /* Glassmorphism vivid (di atas mesh biru-ungu-cyan) */
   .glass {
-    background: linear-gradient(135deg, rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.42));
+    background: linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.72),
+      rgb(255 255 255 / 0.42)
+    );
     backdrop-filter: blur(18px) saturate(1.5);
     -webkit-backdrop-filter: blur(18px) saturate(1.5);
     border: 1px solid rgb(255 255 255 / 0.65);
-    box-shadow: 0 8px 32px -8px rgb(2 132 199 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.7);
+    box-shadow:
+      0 8px 32px -8px rgb(2 132 199 / 0.18),
+      inset 0 1px 0 rgb(255 255 255 / 0.7);
   }
   .glass-strong {
-    background: linear-gradient(135deg, rgb(255 255 255 / 0.88), rgb(224 242 254 / 0.55));
+    background: linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.88),
+      rgb(224 242 254 / 0.55)
+    );
     backdrop-filter: blur(22px) saturate(1.6);
     -webkit-backdrop-filter: blur(22px) saturate(1.6);
     border: 1px solid rgb(255 255 255 / 0.8);
-    box-shadow: 0 12px 40px -10px rgb(2 132 199 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.85);
+    box-shadow:
+      0 12px 40px -10px rgb(2 132 199 / 0.25),
+      inset 0 1px 0 rgb(255 255 255 / 0.85);
   }
   .glass-chip {
     background: rgb(255 255 255 / 0.6);
     backdrop-filter: blur(12px) saturate(1.4);
     -webkit-backdrop-filter: blur(12px) saturate(1.4);
     border: 1px solid rgb(255 255 255 / 0.7);
-    box-shadow: 0 4px 16px -6px rgb(2 132 199 / 0.2), inset 0 1px 0 rgb(255 255 255 / 0.8);
+    box-shadow:
+      0 4px 16px -6px rgb(2 132 199 / 0.2),
+      inset 0 1px 0 rgb(255 255 255 / 0.8);
   }
   .glass-hover {
-    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms;
+    transition:
+      transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 250ms;
   }
   .glass-hover:hover {
     border-color: rgb(125 211 252 / 0.5);
-    box-shadow: 0 12px 30px -8px rgb(2 132 199 / 0.2), 0 0 0 1px rgb(125 211 252 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.85);
+    box-shadow:
+      0 12px 30px -8px rgb(2 132 199 / 0.2),
+      0 0 0 1px rgb(125 211 252 / 0.25),
+      inset 0 1px 0 rgb(255 255 255 / 0.85);
   }
 
   /* Varian gelap glassmorphism — latar transparan gelap, glow biru redup */
   .dark .glass {
-    background: linear-gradient(135deg, rgb(15 23 42 / 0.72), rgb(2 6 23 / 0.45));
+    background: linear-gradient(
+      135deg,
+      rgb(15 23 42 / 0.72),
+      rgb(2 6 23 / 0.45)
+    );
     border-color: rgb(51 65 85 / 0.55);
-    box-shadow: 0 8px 32px -8px rgb(2 6 23 / 0.6), inset 0 1px 0 rgb(148 163 184 / 0.12);
+    box-shadow:
+      0 8px 32px -8px rgb(2 6 23 / 0.6),
+      inset 0 1px 0 rgb(148 163 184 / 0.12);
   }
   .dark .glass-strong {
-    background: linear-gradient(135deg, rgb(15 23 42 / 0.88), rgb(12 26 44 / 0.6));
+    background: linear-gradient(
+      135deg,
+      rgb(15 23 42 / 0.88),
+      rgb(12 26 44 / 0.6)
+    );
     border-color: rgb(51 65 85 / 0.65);
-    box-shadow: 0 12px 40px -10px rgb(2 6 23 / 0.7), inset 0 1px 0 rgb(148 163 184 / 0.15);
+    box-shadow:
+      0 12px 40px -10px rgb(2 6 23 / 0.7),
+      inset 0 1px 0 rgb(148 163 184 / 0.15);
   }
   .dark .glass-chip {
     background: rgb(15 23 42 / 0.6);
     border-color: rgb(51 65 85 / 0.55);
-    box-shadow: 0 4px 16px -6px rgb(2 6 23 / 0.5), inset 0 1px 0 rgb(148 163 184 / 0.1);
+    box-shadow:
+      0 4px 16px -6px rgb(2 6 23 / 0.5),
+      inset 0 1px 0 rgb(148 163 184 / 0.1);
   }
   .dark .glass-hover:hover {
     border-color: rgb(56 189 248 / 0.4);
-    box-shadow: 0 12px 30px -8px rgb(2 6 23 / 0.6), 0 0 0 1px rgb(56 189 248 / 0.25), inset 0 1px 0 rgb(148 163 184 / 0.15);
+    box-shadow:
+      0 12px 30px -8px rgb(2 6 23 / 0.6),
+      0 0 0 1px rgb(56 189 248 / 0.25),
+      inset 0 1px 0 rgb(148 163 184 / 0.15);
   }
   .dark .glass-glare::after {
-    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(148 163 184 / 0.14), transparent 65%);
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(148 163 184 / 0.14),
+      transparent 65%
+    );
   }
 
   /* Entrance anime.js — matikan transition sementara agar tiap frame
@@ -542,12 +688,18 @@
   }
 
   /* Tilt 3D scene + glare mengikuti kursor */
-  .tilt-scene { perspective: 1000px; }
+  .tilt-scene {
+    perspective: 1000px;
+  }
   [data-tilt] {
     transform-style: preserve-3d;
     will-change: transform;
   }
-  .glass-glare { position: relative; overflow: hidden; }
+
+  .glass-glare {
+    position: relative;
+    overflow: hidden;
+  }
   .glass-glare::after {
     content: "";
     position: absolute;
@@ -555,22 +707,42 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity 300ms;
-    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.3), transparent 65%);
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(255 255 255 / 0.3),
+      transparent 65%
+    );
   }
-  .glass-glare:hover::after { opacity: 0.6; }
+  .glass-glare:hover::after {
+    opacity: 0.6;
+  }
 
   /* Orbs mesh mengambang */
   @keyframes float-slow {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(24px, -30px, 0) scale(1.08); }
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(24px, -30px, 0) scale(1.08);
+    }
   }
-  .orb-float { animation: float-slow 9s ease-in-out infinite; }
-  .orb-float-delayed { animation: float-slow 12s ease-in-out -4s infinite; }
+  .orb-float {
+    animation: float-slow 9s ease-in-out infinite;
+  }
+  .orb-float-delayed {
+    animation: float-slow 12s ease-in-out -4s infinite;
+  }
 }
 
 @keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-bounce-slow {
@@ -611,12 +783,20 @@
   animation: chat-overlay-out 200ms ease-in forwards;
 }
 @keyframes chat-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes chat-overlay-out {
-  from { opacity: 0; }
-  to { opacity: 0; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* ---------- Bubble melayang ---------- */
@@ -639,9 +819,13 @@
     scale 360ms var(--chat-ease-spring);
 }
 @media (hover: hover) {
-  .chat-fab:hover { transform: scale(1.07) rotate(-3deg); }
+  .chat-fab:hover {
+    transform: scale(1.07) rotate(-3deg);
+  }
 }
-.chat-fab:active { transform: scale(0.92); }
+.chat-fab:active {
+  transform: scale(0.92);
+}
 
 .chat-fab-entry {
   animation: chat-fab-in 420ms var(--chat-ease-out) backwards;
@@ -650,12 +834,23 @@
   animation: chat-fab-float 5.5s ease-in-out 700ms infinite;
 }
 @keyframes chat-fab-in {
-  0% { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.92); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 @keyframes chat-fab-float {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -6px, 0); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
 }
 
 /* Cincin halo di belakang bubble — dua lapis, saling menyusul. */
@@ -669,18 +864,34 @@
   animation: chat-halo 3.6s var(--chat-ease-out) infinite;
   pointer-events: none;
 }
-.chat-fab-halo::after { animation-delay: 1.8s; }
+.chat-fab-halo::after {
+  animation-delay: 1.8s;
+}
 @keyframes chat-halo {
-  0% { opacity: 0.55; transform: scale(1); }
-  70%, 100% { opacity: 0; transform: scale(1.7); }
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
 }
 
 .chat-sparkle {
   animation: chat-sparkle 2.6s ease-in-out infinite;
 }
 @keyframes chat-sparkle {
-  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  50% { opacity: 0.55; transform: scale(0.82) rotate(18deg); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82) rotate(18deg);
+  }
 }
 
 /* ---------- Reveal ringan (header → pesan → input) ---------- */
@@ -693,7 +904,10 @@
     opacity: 0;
     transform: translate3d(0, 8px, 0) scale(0.99);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ---------- Pesan ---------- */
@@ -710,29 +924,45 @@
     opacity: 0;
     transform: translate3d(-8px, 6px, 0) scale(0.99);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes chat-msg-right {
   from {
     opacity: 0;
     transform: translate3d(8px, 6px, 0) scale(0.99);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .chat-bubble-surface {
-  transition: transform 320ms var(--chat-ease-out), box-shadow 320ms ease;
+  transition:
+    transform 320ms var(--chat-ease-out),
+    box-shadow 320ms ease;
 }
 @media (hover: hover) {
-  .chat-bubble-surface:hover { transform: translateY(-1px); }
+  .chat-bubble-surface:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .chat-avatar-pop {
   animation: chat-avatar-pop 320ms var(--chat-ease-out) backwards;
 }
 @keyframes chat-avatar-pop {
-  from { opacity: 0; transform: translate3d(0, 4px, 0) scale(0.92); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ---------- Chip saran ---------- */
@@ -745,7 +975,10 @@
     opacity: 0;
     transform: translate3d(0, 6px, 0) scale(0.98);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ---------- Welcome / empty state chat ---------- */
@@ -757,8 +990,12 @@
   will-change: transform;
 }
 @keyframes chat-welcome-float {
-  from { transform: translate3d(0, 4px, 0) rotate(-4deg); }
-  to { transform: translate3d(0, -6px, 0) rotate(5deg); }
+  from {
+    transform: translate3d(0, 4px, 0) rotate(-4deg);
+  }
+  to {
+    transform: translate3d(0, -6px, 0) rotate(5deg);
+  }
 }
 
 /* Dua cincin dekoratif yang samar "bernapas" bergantian. */
@@ -766,59 +1003,109 @@
   animation: chat-welcome-ring 6.5s var(--chat-ease-out) 300ms infinite;
 }
 @keyframes chat-welcome-ring {
-  0%, 100% { opacity: 0.3; transform: scale(0.985); }
-  50% { opacity: 0.85; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
 }
 
 /* ---------- Indikator mengetik ---------- */
 .chat-dot {
   animation: chat-dot-wave 1.15s var(--chat-ease-smooth) infinite;
 }
-.chat-dot:nth-child(2) { animation-delay: 150ms; }
-.chat-dot:nth-child(3) { animation-delay: 300ms; }
+.chat-dot:nth-child(2) {
+  animation-delay: 150ms;
+}
+.chat-dot:nth-child(3) {
+  animation-delay: 300ms;
+}
 @keyframes chat-dot-wave {
-  0%, 60%, 100% { opacity: 0.4; transform: translate3d(0, 0, 0); }
-  30% { opacity: 1; transform: translate3d(0, -3px, 0); }
+  0%,
+  60%,
+  100% {
+    opacity: 0.4;
+    transform: translate3d(0, 0, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(0, -3px, 0);
+  }
 }
 
 /* ---------- Tombol aksi & feedback ---------- */
 .chat-action {
-  transition: transform 220ms var(--chat-ease-spring), background-color 220ms ease, color 220ms ease, opacity 220ms ease;
+  transition:
+    transform 220ms var(--chat-ease-spring),
+    background-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
 }
 @media (hover: hover) {
-  .chat-action:hover { transform: translateY(-1px) scale(1.05); }
+  .chat-action:hover {
+    transform: translateY(-1px) scale(1.05);
+  }
 }
-.chat-action:active { transform: scale(0.9); }
+.chat-action:active {
+  transform: scale(0.9);
+}
 
 .chat-vote-pop {
   animation: chat-vote-pop 360ms var(--chat-ease-spring);
 }
 @keyframes chat-vote-pop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ---------- Input & tombol kirim ---------- */
 .chat-input-shell {
-  transition: border-color 260ms ease, box-shadow 320ms ease, background-color 320ms ease, transform 320ms var(--chat-ease-out);
+  transition:
+    border-color 260ms ease,
+    box-shadow 320ms ease,
+    background-color 320ms ease,
+    transform 320ms var(--chat-ease-out);
 }
 .chat-input-shell:focus-within {
   border-color: rgb(56 189 248 / 0.7);
-  box-shadow: 0 0 0 3px rgb(56 189 248 / 0.16), 0 12px 30px -16px rgb(37 99 235 / 0.5);
+  box-shadow:
+    0 0 0 3px rgb(56 189 248 / 0.16),
+    0 12px 30px -16px rgb(37 99 235 / 0.5);
 }
 
 .chat-send {
   position: relative;
-  transition: transform 240ms var(--chat-ease-spring), box-shadow 260ms ease, opacity 240ms ease;
+  transition:
+    transform 240ms var(--chat-ease-spring),
+    box-shadow 260ms ease,
+    opacity 240ms ease;
 }
 @media (hover: hover) {
-  .chat-send:hover:not(:disabled) { transform: translateY(-1px) scale(1.04); }
+  .chat-send:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.04);
+  }
 }
-.chat-send:active:not(:disabled) { transform: scale(0.9); }
-.chat-send svg { transition: transform 280ms var(--chat-ease-spring); }
+.chat-send:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.chat-send svg {
+  transition: transform 280ms var(--chat-ease-spring);
+}
 @media (hover: hover) {
-  .chat-send:hover:not(:disabled) svg { transform: translateX(1px) rotate(-10deg); }
+  .chat-send:hover:not(:disabled) svg {
+    transform: translateX(1px) rotate(-10deg);
+  }
 }
 
 /* Cincin halus di sekitar tombol kirim saat siap dikirim (composited). */
@@ -832,8 +1119,15 @@
   pointer-events: none;
 }
 @keyframes chat-send-ring {
-  0% { opacity: 0.6; transform: scale(0.94); }
-  70%, 100% { opacity: 0; transform: scale(1.22); }
+  0% {
+    opacity: 0.6;
+    transform: scale(0.94);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
 }
 
 /* ---------- Panel chat halaman /chat ---------- */
@@ -845,7 +1139,10 @@
     border-color 420ms ease;
 }
 .chat-sheet-handle {
-  transition: transform 440ms var(--chat-ease-spring), width 440ms var(--chat-ease-spring), opacity 320ms ease;
+  transition:
+    transform 440ms var(--chat-ease-spring),
+    width 440ms var(--chat-ease-spring),
+    opacity 320ms ease;
 }
 
 .chat-aside-in {
@@ -856,7 +1153,10 @@
     opacity: 0;
     transform: translate3d(16px, 0, 0);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .chat-topbar {
@@ -867,33 +1167,55 @@
     opacity: 0;
     transform: translate3d(0, -8px, 0);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Anak-anak langsung dari `.chat-stagger` masuk berurutan. */
 .chat-stagger > * {
   animation: chat-stagger-in 280ms var(--chat-ease-out) backwards;
 }
-.chat-stagger > *:nth-child(1) { animation-delay: 40ms; }
-.chat-stagger > *:nth-child(2) { animation-delay: 80ms; }
-.chat-stagger > *:nth-child(3) { animation-delay: 120ms; }
-.chat-stagger > *:nth-child(4) { animation-delay: 160ms; }
-.chat-stagger > *:nth-child(5) { animation-delay: 200ms; }
-.chat-stagger > *:nth-child(6) { animation-delay: 240ms; }
+.chat-stagger > *:nth-child(1) {
+  animation-delay: 40ms;
+}
+.chat-stagger > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.chat-stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.chat-stagger > *:nth-child(4) {
+  animation-delay: 160ms;
+}
+.chat-stagger > *:nth-child(5) {
+  animation-delay: 200ms;
+}
+.chat-stagger > *:nth-child(6) {
+  animation-delay: 240ms;
+}
 @keyframes chat-stagger-in {
   from {
     opacity: 0;
     transform: translate3d(0, -6px, 0);
   }
-  to { opacity: 1; transform: none; }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .chat-page-fade {
   animation: chat-page-fade 600ms var(--chat-ease-out) backwards;
 }
 @keyframes chat-page-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Halaman chat masuk dengan gerak pendek dan fade; perjalanan kembali ke
@@ -907,25 +1229,43 @@
     transform: translate3d(0, 12px, 0) scale(0.985);
     border-radius: 16px;
   }
-  to { opacity: 1; transform: none; border-radius: 0; }
+  to {
+    opacity: 1;
+    transform: none;
+    border-radius: 0;
+  }
 }
 
 /* Ikon panah pada tombol kembali ikut bergeser saat hover. */
-.chat-back:hover .chat-back-icon { transform: translate3d(-2px, 0, 0); }
+.chat-back:hover .chat-back-icon {
+  transform: translate3d(-2px, 0, 0);
+}
 .chat-back-icon {
   transition: transform 300ms var(--chat-ease-spring);
 }
 
 /* Reduced motion — disable animations & smooth scroll */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .animate-fade-in, .animate-slide-up, .animate-bounce-slow { animation: none !important; opacity: 1 !important; transform: none !important; }
-  .hover-lift:hover { transform: none !important; }
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-bounce-slow {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hover-lift:hover {
+    transform: none !important;
+  }
   .chat-fab-float,
   .chat-fab-halo::before,
   .chat-fab-halo::after,
@@ -933,11 +1273,18 @@
   .chat-send-ready::after,
   .chat-welcome-icon,
   .chat-welcome-ring,
-  .chat-dot { animation: none !important; }
-  .chat-fab:hover, .chat-fab:active { transform: none !important; }
-  .chat-sheet { transition: none !important; will-change: auto; }
+  .chat-dot {
+    animation: none !important;
+  }
+  .chat-fab:hover,
+  .chat-fab:active {
+    transform: none !important;
+  }
+  .chat-sheet {
+    transition: none !important;
+    will-change: auto;
+  }
 }
-
 
 /* ---- Anti "zoom otomatis" iOS Safari ----------------------------------
    iOS Safari melakukan auto-zoom saat fokus ke input berfont-size < 16px,

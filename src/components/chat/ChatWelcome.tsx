@@ -60,9 +60,7 @@ export function ChatWelcome({ compact = false }: { compact?: boolean }) {
           )}
         >
           <Bot
-            className={cn(
-              "h-6 w-6 rounded-full object-cover object-center"
-            )}
+            className={cn("h-6 w-6 rounded-full object-cover object-center")}
             color="white"
           />
 
@@ -89,7 +87,7 @@ export function ChatWelcome({ compact = false }: { compact?: boolean }) {
         className={cn(
           "chat-reveal text-slate-500 dark:text-slate-400",
           compact
-            ? "mt-1 line-clamp-2 text-[10.5px] leading-relaxed"
+            ? "mt-2 line-clamp-2 text-[11.5px] leading-relaxed"
             : "mt-2 text-xs leading-relaxed sm:text-sm",
         )}
         style={{ "--reveal-i": 4 } as CSSProperties}
@@ -100,7 +98,7 @@ export function ChatWelcome({ compact = false }: { compact?: boolean }) {
 
       <section
         aria-label="Saran pertanyaan"
-        className={cn("chat-reveal w-full", compact ? "mt-2.5" : "mt-6")}
+        className={cn("chat-reveal w-full", compact ? "mt-5" : "mt-6")}
         style={{ "--reveal-i": 5 } as CSSProperties}
       >
         <p

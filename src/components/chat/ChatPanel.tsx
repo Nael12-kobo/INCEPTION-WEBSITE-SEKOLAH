@@ -146,7 +146,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
     <div
       ref={scrollRef}
       className={cn(
-        "flex-1 space-y-4 overflow-y-auto subtle-scroll",
+        "flex-1 mt-1.5 space-y-4 overflow-y-auto subtle-scroll",
         compact ? "p-4" : "p-4 sm:p-6",
         // Fade-out tepi atas saat compact (panel mobile): pesan yang
         // ke-scroll ke atas memudar halus ~56px, bukan terpotong mendadak.
@@ -156,7 +156,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
         // memudar di tepi atas panel compact.
         compact &&
           !isFresh &&
-          "[mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_3.5rem)]",
+          "[mask-image:linear-gradient(to_bottom,transparent_0,black_1.5rem)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_1.5rem)]",
         // Fullscreen + belum ada pesan: welcome diletakkan di tengah area.
         // Compact sengaja rata atas — flex centering + overflow akan
         // memotong sisi atas saat konten lebih tinggi dari panel.
@@ -332,19 +332,19 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
           <Send className="h-4 w-4" />
         </Button>
       </div>
-      <div className="mt-5 flex items-center justify-between gap-1">
+      <div className="mt-2.5 flex items-center justify-between gap-1">
         {/* Pengalihan ke petugas: WA resmi hanya lewat tombol di /ppdb
             (nomor dari env) — jangan karang nomor di sini. */}
         <Link
           href="/ppdb"
-          className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
         >
           <Phone className="h-3 w-3" />
           Hubungi Petugas
         </Link>
         <p
           className={cn(
-            "text-right text-[10px] tabular-nums transition-colors duration-300",
+            "text-right text-[12.5px] tabular-nums transition-colors duration-300",
             nearLimit ? "text-amber-600" : "text-slate-400",
           )}
         >
