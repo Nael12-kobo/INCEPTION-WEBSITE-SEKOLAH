@@ -81,19 +81,19 @@ function GearShape({ gear }: { gear: (typeof gears)[0] }) {
 
     // Inner point
     points.push(
-      `${cx + innerR * Math.cos(angle1)},${cy + innerR * Math.sin(angle1)}`
+      `${(cx + innerR * Math.cos(angle1)).toFixed(3)},${(cy + innerR * Math.sin(angle1)).toFixed(3)}`
     );
     // Tooth rise
     points.push(
-      `${cx + (innerR + toothHeight) * Math.cos(angle2)},${cy + (innerR + toothHeight) * Math.sin(angle2)}`
+      `${(cx + (innerR + toothHeight) * Math.cos(angle2)).toFixed(3)},${(cy + (innerR + toothHeight) * Math.sin(angle2)).toFixed(3)}`
     );
     // Tooth top
     points.push(
-      `${cx + (innerR + toothHeight) * Math.cos(angle3)},${cy + (innerR + toothHeight) * Math.sin(angle3)}`
+      `${(cx + (innerR + toothHeight) * Math.cos(angle3)).toFixed(3)},${(cy + (innerR + toothHeight) * Math.sin(angle3)).toFixed(3)}`
     );
     // Tooth fall
     points.push(
-      `${cx + innerR * Math.cos(angle4)},${cy + innerR * Math.sin(angle4)}`
+      `${(cx + innerR * Math.cos(angle4)).toFixed(3)},${(cy + innerR * Math.sin(angle4)).toFixed(3)}`
     );
   }
 

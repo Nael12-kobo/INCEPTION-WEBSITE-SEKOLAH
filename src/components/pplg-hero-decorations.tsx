@@ -2,20 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-// Seeded PRNG (mulberry32) — deterministic, same on server & client
-function mulberry32(seed: number) {
-  return function () {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const seededRand = mulberry32(42);
-
-// Pick a random integer [0, max) using Math.random (client-only, inside state init)
+// Randomize later cycles after hydration; initial render stays deterministic.
 function randomIndex(max: number) {
   return Math.floor(Math.random() * max);
 }
@@ -75,8 +62,10 @@ function TypewriterText({ text, onCycleDone }: { text: string; onCycleDone: () =
         setDisplayed(text.slice(0, displayed.length - 1));
       }, 30);
     } else if (isDeleting && displayed.length === 0) {
-      setIsDeleting(false);
-      onCycleDone();
+      timeout = setTimeout(() => {
+        setIsDeleting(false);
+        onCycleDone();
+      }, 0);
     }
 
     return () => clearTimeout(timeout);
@@ -85,14 +74,22 @@ function TypewriterText({ text, onCycleDone }: { text: string; onCycleDone: () =
   return (
     <span>
       {displayed}
-      <span className="inline-block w-[2px] h-[1.1em] bg-rose-300 ml-[1px] align-text-bottom animate-pulse" />
+      <span className="inline-block w-[2px] h-[1.1em] bg-red-300 ml-[1px] align-text-bottom animate-pulse" />
     </span>
   );
 }
 
 // Individual code card — picks random snippet, re-randomizes after each cycle
-function CodeCard({ style, animation }: { style: React.CSSProperties; animation: string }) {
-  const [snippetIdx, setSnippetIdx] = useState(() => randomIndex(TOTAL_SNIPPETS));
+function CodeCard({
+  style,
+  animation,
+  initialIndex,
+}: {
+  style: React.CSSProperties;
+  animation: string;
+  initialIndex: number;
+}) {
+  const [snippetIdx, setSnippetIdx] = useState(initialIndex);
 
   const handleCycleDone = useCallback(() => {
     let next = randomIndex(TOTAL_SNIPPETS);
@@ -167,6 +164,7 @@ export default function PPLGHeroDecorations() {
               "--cr": `${card.rotate}deg`,
             } as React.CSSProperties}
             animation={`pplg-float ${card.duration}s ease-in-out ${card.delay}s infinite`}
+            initialIndex={i % TOTAL_SNIPPETS}
           />
         );
       })}

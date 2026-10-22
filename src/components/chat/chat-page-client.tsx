@@ -208,7 +208,7 @@ export function ChatPageClient() {
               asChild
               variant="outline"
               size="sm"
-              className="chat-back bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-95"
+              className="chat-back bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-98"
             >
               <Link href="/" onClick={goHome}>
                 <ArrowLeft className="chat-back-icon h-4 w-4" /> Beranda

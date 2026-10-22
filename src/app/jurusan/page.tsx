@@ -13,7 +13,7 @@ const jurusan = [
     nama: "PPLG",
     deskripsi: "Pemrograman Perangkat Lunak & Gim",
     icon: "💻",
-    color: "purple",
+    color: "red",
     href: "/jurusan/PPLG",
     lucide: <Code2 className="size-5" />,
     detail:
@@ -23,7 +23,7 @@ const jurusan = [
     nama: "TJKT",
     deskripsi: "Teknologi Jaringan Komputer & Telekomunikasi",
     icon: "🌐",
-    color: "cyan",
+    color: "gray",
     href: "/jurusan/TJKT",
     lucide: <Wifi className="size-5" />,
     detail:
@@ -33,7 +33,7 @@ const jurusan = [
     nama: "DKV",
     deskripsi: "Desain Komunikasi Visual",
     icon: "🎨",
-    color: "pink",
+    color: "blue",
     href: "/jurusan/DKV",
     lucide: <Palette className="size-5" />,
     detail:
@@ -52,23 +52,23 @@ const jurusan = [
 ];
 
 const colorClasses: Record<string, { bg: string; text: string; border: string; hover: string }> = {
-  purple: {
-    bg: "bg-purple-100 dark:bg-purple-900/50",
-    text: "text-purple-600 dark:text-purple-400",
-    border: "hover:border-purple-300 dark:hover:border-purple-600",
-    hover: "group-hover:bg-purple-600",
+  red: {
+    bg: "bg-red-100 dark:bg-red-900/50",
+    text: "text-red-600 dark:text-red-400",
+    border: "hover:border-red-300 dark:hover:border-red-600",
+    hover: "group-hover:bg-red-600",
   },
-  cyan: {
-    bg: "bg-cyan-100 dark:bg-cyan-900/50",
-    text: "text-cyan-600 dark:text-cyan-400",
-    border: "hover:border-cyan-300 dark:hover:border-cyan-600",
-    hover: "group-hover:bg-cyan-600",
+  gray: {
+    bg: "bg-gray-100 dark:bg-gray-700",
+    text: "text-gray-600 dark:text-gray-300",
+    border: "hover:border-gray-300 dark:hover:border-gray-500",
+    hover: "group-hover:bg-gray-600",
   },
-  pink: {
-    bg: "bg-pink-100 dark:bg-pink-900/50",
-    text: "text-pink-600 dark:text-pink-400",
-    border: "hover:border-pink-300 dark:hover:border-pink-600",
-    hover: "group-hover:bg-pink-600",
+  blue: {
+    bg: "bg-blue-100 dark:bg-blue-900/50",
+    text: "text-blue-600 dark:text-blue-400",
+    border: "hover:border-blue-300 dark:hover:border-blue-600",
+    hover: "group-hover:bg-blue-600",
   },
   orange: {
     bg: "bg-orange-100 dark:bg-orange-900/50",

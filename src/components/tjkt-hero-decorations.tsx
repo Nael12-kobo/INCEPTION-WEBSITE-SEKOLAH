@@ -89,10 +89,10 @@ function ConnectionLine({ from, to }: { from: (typeof nodes)[0]; to: (typeof nod
       style={{
         left: `${x1}%`,
         top: `${y1}%`,
-        width: `${length}%`,
+        width: `${length.toFixed(2)}%`,
         height: "1px",
         background: "linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.2), rgba(255,255,255,0.05))",
-        transform: `rotate(${angle}deg)`,
+        transform: `rotate(${angle.toFixed(2)}deg)`,
         transformOrigin: "0 0",
       }}
     />

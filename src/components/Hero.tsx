@@ -77,7 +77,7 @@ export function Hero() {
         translateY: [36, 0],
         rotateX: [-70, 0],
         duration: 700,
-        delay: stagger(25g),
+        delay: stagger(25),
         ease: "outExpo",
       }),
     );

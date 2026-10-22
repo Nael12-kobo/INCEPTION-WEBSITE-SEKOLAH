@@ -14,6 +14,7 @@ import {
   Layers,
 } from "lucide-react";
 import DKVHeroDecorations from "@/components/dkv-hero-decorations";
+import MitraIndustri from "@/components/jurusan/mitra-industri";
 
 export const metadata: Metadata = {
   title: "DKV — Desain Komunikasi Visual | SMK Tunas Harapan",
@@ -100,7 +101,7 @@ export default function DKVPage() {
   return (
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0b1220] via-[#12345b] to-[#075985] text-white">
         <DKVHeroDecorations />
 
         <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
@@ -267,7 +268,7 @@ export default function DKVPage() {
       {/* CTA */}
       <section className="py-16 md:py-20 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-900 rounded-3xl p-8 md:p-12 text-white text-center">
+          <div className="bg-gradient-to-br from-[#0b1220] via-[#12345b] to-[#075985] rounded-3xl p-8 md:p-12 text-white text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Tertarik dengan Jurusan DKV?
             </h2>
@@ -278,7 +279,7 @@ export default function DKVPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/chat"
-                className="inline-flex items-center justify-center gap-2 bg-card text-blue-700 font-semibold px-8 py-3 rounded-full hover:bg-blue-50 transition-colors shadow-lg"
+                className="inline-flex items-center justify-center gap-2 bg-white text-blue-800 font-semibold px-8 py-3 rounded-full hover:bg-blue-50 transition-colors shadow-lg"
               >
                 Tanya AI Asisten
                 <ChevronRight className="size-5" />
@@ -293,6 +294,8 @@ export default function DKVPage() {
           </div>
         </div>
       </section>
+
+      <MitraIndustri accent="blue" />
     </div>
   );
 }

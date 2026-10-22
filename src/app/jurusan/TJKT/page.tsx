@@ -14,6 +14,7 @@ import {
   Router,
 } from "lucide-react";
 import TJKTHeroDecorations from "@/components/tjkt-hero-decorations";
+import MitraIndustri from "@/components/jurusan/mitra-industri";
 
 export const metadata: Metadata = {
   title: "TJKT — Jaringan Komputer & Telekomunikasi | SMK Tunas Harapan",
@@ -100,7 +101,7 @@ export default function TJKTPage() {
   return (
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#111827] via-[#374151] to-[#6b7280] text-white">
         <TJKTHeroDecorations />
 
         <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
@@ -183,7 +184,7 @@ export default function TJKTPage() {
 
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <GraduationCap className="size-5 text-gray-500" />
+                <GraduationCap className="size-5 text-gray-600" />
                 Keunggulan Jurusan
               </h3>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border dark:border-gray-700">
@@ -220,7 +221,7 @@ export default function TJKTPage() {
                 key={index}
                 className="bg-card dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow border dark:border-gray-700"
               >
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-900/50 text-black dark:text-gray-400 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 flex items-center justify-center mb-4">
                   <span className="text-lg font-bold">{index + 1}</span>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
@@ -253,13 +254,13 @@ export default function TJKTPage() {
                 key={index}
                 className="bg-gradient-to-br from-gray-50 to-card dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-6 border dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900/50 text-black dark:text-gray-400 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 flex items-center justify-center mb-4">
                   {item.icon}
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                   {item.pekerjaan}
                 </h3>
-                <p className="text-sm text-black dark:text-gray-400 font-medium">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                   {item.gaji}
                 </p>
               </div>
@@ -271,7 +272,7 @@ export default function TJKTPage() {
       {/* CTA */}
       <section className="py-16 md:py-20 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 rounded-3xl p-8 md:p-12 text-white text-center">
+          <div className="bg-gradient-to-br from-[#111827] via-[#374151] to-[#6b7280] rounded-3xl p-8 md:p-12 text-white text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Tertarik dengan Jurusan TJKT?
             </h2>
@@ -282,7 +283,7 @@ export default function TJKTPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/chat"
-                className="inline-flex items-center justify-center gap-2 bg-card text-gray-700 font-semibold px-8 py-3 rounded-full hover:bg-gray-50 transition-colors shadow-lg"
+                className="inline-flex items-center justify-center gap-2 bg-white text-gray-800 font-semibold px-8 py-3 rounded-full hover:bg-gray-50 transition-colors shadow-lg"
               >
                 Tanya AI Asisten
                 <ChevronRight className="size-5" />
@@ -297,6 +298,8 @@ export default function TJKTPage() {
           </div>
         </div>
       </section>
+
+      <MitraIndustri accent="gray" />
     </div>
   );
 }
