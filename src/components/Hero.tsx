@@ -62,7 +62,7 @@ export function Hero() {
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    if (!root) return;  
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const letters = root.querySelectorAll<HTMLElement>("[data-hero-letter]");

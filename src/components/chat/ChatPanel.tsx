@@ -337,7 +337,7 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
             (nomor dari env) — jangan karang nomor di sini. */}
         <Link
           href="/ppdb"
-          className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 text-[13px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
         >
           <Phone className="h-3 w-3" />
           Hubungi Petugas
