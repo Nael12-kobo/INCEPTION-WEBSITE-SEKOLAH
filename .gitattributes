@@ -1,1 +1,1 @@
-character.vrm filter=lfs diff=lfs merge=lfs -text
+# Keep the VRM model as a regular Git asset so deployment builds include the actual binary.
