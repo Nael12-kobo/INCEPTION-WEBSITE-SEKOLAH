@@ -270,7 +270,8 @@ export function UserProfileClient({
             ))}
           </dl>
 
-          <div className="mt-6 flex items-center gap-3 border-t border-sky-100 pt-4">
+          {/* flex-wrap: tombol label panjang tidak muat di layar 360px (pola account-section). */}
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-sky-100 pt-4">
             <Button size="sm" asChild>
               <a href="/settings">
                 Edit Profil

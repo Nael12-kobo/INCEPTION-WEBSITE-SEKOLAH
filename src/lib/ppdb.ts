@@ -251,11 +251,17 @@ export function validatePpdbDraft(draft: PpdbDraft): PpdbValidation {
 
 /**
  * Nomor pendaftaran berurutan, mis. PPDB-2026-0007.
- * Route /api/ppdb menghitung dari jumlah baris tabel, dan kolom @unique
- * menjadi jaring pengaman terakhir bila ada pendaftaran bersamaan.
+ *
+ * Route /api/ppdb menurunkan nomor urut dari agregat MAX kolom registrationNo
+ * (bukan count()): pendaftaran yang dihapus admin TIDAK membuat nomor lama
+ * dipakai ulang, dan nomor yang sudah terpakai selalu terlewati meski ada
+ * baris terhapus (C1). Kolom @unique tetap jaring pengaman terakhir.
  */
-export function registrationNoFromCount(count: number, year = new Date().getFullYear()) {
-  return `PPDB-${year}-${String(count + 1).padStart(4, "0")}`;
+export function registrationNoFromSeq(
+  seq: number,
+  year = new Date().getFullYear()
+) {
+  return `PPDB-${year}-${String(seq).padStart(4, "0")}`;
 }
 
 /** Ringkasan data untuk pesan WhatsApp ke nomor pendaftar. */

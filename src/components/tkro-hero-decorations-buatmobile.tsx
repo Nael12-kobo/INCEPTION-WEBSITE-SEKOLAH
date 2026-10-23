@@ -20,44 +20,6 @@ const gears: {
   { size: 130, top: "4%",   right: "-6%",  duration: 15, delay: 0,    direction: "normal",  teeth: 15 },
 ];
 
-// Piston animations
-const pistons: {
-  top: string;
-  left?: string;
-  right?: string;
-  width: number;
-  height: number;
-  duration: number;
-  delay: number;
-}[] = [
-  //{ top: "20%", right: "25%", width: 14, height: 60, duration: 2, delay: 0 },
-
-];
-
-// Hexagonal bolt shapes
-const bolts: {
-  size: number;
-  top: string;
-  left?: string;
-  right?: string;
-  duration: number;
-  delay: number;
-}[] = [
-  //{ size: 18, top: "12%", left: "20%",  duration: 10, delay: 0.2 },
-];
-
-// Tachometer arc shapes
-const tachometerArcs: {
-  size: number;
-  top: string;
-  left?: string;
-  right?: string;
-  duration: number;
-  delay: number;
-}[] = [
-  //{ size: 290,  top: "3%",  left: "45%", duration: 25, delay: 0 },
-];
-
 // Render a gear SVG with teeth
 function GearShape({ gear }: { gear: (typeof gears)[0] }) {
   const pos: React.CSSProperties = { top: gear.top };
@@ -140,143 +102,11 @@ function GearShape({ gear }: { gear: (typeof gears)[0] }) {
   );
 }
 
-// Piston assembly
-function Piston({ piston }: { piston: (typeof pistons)[0] }) {
-  const pos: React.CSSProperties = { top: piston.top };
-  if ("left" in piston) pos.left = piston.left;
-  if ("right" in piston) pos.right = piston.right;
-
-  return (
-    <div
-      className="absolute md:hidden opacity-[0.08]"
-      style={{ ...pos }}
-    >
-      {/* Cylinder */}
-      <div
-        className="border-2 border-white/30 rounded-sm"
-        style={{
-          width: piston.width + 10,
-          height: piston.height,
-        }}
-      />
-      {/* Piston head - moves up and down */}
-      <div
-        className="absolute left-[5px] bg-card/40 rounded-sm"
-        style={{
-          width: piston.width,
-          height: 10,
-          animation: `tkro-piston ${piston.duration}s ease-in-out ${piston.delay}s infinite`,
-        }}
-      />
-      {/* Connecting rod */}
-      <div
-        className="absolute bg-card/20"
-        style={{
-          left: piston.width / 2,
-          width: 3,
-          height: piston.height * 0.6,
-          animation: `tkro-piston ${piston.duration}s ease-in-out ${piston.delay}s infinite`,
-        }}
-      />
-    </div>
-  );
-}
-
-// Hexagonal bolt
-function Bolt({ bolt }: { bolt: (typeof bolts)[0] }) {
-  const pos: React.CSSProperties = { top: bolt.top };
-  if ("left" in bolt) pos.left = bolt.left;
-  if ("right" in bolt) pos.right = bolt.right;
-
-  return (
-    <div
-      className="absolute md:hidden opacity-[0.1]"
-      style={{
-        ...pos,
-        width: bolt.size,
-        height: bolt.size,
-        animation: `tkro-float ${bolt.duration}s ease-in-out ${bolt.delay}s infinite`,
-      }}
-    >
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <polygon
-          points="12,1 21,6 21,18 12,23 3,18 3,6"
-          fill="white"
-        />
-        <circle cx="12" cy="12" r="4" fill="rgba(0,0,0,0.4)" />
-      </svg>
-    </div>
-  );
-}
-
-// Tachometer arc
-function TachometerArc({ arc }: { arc: (typeof tachometerArcs)[0] }) {
-  const pos: React.CSSProperties = { top: arc.top };
-  if ("left" in arc) pos.left = arc.left;
-  if ("right" in arc) pos.right = arc.right;
-
-  return (
-    <div
-      className="absolute md:hidden opacity-[0.06]"
-      style={{ ...pos, width: arc.size, height: arc.size }}
-    >
-      <svg
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
-      >
-        {/* Outer arc */}
-        <path
-          d="M 15 80 A 45 45 0 0 1 85 80"
-          stroke="white"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
-        {/* Tick marks */}
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
-          const angle = -180 + i * 18;
-          const rad = (angle * Math.PI) / 180;
-          const inner = 38;
-          const outer = i % 5 === 0 ? 48 : 44;
-          return (
-            <line
-              key={i}
-              x1={50 + inner * Math.cos(rad)}
-              y1={80 + inner * Math.sin(rad)}
-              x2={50 + outer * Math.cos(rad)}
-              y2={80 + outer * Math.sin(rad)}
-              stroke="white"
-              strokeWidth={i % 5 === 0 ? 2.5 : 1.2}
-              strokeLinecap="round"
-            />
-          );
-        })}
-        {/* Needle */}
-        <line
-          x1="50"
-          y1="80"
-          x2="50"
-          y2="40"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-          style={{
-            transformOrigin: "50px 80px",
-            animation: `tkro-needle 4s ease-in-out ${arc.delay}s infinite`,
-          }}
-        />
-        {/* Center dot */}
-        <circle cx="50" cy="80" r="3" fill="white" />
-      </svg>
-    </div>
-  );
-}
-
 export default function TKROHeroDecorations() {
   useEffect(() => {
-    const id = "tkro-hero-animations";
+    // Id unik per varian (desktop/mobile keduanya di-mount bersamaan) — id
+    // kembar membuat race "siapa yang unmount menghapus style" (#11).
+    const id = "tkro-hero-animations-mobile";
     if (document.getElementById(id)) return;
 
     const style = document.createElement("style");
@@ -285,18 +115,6 @@ export default function TKROHeroDecorations() {
       @keyframes tkro-spin {
         0%   { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
-      }
-      @keyframes tkro-float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
-        50%      { transform: translateY(-10px) rotate(15deg); opacity: 0.15; }
-      }
-      @keyframes tkro-piston {
-        0%, 100% { transform: translateY(0px); }
-        50%      { transform: translateY(25px); }
-      }
-      @keyframes tkro-needle {
-        0%, 100% { transform: rotate(-40deg); }
-        50%      { transform: rotate(40deg); }
       }
     `;
     document.head.appendChild(style);
@@ -311,21 +129,6 @@ export default function TKROHeroDecorations() {
       {/* Gears */}
       {gears.map((gear, i) => (
         <GearShape key={`gear-${i}`} gear={gear} />
-      ))}
-
-      {/* Pistons */}
-      {pistons.map((piston, i) => (
-        <Piston key={`piston-${i}`} piston={piston} />
-      ))}
-
-      {/* Hexagonal bolts */}
-      {bolts.map((bolt, i) => (
-        <Bolt key={`bolt-${i}`} bolt={bolt} />
-      ))}
-
-      {/* Tachometer arcs */}
-      {tachometerArcs.map((arc, i) => (
-        <TachometerArc key={`tach-${i}`} arc={arc} />
       ))}
     </div>
   );

@@ -109,16 +109,14 @@ export async function PATCH(
     }
 
     if (body.email !== undefined) {
-      if (
-        typeof body.email !== "string" ||
-        !EMAIL_RE.test(body.email.trim())
-      ) {
+      const normalized = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+      if (!EMAIL_RE.test(normalized)) {
         return NextResponse.json(
           { error: "Invalid email" },
           { status: 400 }
         );
       }
-      data.email = body.email.trim();
+      data.email = normalized;
     }
 
     if (body.notes !== undefined) {
@@ -157,20 +155,26 @@ export async function PATCH(
       );
     }
 
-    const updated = await prisma.ppdbRegistration.update({
-      where: { id: registrationId },
-      data,
-    });
-
-    // "Meloloskan" (status → REGISTERED): verifikasi juga akun siswanya —
-    // portal siswa sudah terbuka penuh, dan badge Verifikasi di Pengguna ikut
-    // benar. updateMany agar aman bila akunnya sudah terverifikasi.
-    if (data.status === "REGISTERED" && existing.status !== "REGISTERED") {
-      await prisma.user.updateMany({
-        where: { id: existing.userId, emailVerified: null },
-        data: { emailVerified: new Date() },
+    // C12: update pendaftaran + verifikasi akun siswa dalam SATU transaksi —
+    // crash di tengah jalan tidak lagi meninggalkan status REGISTERED dengan
+    // akun yang emailVerified-nya null (atau sebaliknya).
+    const updated = await prisma.$transaction(async (tx) => {
+      const row = await tx.ppdbRegistration.update({
+        where: { id: registrationId },
+        data,
       });
-    }
+
+      // "Meloloskan" (status → REGISTERED): verifikasi juga akun siswanya —
+      // portal siswa sudah terbuka penuh, dan badge Verifikasi di Pengguna ikut
+      // benar. updateMany agar aman bila akunnya sudah terverifikasi.
+      if (data.status === "REGISTERED" && existing.status !== "REGISTERED") {
+        await tx.user.updateMany({
+          where: { id: existing.userId, emailVerified: null },
+          data: { emailVerified: new Date() },
+        });
+      }
+      return row;
+    });
 
     // -------- Audit log --------------------------------------------------
     const changes: Record<string, { old: unknown; new: unknown }> = {};

@@ -60,3 +60,16 @@ export async function consumeResetToken(
     where: { identifier: email, token: hashToken(rawToken) },
   });
 }
+
+/**
+ * Cabut SEMUA token reset yang masih beredar untuk satu email (S6).
+ *
+ * Dipanggil setelah reset berhasil: tautan lama yang belum dipakai (mis.
+ * link curian yang dikirim jauh sebelumnya) ikut mati, bukan hanya token
+ * yang barusan dipakai.
+ */
+export async function deleteAllResetTokens(email: string): Promise<void> {
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: email },
+  });
+}

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { UserRole, ROLE_META, isUserRole } from "@/lib/roles";
+import { parseJsonSafe } from "@/components/admin/api-json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,17 +55,29 @@ function CreateForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
       });
-      const data = await res.json();
+      const data = await parseJsonSafe<{
+        errors?: Errors;
+        error?: string;
+        user?: Parameters<typeof onCreated>[0];
+      }>(res);
       if (!res.ok) {
-        if (data.errors) setErrors(data.errors);
-        throw new Error(data.error || "Gagal menambahkan user.");
+        // Pesan per-field langsung tampil di input masing-masing — hentikan
+        // submit tanpa melempar, supaya tidak ditimpa pesan form-level.
+        if (data?.errors && Object.keys(data.errors).length > 0) {
+          setErrors(data.errors);
+          return;
+        }
+        throw new Error(data?.error || "Gagal menambahkan user.");
       }
+      if (!data?.user) throw new Error("Gagal menambahkan user.");
       onCreated(data.user);
       onClose();
     } catch (err) {
-      if (Object.keys(errors).length === 0) {
-        setErrors({ form: err instanceof Error ? err.message : "Gagal menambahkan user." });
-      }
+      const message = err instanceof Error ? err.message : "Gagal menambahkan user.";
+      // Update fungsional: pertahankan error per-field yang baru diset —
+      // snapshot closure `errors` selalu {} sehingga dulu pesan per-field
+      // tidak pernah sampai ke UI (#14).
+      setErrors((prev) => (Object.keys(prev).length > 0 ? prev : { form: message }));
     } finally {
       setLoading(false);
     }

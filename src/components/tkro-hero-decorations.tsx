@@ -286,7 +286,9 @@ function TachometerArc({ arc }: { arc: (typeof tachometerArcs)[0] }) {
 
 export default function TKROHeroDecorations() {
   useEffect(() => {
-    const id = "tkro-hero-animations";
+    // Id unik per varian (desktop/mobile keduanya di-mount bersamaan) — id
+    // kembar membuat race "siapa yang unmount menghapus style" (#11).
+    const id = "tkro-hero-animations-desktop";
     if (document.getElementById(id)) return;
 
     const style = document.createElement("style");

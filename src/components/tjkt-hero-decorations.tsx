@@ -99,7 +99,7 @@ function ConnectionLine({ from, to }: { from: (typeof nodes)[0]; to: (typeof nod
   );
 }
 
-function DataPacket({ from, to, duration, delay }: PacketDef) {
+function DataPacket({ index, from, to, duration, delay }: PacketDef) {
   const x1 = from.left ? parseFloat(from.left) : from.right ? 100 - parseFloat(from.right) : 50;
   const y1 = parseFloat(from.top);
   const x2 = to.left ? parseFloat(to.left) : to.right ? 100 - parseFloat(to.right) : 50;
@@ -116,7 +116,9 @@ function DataPacket({ from, to, duration, delay }: PacketDef) {
         borderRadius: "50%",
         background: "rgba(255,255,255,0.7)",
         boxShadow: "0 0 8px rgba(255,255,255,0.4)",
-        animation: `tjkt-packet-${duration.toFixed(1)} ${duration}s linear ${delay}s infinite`,
+        // Nama keyframe memakai index packet agar dua packet dengan duration
+        // sama (mis. keduanya 3) tidak berebut `@keyframes tjkt-packet-3` (#12).
+        animation: `tjkt-packet-${index}-${duration.toFixed(1)} ${duration}s linear ${delay}s infinite`,
         ["--x1" as string]: `${x1}%`,
         ["--y1" as string]: `${y1}%`,
         ["--x2" as string]: `${x2}%`,
@@ -162,6 +164,7 @@ const binaryStreams = [
 ];
 
 type PacketDef = {
+  index: number;
   from: (typeof nodes)[0];
   to: (typeof nodes)[0];
   duration: number;
@@ -169,7 +172,8 @@ type PacketDef = {
 };
 
 // Build packet objects from indices
-const packetDefs: PacketDef[] = packets.map((p) => ({
+const packetDefs: PacketDef[] = packets.map((p, i) => ({
+  index: i,
   from: nodes[p.from],
   to: nodes[p.to],
   duration: p.duration,
@@ -181,9 +185,10 @@ export default function TJKTHeroDecorations() {
     const id = "tjkt-hero-animations";
     if (document.getElementById(id)) return;
 
-    // Build dynamic keyframes for each unique packet path
+    // Build dynamic keyframes for each packet path — nama unik per index
+    // packet agar duration yang sama tidak menghasilkan keyframe dobel (#12)
     const packetKeyframes = packets
-      .map((p) => {
+      .map((p, i) => {
         const from = nodes[p.from];
         const to = nodes[p.to];
         const x1 = from.left ? parseFloat(from.left) : from.right ? 100 - parseFloat(from.right) : 50;
@@ -191,7 +196,7 @@ export default function TJKTHeroDecorations() {
         const x2 = to.left ? parseFloat(to.left) : to.right ? 100 - parseFloat(to.right) : 50;
         const y2 = parseFloat(to.top);
         return `
-          @keyframes tjkt-packet-${p.duration.toFixed(1)} {
+          @keyframes tjkt-packet-${i}-${p.duration.toFixed(1)} {
             0%   { left: ${x1}%; top: ${y1}%; opacity: 0; }
             5%   { opacity: 1; }
             95%  { opacity: 1; }

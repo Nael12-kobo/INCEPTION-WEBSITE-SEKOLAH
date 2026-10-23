@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { isSuperAdmin } from "@/lib/roles";
+import { formatRoleLabel, isSuperAdmin } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -76,37 +76,37 @@ function UserEditForm({
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
-          <label htmlFor="name" className="text-left text-sm font-medium sm:text-right">
-            Name
+          <label htmlFor="edit-name" className="text-left text-sm font-medium sm:text-right">
+            Nama
           </label>
           <Input
-            id="name"
+            id="edit-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="sm:col-span-3"
-            placeholder="User name"
+            placeholder="Nama user"
           />
         </div>
         <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
-          <label htmlFor="email" className="text-left text-sm font-medium sm:text-right">
+          <label htmlFor="edit-email" className="text-left text-sm font-medium sm:text-right">
             Email
           </label>
           <Input
-            id="email"
+            id="edit-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="sm:col-span-3"
-            placeholder="user@example.com"
+            placeholder="user@contoh.com"
           />
         </div>
         <div className="grid grid-cols-1 items-start gap-1.5 sm:grid-cols-4 sm:items-center sm:gap-4">
-          <label htmlFor="role" className="text-left text-sm font-medium sm:text-right">
+          <label htmlFor="edit-role" className="text-left text-sm font-medium sm:text-right">
             Role
           </label>
           <select
-            id="role"
+            id="edit-role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             disabled={!canEditRole}
@@ -114,7 +114,7 @@ function UserEditForm({
           >
             {(canEditRole ? accessibleRoles : [user.role]).map((r) => (
               <option key={r} value={r}>
-                {r}
+                {formatRoleLabel(r)}
               </option>
             ))}
           </select>
@@ -128,10 +128,10 @@ function UserEditForm({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          Batal
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Save Changes"}
+          {loading ? "Menyimpan…" : "Simpan Perubahan"}
         </Button>
       </DialogFooter>
     </form>

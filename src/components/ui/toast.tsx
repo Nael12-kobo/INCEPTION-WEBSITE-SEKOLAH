@@ -217,12 +217,12 @@ function ToastViewport({
   reduced: boolean;
   onDismiss: (id: string) => void;
 }) {
-  if (toasts.length === 0) return null;
-
+  // Region live dipasang PERMANEN (meski kosong) — banyak screen reader
+  // tidak mengumumkan mutasi pada region yang baru saja dimount.
+  // Item sengaja TANPA role="status" agar tidak diumumkan dua kali.
   return (
     <div
       aria-live="polite"
-      aria-atomic="true"
       className={cn(
         "pointer-events-none fixed gap-3 right-3 top-20 z-100 max-w-sm -space-y-3.5",
         "sm:right-6 sm:top-10 sm:w-96 sm:items-end"
@@ -263,7 +263,6 @@ function ToastItem({
 
   return (
     <div
-      role="status"
       className={cn(
         "pointer-events-auto relative w-full overflow-hidden rounded-2xl border px-4 py-3.5 backdrop-blur-sm elevation-3",
         tone.container,

@@ -139,6 +139,7 @@ export function PhotoUpload({
             <img
               src={imageSrc}
               alt="Pratinjau foto siswa"
+              loading="lazy"
               className="h-full w-full object-cover"
             />
           ) : (

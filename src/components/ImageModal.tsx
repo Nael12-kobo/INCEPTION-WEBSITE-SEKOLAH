@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,13 +29,51 @@ export function ImageModal({
   videoSrc,
   poster,
 }: ImageModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   // Efek berjalan hanya ketika modal dibuka (isOpen = true)
   useEffect(() => {
     if (!isOpen) return;
 
-    // 1. Tutup dengan tombol ESC
+    const dialog = dialogRef.current;
+    // Simpan pemicu modal agar fokus bisa dipulihkan saat ditutup (#25).
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    // Fokus awal: container modal (tabIndex -1) agar screen reader masuk ke dialog.
+    dialog?.focus();
+
+    const getFocusables = () =>
+      dialog
+        ? Array.from(
+            dialog.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])'
+            )
+          )
+        : [];
+
+    // 1. Tutup dengan tombol ESC + jebak Tab di dalam modal (focus trap)
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialog) return;
+      const focusables = getFocusables();
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || active === dialog || !dialog.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || active === dialog || !dialog.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
 
     // 2. Kunci scroll body agar halaman belakang tidak ikut ter-scroll
@@ -46,6 +84,8 @@ export function ImageModal({
     return () => {
       document.body.style.overflow = originalStyle;
       window.removeEventListener("keydown", handleKeyDown);
+      // Pulihkan fokus ke elemen yang membuka modal (#25).
+      previouslyFocused?.focus();
     };
   }, [isOpen, onClose]);
 
@@ -54,10 +94,13 @@ export function ImageModal({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       className={cn(
         "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
         "bg-black/60 backdrop-blur-md",
         "animate-in fade-in duration-300", // Animasi masuk yang halus
+        "outline-none", // fokus programatik ke container tidak perlu ring visual
       )}
       onClick={onClose}
       role="dialog"
@@ -112,8 +155,8 @@ export function ImageModal({
               fill
               sizes="(max-width: 768px) 100vw, 70vw"
               className="object-contain"
-              priority // Sangat penting agar gambar langsung muncul tanpa delay lazy-loading
-              quality={100}
+              // Tanpa `priority`/`quality={100}` (#36): overlay on-demand tidak
+              // perlu eager fetch, quality default (75) ~separuh byte quality 100.
             />
           )}
         </div>

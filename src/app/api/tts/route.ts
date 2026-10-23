@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { FishAudioClient, RealtimeEvents } from "fish-audio";
 import { normalizeForSpeech } from "@/lib/tts-normalizer";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+/**
+ * Batas teks per permintaan — Fish Audio memotong pada 5000 char, dan teks
+ * panjang = kuota berbayar membengkak. Chat AI memakai maks ±500 char/pesan,
+ * jadi 5000 memberi ruang untuk merangkai beberapa jawaban sekaligus.
+ */
+const MAX_TEXT_LENGTH = 5000;
 
 export async function POST(request: Request) {
   const apiKey = process.env.FISH_AUDIO_API_KEY;
@@ -16,6 +24,23 @@ export async function POST(request: Request) {
     );
   }
 
+  // S1: endpoint publik (guest dipakai oleh chat) TANPA auth → rate limit
+  // per IP wajib ada, pola yang sama dengan /api/chat (20/menit), supaya
+  // script anonim tidak menghabiskan kuota Fish Audio berbayar.
+  const rl = rateLimit(`tts:${clientIp(request)}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      {
+        message: "Terlalu banyak permintaan suara. Tunggu sebentar ya.",
+        retryAfterSec: rl.retryAfterSec,
+      },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   let body: { text?: unknown };
   try {
     body = await request.json();
@@ -26,6 +51,12 @@ export async function POST(request: Request) {
   const rawText = typeof body.text === "string" ? body.text.trim() : "";
   if (!rawText) {
     return NextResponse.json({ message: "Teks TTS kosong." }, { status: 400 });
+  }
+  if (rawText.length > MAX_TEXT_LENGTH) {
+    return NextResponse.json(
+      { message: `Teks TTS maksimal ${MAX_TEXT_LENGTH} karakter.` },
+      { status: 400 }
+    );
   }
 
   const text = normalizeForSpeech(rawText);

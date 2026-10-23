@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const [actor, target] = await Promise.all([
     prisma.user.findUnique({
       where: { id: impersonatorId },
-      select: { id: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true },
     }),
     prisma.user.findUnique({
       where: { id: targetId },
@@ -46,9 +46,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const token = await mintSessionToken({ userId: actor.id, role: actor.role });
+  const cookieName = sessionCookieName(request);
+  const token = await mintSessionToken({
+    userId: actor.id,
+    role: actor.role,
+    name: actor.name,
+    email: actor.email,
+    cookieName,
+  });
   const res = NextResponse.json({ ok: true, redirectTo: "/admin" });
-  res.cookies.set(sessionCookieName(), token, sessionCookieOptions());
+  res.cookies.set(cookieName, token, sessionCookieOptions(request));
 
   await logAudit({
     actorId: actor.id,

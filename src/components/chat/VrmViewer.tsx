@@ -69,7 +69,8 @@ const LOADING_FRAME_PATHS = Array.from(
  * - Entrance .vrma sekali-putar → crossfade 0.4s → idle.vrma loop;
  *   saat clip aktif prosedural badan mati (clip pegang penuh), blink +
  *   mulut prosedural tetap jalan di atasnya + frustumCulled=false.
- * - Error asli ditampilkan (bukan pesan generik) agar mudah diagnosis.
+ * - Saat gagal, panel fallback menampilkan pesan ramah; detail error
+ *   (URL aset + pesan) dicatat ke console untuk diagnosis.
  * - Diet runtime: pixelRatio max 1.5, pause saat tab hidden / karakter
  *   disembunyikan pengguna (prop paused).
  */
@@ -131,10 +132,18 @@ export function VrmViewer({
     let animationFrame = 0;
     const startedAt = performance.now();
     const frameDuration = 1000 / LOADING_FRAME_RATE;
+    // Cache index terakhir: hanya setState saat index benar-benar berubah
+    // (tanpa ini ~60 re-render/detik selama model besar dimuat).
+    let lastFrame = 0;
 
     const animate = (now: number) => {
       const elapsed = now - startedAt;
-      setLoadingFrame(Math.floor(elapsed / frameDuration) % LOADING_FRAME_COUNT);
+      const frame =
+        Math.floor(elapsed / frameDuration) % LOADING_FRAME_COUNT;
+      if (frame !== lastFrame) {
+        lastFrame = frame;
+        setLoadingFrame(frame);
+      }
       animationFrame = requestAnimationFrame(animate);
     };
 
@@ -817,15 +826,12 @@ export function VrmViewer({
         };
         window.addEventListener("resize", onResize);
       } catch (e) {
-        // Tampilkan error ASLI agar mudah diagnosis (404, OOM, parse, dsb).
-        const msg =
-          e instanceof Error
-            ? e.message
-            : "Gagal memuat model (unknown error).";
+        // Detail asli (URL + error) hanya untuk developer di console —
+        // user cukup melihat pesan ramah di panel fallback.
         console.warn("[VrmViewer] gagal memuat", url, e);
         if (!isCancelled()) {
           setStatus("fallback");
-          setHint(`${url} — ${msg.slice(0, 300)}`);
+          setHint("Silakan muat ulang halaman untuk mencoba lagi.");
         }
       }
     }
@@ -877,10 +883,10 @@ export function VrmViewer({
 
       {status === "loading" && (
         <div className="absolute inset-0 flex items-center justify-center bg-card">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sekuens 90 frame PNG (bukan 1 aset statis) — next/image tak cocok untuk sprite berputar */}
           <img
             src={LOADING_FRAME_PATHS[loadingFrame]}
             alt="Memuat karakter 3D..."
-            aria-label="Memuat karakter 3D..."
             className="h-60 w-60 translate-y-[-60%] object-contain md:h-100 md:w-100 md:translate-y-0"
           />
         </div>

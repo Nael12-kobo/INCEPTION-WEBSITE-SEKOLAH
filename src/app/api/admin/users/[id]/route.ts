@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import {
   requireAdmin,
   canEditUser,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
+import { EMAIL_RE } from "@/lib/ppdb";
 
 /** PATCH — edit data user (nama/email/role sesuai permission). */
 export async function PATCH(
@@ -24,7 +26,7 @@ export async function PATCH(
   try {
     const { id: userId } = await params;
     const body = await request.json();
-    const { name, email, role } = body;
+    const { name, email, role } = body ?? {};
 
     if (userId === session.user.id) {
       return NextResponse.json({ error: "Cannot edit your own account" }, { status: 400 });
@@ -46,9 +48,36 @@ export async function PATCH(
       );
     }
 
+    // S9/C7: validasi & normalisasi sebelum menulis — email wajib format
+    // valid dan diseragamkan huruf kecil (semua lookup login/reset memakai
+    // lowercase, email `SOME@Example.COM` = akun yang tak bisa login lagi),
+    // nama ≥ 2 karakter (C13, seragam dengan register & account).
     const updateData: { name?: string; email?: string; role?: UserRole } = {};
-    if (name !== undefined) updateData.name = name;
-    if (email !== undefined) updateData.email = email;
+    if (name !== undefined) {
+      if (typeof name !== "string" || !name.trim() || name.trim().length < 2) {
+        return NextResponse.json(
+          { error: "Nama minimal 2 karakter.", errors: { name: "Nama minimal 2 karakter." } },
+          { status: 400 }
+        );
+      }
+      if (name.trim().length > 100) {
+        return NextResponse.json(
+          { error: "Nama maksimal 100 karakter.", errors: { name: "Nama maksimal 100 karakter." } },
+          { status: 400 }
+        );
+      }
+      updateData.name = name.trim();
+    }
+    if (email !== undefined) {
+      const normalized = typeof email === "string" ? email.trim().toLowerCase() : "";
+      if (!EMAIL_RE.test(normalized)) {
+        return NextResponse.json(
+          { error: "Format email tidak valid.", errors: { email: "Format email tidak valid." } },
+          { status: 400 }
+        );
+      }
+      updateData.email = normalized;
+    }
 
     const roleChanged = role !== undefined && role !== targetUser.role;
     if (roleChanged) {
@@ -59,6 +88,11 @@ export async function PATCH(
         );
       }
       updateData.role = role;
+    }
+
+    // C7: tidak ada field yang berubah → 400, bukan memanggil update({}).
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: "Tidak ada perubahan untuk disimpan." }, { status: 400 });
     }
 
     const updatedUser = await prisma.user.update({
@@ -88,6 +122,22 @@ export async function PATCH(
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
+    // C7: email duplikat → 409 (bukan 500).
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        {
+          error: "Email sudah dipakai akun lain.",
+          errors: { email: "Email sudah dipakai akun lain." },
+        },
+        { status: 409 }
+      );
+    }
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
     console.error("Error editing user:", error);
     return NextResponse.json({ error: "Failed to edit user" }, { status: 500 });
   }

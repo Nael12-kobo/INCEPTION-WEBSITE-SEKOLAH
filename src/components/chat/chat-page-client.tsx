@@ -50,8 +50,8 @@ interface HistoryItem {
  * - SATU <VrmViewer> selalu mounted di layer belakang; tidak pernah unmount
  *   saat resize mobile ↔ desktop, jadi hanya 1 <canvas> + 1× unduhan model.
  *   Offset framing responsif via prop (dibaca VrmViewer lewat ref, tanpa reload).
- * - Desktop (lg+): VRM menempati area kiri (kanan disisakan 440px untuk panel
- *   chat); panel chat absolute kanan.
+ * - Desktop (lg+): VRM berada di kolom kiri dengan lebar responsif sekitar
+ *   30vw (dibatasi 26rem–34rem); panel chat memakai seluruh sisa lebar kanan.
  * - Mobile: VRM full-screen di belakang; panel chat menempel di depan bawah
  *   setinggi 30% dengan gradient transparan ke atas; tombol expand → fullscreen.
  */
@@ -185,7 +185,7 @@ export function ChatPageClient() {
       <div
         aria-hidden={!showCharacter}
         className={cn(
-          "absolute inset-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:inset-y-0 lg:left-0 lg:right-[440px]",
+          "absolute inset-0 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:inset-y-0 lg:left-0 lg:right-auto lg:w-[clamp(26rem,30vw,34rem)]",
           showCharacter
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-[0.98] opacity-0",
@@ -229,8 +229,8 @@ export function ChatPageClient() {
             </p>
           </div>
 
-          {/* Kanan — panel chat translucent */}
-          <aside className="chat-aside-in absolute bottom-0 right-0 top-0 flex w-[440px] min-h-0 flex-col border-l border-border bg-background shadow-[-24px_0_60px_-40px_rgb(15_23_42/0.28)]">
+          {/* Panel chat memenuhi semua ruang di kanan kolom karakter. */}
+          <aside className="chat-aside-in absolute bottom-0 left-0 right-0 top-0 flex w-full min-h-0 flex-col border-l border-border bg-background shadow-[-24px_0_60px_-40px_rgb(15_23_42/0.28)] lg:left-[clamp(26rem,30vw,34rem)] lg:w-auto">
             <DesktopHeader
               onHistory={() => setShowHistory((v) => !v)}
               onNew={() => {

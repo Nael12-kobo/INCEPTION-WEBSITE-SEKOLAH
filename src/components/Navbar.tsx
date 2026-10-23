@@ -32,8 +32,8 @@ const profilLinks = [
 const programLinks = [
   { href: "/jurusan/PPLG", title: "Pengembangan Perangkat Lunak Dan Gim", desc: "Web, mobile, dan cloud." },
   { href: "/jurusan/TJKT", title: "Teknik Jaringan Komputer Dan Telekomunikasi", desc: "Jaringan, Fiber optik, 5G, dan sistem komunikasi." },
-  { href: "/jurusan/DKV", title: "Desain Komunikasi Visual", desc: "Desain grafis, fotografi, dan videografi." },
-  { href: "/jurusan/TKRO", title: "Teknik Kendaraan Ringan Otomotif", desc: "Perawatan dan perbaikan kendaraan ringan." },
+  { href: "/jurusan/DKV", title: "Desain Komunikasi Visual", desc: "Desain grafis, fotografi, videografi, dan animasi." },
+  { href: "/jurusan/TKRO", title: "Teknik Kendaraan Ringan Otomotif", desc: "Mesin, kelistrikan, chassis, dan body repair." }
 ];
 
 const mobileLinks = [

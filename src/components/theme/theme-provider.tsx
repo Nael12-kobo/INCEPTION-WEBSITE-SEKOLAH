@@ -45,6 +45,24 @@ const ThemeContext = React.createContext<{
   setTheme: () => undefined,
 });
 
+/** localStorage sebagai external store (pola yang direkomendasikan React —
+ *  tanpa setState di dalam effect). `storage` sinkronkan antar-tab. */
+function subscribeTheme(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getThemeSnapshot(): Theme {
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "light" || stored === "dark" ? stored : "system";
+}
+
+/** SSR & hydration selalu "system" — cocok dengan HTML prerender; nilai
+ *  tersimpan (bila ada) dipakai re-render sesudah hydration. */
+function getServerThemeSnapshot(): Theme {
+  return "system";
+}
+
 export function useTheme(): {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -53,28 +71,31 @@ export function useTheme(): {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default "system" — nilai tersimpan (bila ada) dibaca saat mount.
-  const [theme, setThemeState] = React.useState<Theme>("system");
+  // Nilai tersimpan dibaca via external store — bukan setState di effect.
+  const storedTheme = React.useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot
+  );
+  // Pilihan eksplisit user di tab ini menang atas snapshot (mis. setelah
+  // toggle "system" → "dark" tanpa menunggu event storage lintas-tab).
+  const [choice, setChoice] = React.useState<Theme | null>(null);
+  const theme: Theme = choice ?? storedTheme;
 
+  // Sinkronkan class `.dark` + color-scheme di <html> dengan state React.
+  // Idempoten dengan themeInitScript (anti-FOUC) di root layout.
   React.useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const initial: Theme =
-      stored === "light" || stored === "dark" ? stored : "system";
-    setThemeState(initial);
-    applyTheme(initial);
-
+    applyTheme(theme);
+    if (theme !== "system") return;
     // "Otomatis" harus ikut hidup saat setelan sistem berubah.
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const onSystemChange = () => {
-      const current = window.localStorage.getItem(STORAGE_KEY);
-      if (current !== "light" && current !== "dark") applyTheme("system");
-    };
+    const onSystemChange = () => applyTheme("system");
     media.addEventListener("change", onSystemChange);
     return () => media.removeEventListener("change", onSystemChange);
-  }, []);
+  }, [theme]);
 
   const setTheme = React.useCallback((next: Theme) => {
-    setThemeState(next);
+    setChoice(next);
     if (next === "system") {
       window.localStorage.removeItem(STORAGE_KEY);
     } else {

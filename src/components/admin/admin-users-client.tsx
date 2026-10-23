@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Download, Eye, Mail, UserCog, Trash2, LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Download, Eye, Mail, UserCog, Trash2, LogIn, Loader2 } from "lucide-react";
 import {
   UserRole,
   canEditUser,
@@ -11,10 +12,13 @@ import {
 } from "@/lib/roles";
 import { UserEditDialog } from "@/components/admin/user-edit-dialog";
 import { UserCreateDialog } from "@/components/admin/user-create-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { parseJsonSafe } from "@/components/admin/api-json";
 import { Button } from "@/components/ui/button";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toast";
 import { ExportButton } from "@/components/ui/export-button";
 import { Search } from "lucide-react";
 
@@ -60,6 +64,16 @@ export function AdminUsersClient({
   const [editOpen, setEditOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<AdminUserRow | null>(null);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const router = useRouter();
+  const toast = useToast();
+
+  // Status sibuk per baris: menonaktifkan tombol aksi saat delete/impersonate
+  // berjalan supaya tidak bisa double-submit (#46).
+  const [pending, setPending] = React.useState<{
+    id: string;
+    action: "delete" | "impersonate";
+  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<AdminUserRow | null>(null);
 
   // Buka dialog tambah saat URL ber-hash #tambah-user (dipicu tombol header).
   React.useEffect(() => {
@@ -93,34 +107,35 @@ export function AdminUsersClient({
   const refresh = async () => {
     const res = await fetch("/api/admin/users");
     if (!res.ok) return;
-    const data = await res.json();
+    const data = await parseJsonSafe<{
+      users?: Array<{
+        id: string;
+        name: string | null;
+        email: string | null;
+        role: string;
+        emailVerified: string | Date | null;
+        createdAt: string | Date;
+        hasPhoto?: boolean;
+      }>;
+    }>(res);
+    if (!data?.users) return;
     setUsers(
-      (data.users || []).map(
-        (u: {
-          id: string;
-          name: string | null;
-          email: string | null;
-          role: string;
-          emailVerified: string | Date | null;
-          createdAt: string | Date;
-          hasPhoto?: boolean;
-        }) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          role: u.role,
-          emailVerified: u.emailVerified
-            ? typeof u.emailVerified === "string"
-              ? u.emailVerified
-              : new Date(u.emailVerified).toISOString()
-            : null,
-          createdAt:
-            typeof u.createdAt === "string"
-              ? u.createdAt
-              : new Date(u.createdAt).toISOString(),
-          hasPhoto: Boolean(u.hasPhoto),
-        })
-      )
+      data.users.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        emailVerified: u.emailVerified
+          ? typeof u.emailVerified === "string"
+            ? u.emailVerified
+            : new Date(u.emailVerified).toISOString()
+          : null,
+        createdAt:
+          typeof u.createdAt === "string"
+            ? u.createdAt
+            : new Date(u.createdAt).toISOString(),
+        hasPhoto: Boolean(u.hasPhoto),
+      }))
     );
   };
 
@@ -134,8 +149,8 @@ export function AdminUsersClient({
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Gagal memperbarui user");
+      const err = await parseJsonSafe<{ error?: string }>(res);
+      throw new Error(err?.error || "Gagal memperbarui user");
     }
     await refresh();
   };
@@ -152,37 +167,54 @@ export function AdminUsersClient({
     setUsers((prev) => [{ ...user, hasPhoto: false }, ...prev]);
   };
 
-  const handleDelete = async (userId: string) => {
-    if (!confirm("Hapus user ini? Tindakan tidak bisa dibatalkan.")) return;
-    const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error || "Gagal menghapus user");
-      return;
+  const handleDelete = async () => {
+    if (!deleteTarget || pending) return;
+    const userId = deleteTarget.id;
+    setPending({ id: userId, action: "delete" });
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal menghapus user");
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      toast.success("User berhasil dihapus.");
+      setDeleteTarget(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Gagal menghapus user"
+      );
+    } finally {
+      setPending(null);
     }
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
   };
 
   /** Pindah sesi ke akun target (mode "masuk sebagai siswa"). */
   const handleImpersonate = async (user: AdminUserRow) => {
+    if (pending) return;
+    setPending({ id: user.id, action: "impersonate" });
     try {
       const res = await fetch(`/api/admin/users/${user.id}/impersonate`, {
         method: "POST",
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
-          error?: string;
-        } | null;
+        const body = await parseJsonSafe<{ error?: string }>(res);
         throw new Error(body?.error ?? "");
       }
-      // Muat ulang penuh: semua halaman memakai sesi siswa hasil pindah.
-      window.location.assign("/dashboard");
+      // Navigasi + refresh: semua halaman memakai sesi siswa hasil pindah
+      // (pengganti window.location.assign yang memicu lint no-location-assign).
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error && error.message
           ? error.message
           : "Gagal masuk sebagai user ini."
       );
+    } finally {
+      setPending(null);
     }
   };
 
@@ -245,6 +277,9 @@ export function AdminUsersClient({
                     const canEdit = !isSelf && canEditUser(currentUserRole, user.role);
                     const canDelete = !isSelf && canDeleteUser(currentUserRole, user.role);
                     const canSwitch = !isSelf && canImpersonate(currentUserRole, user.role);
+                    // Aksi baris ini sedang berjalan — tombol dinonaktifkan (#46).
+                    const rowAction =
+                      pending?.id === user.id ? pending.action : null;
 
                     return (
                       <tr
@@ -339,9 +374,14 @@ export function AdminUsersClient({
                                 size="icon-sm"
                                 aria-label="Masuk sebagai user ini"
                                 title="Masuk sebagai siswa ini"
+                                disabled={rowAction !== null}
                                 onClick={() => handleImpersonate(user)}
                               >
-                                <LogIn className="h-4 w-4 text-slate-500" />
+                                {rowAction === "impersonate" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin text-slate-500" aria-hidden />
+                                ) : (
+                                  <LogIn className="h-4 w-4 text-slate-500" />
+                                )}
                               </Button>
                             ) : null}
                             {canEdit ? (
@@ -349,6 +389,7 @@ export function AdminUsersClient({
                                 variant="ghost"
                                 size="icon-sm"
                                 aria-label="Edit"
+                                disabled={rowAction !== null}
                                 onClick={() => {
                                   setSelected(user);
                                   setEditOpen(true);
@@ -362,9 +403,14 @@ export function AdminUsersClient({
                                 variant="ghost-destructive"
                                 size="icon-sm"
                                 aria-label="Hapus"
-                                onClick={() => handleDelete(user.id)}
+                                disabled={rowAction !== null}
+                                onClick={() => setDeleteTarget(user)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {rowAction === "delete" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
                               </Button>
                             ) : null}
                             {!canEdit && !canDelete && !user.hasPhoto ? (
@@ -421,6 +467,19 @@ export function AdminUsersClient({
         onOpenChange={setCreateOpen}
         currentUserRole={currentUserRole}
         onCreated={handleCreate}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !pending) setDeleteTarget(null);
+        }}
+        title="Hapus user ini?"
+        description={`${deleteTarget?.email ?? ""} — tindakan tidak bisa dibatalkan.`}
+        confirmLabel="Hapus"
+        destructive
+        loading={pending?.action === "delete"}
+        onConfirm={handleDelete}
       />
     </>
   );

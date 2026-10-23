@@ -90,7 +90,8 @@ export function AuthBrandPanel() {
       {/* Footer panel + toggle bahasa */}
       <div className="relative flex items-center justify-between">
         <p className="text-xs text-slate-400">
-          © {new Date().getFullYear()} SMK Telekomunikasi Tunas Harapan
+          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> SMK
+          Telekomunikasi Tunas Harapan
         </p>
         <LanguageToggle />
       </div>

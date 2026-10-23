@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 // ChatBubble (dan seluruh panel chat: Radix Dialog, ChatPanel, MarkdownLite,
 // chat-store) dimuat sebagai chunk terpisah yang tidak menghambat hydrasi
@@ -66,6 +67,12 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <div id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </div>
+      {/* Footer situs: cukup di sini — termasuk halaman home (dulu dirender
+          manual di src/app/page.tsx, jadi halaman /jurusan, /sejarah,
+          /guru-karyawan, dan legal tidak punya footer). Route portal
+          (/dashboard, /admin, /auth, /ppdb, /chat, dst.) tidak ikut karena
+          bukan isSitePath. */}
+      {isSite && <Footer />}
       {isSite && !isChat && <ChatBubble />}
     </>
   );

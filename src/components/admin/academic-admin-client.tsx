@@ -28,6 +28,8 @@ import {
   type AttendanceStatus,
 } from "@/lib/academic";
 import { JURUSAN_OPTIONS, JurusanLabel, type JurusanValue } from "@/lib/ppdb";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import type { ReactNode } from "react";
 
 export type StudentOption = {
@@ -412,6 +414,13 @@ export function AcademicAdminClient({
   const [form, setForm] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
   const [formError, setFormError] = React.useState<string | null>(null);
+  /** Key field yang gagal validasi — dipakai aria-invalid/aria-describedby. */
+  const [errorField, setErrorField] = React.useState<string | null>(null);
+  const toast = useToast();
+
+  // Hapus data: dialog konfirmasi + status sibuk per baris (anti double-submit).
+  const [deleteTarget, setDeleteTarget] = React.useState<AcademicRow | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const cfg = DOMAIN_CONFIG[domain];
   const list = rows[domain] ?? [];
@@ -427,6 +436,7 @@ export function AcademicAdminClient({
     setEditing(null);
     setForm({ ...cfg.defaults });
     setFormError(null);
+    setErrorField(null);
     setOpen(true);
   };
 
@@ -440,6 +450,7 @@ export function AcademicAdminClient({
     }
     setForm(next);
     setFormError(null);
+    setErrorField(null);
     setOpen(true);
   };
 
@@ -448,6 +459,7 @@ export function AcademicAdminClient({
     for (const field of cfg.fields) {
       if (field.required && !String(form[field.key] ?? "").trim()) {
         setFormError(`${field.label} wajib diisi.`);
+        setErrorField(field.key);
         return;
       }
     }
@@ -476,21 +488,36 @@ export function AcademicAdminClient({
       setFormError(
         error instanceof Error ? error.message : "Gagal menyimpan data."
       );
+      setErrorField(null);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (row: AcademicRow) => {
-    if (!confirm("Hapus data ini? Tindakan tidak bisa dibatalkan.")) return;
-    const res = await fetch(`/api/admin/academic/${domain}/${row.id}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
-      alert("Gagal menghapus data.");
-      return;
+  const handleDelete = async () => {
+    if (!deleteTarget || deletingId) return;
+    const { id } = deleteTarget;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/academic/${domain}/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(data?.error || "Gagal menghapus data.");
+      }
+      toast.success("Data berhasil dihapus.");
+      setDeleteTarget(null);
+      await refresh(domain);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menghapus data."
+      );
+    } finally {
+      setDeletingId(null);
     }
-    await refresh(domain);
   };
 
   return (
@@ -594,6 +621,7 @@ export function AcademicAdminClient({
                             variant="ghost"
                             size="icon-sm"
                             aria-label="Ubah"
+                            disabled={deletingId === row.id}
                             onClick={() => openEdit(row)}
                           >
                             <Pencil className="h-4 w-4 text-slate-500" />
@@ -602,9 +630,14 @@ export function AcademicAdminClient({
                             variant="ghost-destructive"
                             size="icon-sm"
                             aria-label="Hapus"
-                            onClick={() => handleDelete(row)}
+                            disabled={deletingId === row.id}
+                            onClick={() => setDeleteTarget(row)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {deletingId === row.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
                       </td>
@@ -633,7 +666,14 @@ export function AcademicAdminClient({
             </DialogHeader>
 
             <div className="grid gap-3 py-4 sm:grid-cols-2">
-              {cfg.fields.map((field) => (
+              {cfg.fields.map((field) => {
+                const invalid = errorField === field.key;
+                const errorId = `field-${field.key}-error`;
+                const a11yProps = {
+                  "aria-invalid": invalid ? true : undefined,
+                  "aria-describedby": invalid ? errorId : undefined,
+                } as const;
+                return (
                 <div
                   key={field.key}
                   className={
@@ -655,6 +695,7 @@ export function AcademicAdminClient({
                       rows={2}
                       value={form[field.key] ?? ""}
                       placeholder={field.placeholder}
+                      {...a11yProps}
                       onChange={(e) =>
                         setForm((prev) => ({
                           ...prev,
@@ -668,6 +709,7 @@ export function AcademicAdminClient({
                     <select
                       id={`field-${field.key}`}
                       value={form[field.key] ?? ""}
+                      {...a11yProps}
                       onChange={(e) =>
                         setForm((prev) => ({
                           ...prev,
@@ -703,6 +745,7 @@ export function AcademicAdminClient({
                       step={field.type === "number" ? "0.5" : undefined}
                       value={form[field.key] ?? ""}
                       placeholder={field.placeholder}
+                      {...a11yProps}
                       onChange={(e) =>
                         setForm((prev) => ({
                           ...prev,
@@ -712,12 +755,22 @@ export function AcademicAdminClient({
                       className="w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
                     />
                   )}
+                  {invalid && formError ? (
+                    <p id={errorId} className="mt-1 text-xs font-medium text-rose-600">
+                      {formError}
+                    </p>
+                  ) : null}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
-            {formError ? (
-              <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600">
+            {formError && errorField === null ? (
+              <p
+                id="academic-form-error"
+                role="alert"
+                className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600"
+              >
                 {formError}
               </p>
             ) : null}
@@ -741,6 +794,20 @@ export function AcademicAdminClient({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Konfirmasi hapus — dialog, bukan confirm() blocking. */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !deletingId) setDeleteTarget(null);
+        }}
+        title="Hapus data ini?"
+        description="Tindakan tidak bisa dibatalkan — data langsung hilang dari portal siswa."
+        confirmLabel="Hapus"
+        destructive
+        loading={deletingId !== null}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -133,7 +133,7 @@ export function RegisterForm() {
             setName(e.target.value);
             if (fieldErrors.name) clearError("name");
           }}
-          error={fieldErrors.name ? t("error.required") : undefined}
+          error={fieldErrors.name}
           icon={<User className="h-4 w-4" aria-hidden />}
           disabled={submitting}
           required
@@ -151,7 +151,7 @@ export function RegisterForm() {
             setEmail(e.target.value);
             if (fieldErrors.email) clearError("email");
           }}
-          error={fieldErrors.email ? t("error.email") : undefined}
+          error={fieldErrors.email}
           icon={<Mail className="h-4 w-4" aria-hidden />}
           disabled={submitting}
           required
@@ -168,7 +168,7 @@ export function RegisterForm() {
             setPassword(e.target.value);
             if (fieldErrors.password) clearError("password");
           }}
-          error={fieldErrors.password ? t("error.passwordLength") : undefined}
+          error={fieldErrors.password}
           disabled={submitting}
           required
         />
@@ -184,7 +184,7 @@ export function RegisterForm() {
             setConfirm(e.target.value);
             if (fieldErrors.confirm) clearError("confirm");
           }}
-          error={fieldErrors.confirm ? t("error.confirmPassword") : undefined}
+          error={fieldErrors.confirm}
           disabled={submitting}
           required
         />
@@ -198,7 +198,7 @@ export function RegisterForm() {
           setAgree(e.target.checked);
           if (fieldErrors.terms) clearError("terms");
         }}
-        error={fieldErrors.terms ? t("error.terms") : undefined}
+        error={fieldErrors.terms}
         disabled={submitting}
         label={
           <>

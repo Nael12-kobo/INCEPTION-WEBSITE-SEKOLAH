@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   FileSpreadsheet,
   Search,
@@ -31,6 +32,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExportButton } from "@/components/ui/export-button";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { parseJsonSafe } from "@/components/admin/api-json";
 import { cn } from "@/lib/utils";
 import {
   PPDB_DOC_KINDS,
@@ -177,13 +181,8 @@ function ReviewControls({
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Sinkron saat dialog dibuka untuk siswa lain, atau data berubah dari luar
-  // (mis. penilaian lain disimpan) — jangan biarkan draft lama menempel.
-  React.useEffect(() => {
-    setStatus(review?.status ?? "");
-    setNote(review?.note ?? "");
-    setError(null);
-  }, [userId, kind, review?.status, review?.note]);
+  // Draft di-reset lewat `key` saat berkas siswa lain dibuka (remount), dan
+  // di handler `clear()` di bawah — tanpa effect yang setState sinkron (L2).
 
   const dirty =
     status !== (review?.status ?? "") || note !== (review?.note ?? "");
@@ -229,6 +228,9 @@ function ReviewControls({
         throw new Error(data?.error ?? "Gagal menghapus penilaian.");
       }
       onCleared(kind);
+      // Penilaian sudah dihapus server — kembalikan draft ke kondisi awal.
+      setStatus("");
+      setNote("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menghapus penilaian.");
     } finally {
@@ -390,6 +392,7 @@ function BerkasDialog({
                 <img
                   src={`/api/admin/users/${target.userId}/photo`}
                   alt={`Pas foto ${target.fullName}`}
+                  loading="lazy"
                   className="h-16 w-12 rounded-lg border border-slate-200 object-cover"
                 />
                 <div className="flex flex-wrap gap-2">
@@ -420,6 +423,7 @@ function BerkasDialog({
             )}
             {target ? (
               <ReviewControls
+                key={`foto-${target.id}`}
                 userId={target.userId}
                 kind="FOTO"
                 review={reviewOf("FOTO")}
@@ -515,6 +519,7 @@ function BerkasDialog({
                 )}
                 {target ? (
                   <ReviewControls
+                    key={`${target.id}-${kind}`}
                     userId={target.userId}
                     kind={kind}
                     review={reviewOf(kind)}
@@ -533,15 +538,23 @@ function BerkasDialog({
 
 export function AdminPpdbClient({
   initialRegistrations,
-  statusCounts,
 }: {
   initialRegistrations: PpdbRow[];
+  /** Diteruskan caller (halaman admin) — kartu status kini diturunkan
+   *  langsung dari `rows`, prop dipertahankan agar kompatibel. */
   statusCounts: Record<string, number>;
 }) {
+  const router = useRouter();
+  const toast = useToast();
   const [rows, setRows] = React.useState(initialRegistrations);
   const [query, setQuery] = React.useState("");
   const [statusUpdating, setStatusUpdating] = React.useState<string | null>(null);
-  const [counts, setCounts] = React.useState(statusCounts);
+
+  // Konfirmasi aksi destruktif via dialog, bukan confirm() blocking.
+  const [deleteTarget, setDeleteTarget] = React.useState<PpdbRow | null>(null);
+  const [deleteBusy, setDeleteBusy] = React.useState(false);
+  const [lolosTarget, setLolosTarget] = React.useState<PpdbRow | null>(null);
+  const [lolosBusy, setLolosBusy] = React.useState(false);
 
   // Dialog ACC: pendaftar yang sedang ditinjau + teks pengumuman yang diedit.
   const [accTarget, setAccTarget] = React.useState<PpdbRow | null>(null);
@@ -572,7 +585,9 @@ export function AdminPpdbClient({
     );
   };
 
-  const recomputeCounts = (list: PpdbRow[]) => {
+  /** Kartu ringkasan per status — diturunkan langsung dari `rows` sehingga
+   *  optimis update/rollback selalu menghasilkan angka yang akurat (#20/#22). */
+  const counts = React.useMemo(() => {
     const next: Record<string, number> = {
       PENDING: 0,
       CONTACTED: 0,
@@ -580,22 +595,21 @@ export function AdminPpdbClient({
       REGISTERED: 0,
       REJECTED: 0,
     };
-    for (const r of list) {
-      next[r.status] = (next[r.status] || 0) + 1;
-    }
-    setCounts(next);
-  };
+    for (const r of rows) next[r.status] = (next[r.status] || 0) + 1;
+    return next;
+  }, [rows]);
 
-  const filtered = rows.filter((r) => {
+  const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      r.fullName.toLowerCase().includes(q) ||
-      r.registrationNo.toLowerCase().includes(q) ||
-      r.email.toLowerCase().includes(q) ||
-      r.phone.includes(q)
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.fullName.toLowerCase().includes(q) ||
+        r.registrationNo.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.phone.includes(q)
     );
-  });
+  }, [rows, query]);
 
   /** Buka dialog ACC (approve) — default teks pengumuman bisa diedit admin. */
   const openAccDialog = (row: PpdbRow) => {
@@ -612,8 +626,10 @@ export function AdminPpdbClient({
       setAccError("Pengumuman wajib diisi.");
       return;
     }
-    const prev = rows;
     const { id } = accTarget;
+    // Hanya nilai lama baris ini yang disimpan — rollback dihitung relatif
+    // state terbaru sehingga mutasi lain yang berjalan tidak tertimpa (#22).
+    const prevRow = rows.find((r) => r.id === id) ?? null;
     setAccSaving(true);
     setAccError(null);
     setRows((list) =>
@@ -626,20 +642,23 @@ export function AdminPpdbClient({
         body: JSON.stringify({ status: "APPROVED", announcement: text }),
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal menyetujui pendaftaran");
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal menyetujui pendaftaran");
       }
-      setRows((list) => {
-        const next = list.map((r) =>
-          r.id === id ? { ...r, status: "APPROVED", announcement: text } : r
-        );
-        recomputeCounts(next);
-        return next;
-      });
+      toast.success("Pendaftaran disetujui — pengumuman terkirim ke siswa.");
       setAccTarget(null);
     } catch (error: unknown) {
-      setRows(prev);
-      recomputeCounts(prev);
+      if (prevRow) {
+        const prevStatus = prevRow.status;
+        const prevAnnouncement = prevRow.announcement;
+        setRows((list) =>
+          list.map((r) =>
+            r.id === id
+              ? { ...r, status: prevStatus, announcement: prevAnnouncement }
+              : r
+          )
+        );
+      }
       setAccError(error instanceof Error ? error.message : "Gagal menyetujui.");
     } finally {
       setAccSaving(false);
@@ -653,7 +672,7 @@ export function AdminPpdbClient({
       if (row) openAccDialog(row);
       return;
     }
-    const prev = rows;
+    const prevStatus = rows.find((r) => r.id === id)?.status;
     setStatusUpdating(id);
     setRows((list) => list.map((r) => (r.id === id ? { ...r, status } : r)));
     try {
@@ -663,83 +682,85 @@ export function AdminPpdbClient({
         body: JSON.stringify({ status }),
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal mengubah status");
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal mengubah status");
       }
-      setRows((list) => {
-        const next = list.map((r) => (r.id === id ? { ...r, status } : r));
-        recomputeCounts(next);
-        return next;
-      });
     } catch (error: unknown) {
-      setRows(prev);
-      recomputeCounts(prev);
-      alert(error instanceof Error ? error.message : "Gagal mengubah status");
+      // Rollback relatif state terbaru (#22): hanya baris ini yang
+      // dikembalikan; mutasi lain yang berjalan tetap dipertahankan.
+      if (prevStatus) {
+        setRows((list) =>
+          list.map((r) => (r.id === id ? { ...r, status: prevStatus } : r))
+        );
+      }
+      toast.error(error instanceof Error ? error.message : "Gagal mengubah status");
     } finally {
       setStatusUpdating(null);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Hapus pendaftaran PPDB ini?")) return;
-    const prev = rows;
+  const handleDelete = async () => {
+    if (!deleteTarget || deleteBusy) return;
+    const { id } = deleteTarget;
+    setDeleteBusy(true);
     setRows((list) => list.filter((r) => r.id !== id));
     try {
       const res = await fetch(`/api/admin/ppdb/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal menghapus");
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal menghapus");
       }
-      setRows((list) => {
-        const next = list.filter((r) => r.id !== id);
-        recomputeCounts(next);
-        return next;
-      });
+      toast.success("Pendaftaran PPDB dihapus.");
+      setDeleteTarget(null);
     } catch (error: unknown) {
-      setRows(prev);
-      recomputeCounts(prev);
-      alert(error instanceof Error ? error.message : "Gagal menghapus");
+      // Rollback relatif state terbaru: baris disisipkan kembali (#22).
+      const row = deleteTarget;
+      setRows((list) =>
+        list.some((r) => r.id === row.id)
+          ? list
+          : [...list, row].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      );
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus");
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
   /**
    * Loloskan: jadikan pendaftar siswa aktif (status REGISTERED).
-   * Server juga men-verifikasi akun siswanya — portal siswa terbuka penuh.
+   * Konfirmasi via dialog; server juga men-verifikasi akun siswanya —
+   * portal siswa terbuka penuh.
    */
-  const handleLoloskan = async (row: PpdbRow) => {
-    const konfirmasi = confirm(
-      `Jadikan ${row.fullName} siswa aktif?\n` +
-        `Pendaftaran ${row.registrationNo} diloloskan (REGISTERED), akun siswa ` +
-        "terverifikasi, dan portal siswanya terbuka penuh."
-    );
-    if (!konfirmasi) return;
-    const prev = rows;
+  const handleLoloskan = async () => {
+    if (!lolosTarget || lolosBusy) return;
+    const { id } = lolosTarget;
+    const prevStatus = lolosTarget.status;
+    setLolosBusy(true);
     setRows((list) =>
-      list.map((r) => (r.id === row.id ? { ...r, status: "REGISTERED" } : r))
+      list.map((r) => (r.id === id ? { ...r, status: "REGISTERED" } : r))
     );
     try {
-      const res = await fetch(`/api/admin/ppdb/${row.id}`, {
+      const res = await fetch(`/api/admin/ppdb/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "REGISTERED" }),
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal meloloskan pendaftar");
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal meloloskan pendaftar");
       }
-      setRows((list) => {
-        const next = list.map((r) =>
-          r.id === row.id ? { ...r, status: "REGISTERED" } : r
-        );
-        recomputeCounts(next);
-        return next;
-      });
+      toast.success(`${lolosTarget.fullName} kini siswa aktif (REGISTERED).`);
+      setLolosTarget(null);
     } catch (error: unknown) {
-      setRows(prev);
-      recomputeCounts(prev);
-      alert(
+      // Rollback relatif state terbaru (#22).
+      setRows((list) =>
+        list.map((r) => (r.id === id ? { ...r, status: prevStatus } : r))
+      );
+      toast.error(
         error instanceof Error ? error.message : "Gagal meloloskan pendaftar."
       );
+    } finally {
+      setLolosBusy(false);
     }
   };
 
@@ -755,10 +776,12 @@ export function AdminPpdbClient({
         } | null;
         throw new Error(body?.error ?? "");
       }
-      // Muat ulang penuh: semua halaman memakai sesi siswa hasil pindah.
-      window.location.assign("/dashboard");
+      // Navigasi + refresh: semua halaman memakai sesi siswa hasil pindah
+      // (pengganti window.location.assign yang memicu lint no-location-assign).
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error && error.message
           ? error.message
           : "Gagal masuk sebagai siswa ini."
@@ -884,6 +907,7 @@ export function AdminPpdbClient({
                             value={r.status}
                             disabled={statusUpdating === r.id}
                             onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                            aria-label={`Ubah status pendaftaran ${r.fullName}`}
                             className="h-10 sm:h-8 rounded-lg border border-slate-200 bg-card px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
                           >
                             {PPDB_STATUSES.map((s) => (
@@ -933,7 +957,7 @@ export function AdminPpdbClient({
                               size="sm"
                               className="h-8 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                               title="Loloskan — jadikan siswa aktif (REGISTERED)"
-                              onClick={() => handleLoloskan(r)}
+                              onClick={() => setLolosTarget(r)}
                             >
                               <GraduationCap className="h-4 w-4" aria-hidden />
                               Loloskan
@@ -953,8 +977,8 @@ export function AdminPpdbClient({
                           <Button
                             variant="ghost-destructive"
                             size="icon-sm"
-                            aria-label="Hapus"
-                            onClick={() => handleDelete(r.id)}
+                            aria-label={`Hapus pendaftaran ${r.fullName}`}
+                            onClick={() => setDeleteTarget(r)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -1060,6 +1084,33 @@ export function AdminPpdbClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Konfirmasi hapus pendaftaran — dialog, bukan confirm() blocking. */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !deleteBusy) setDeleteTarget(null);
+        }}
+        title="Hapus pendaftaran PPDB ini?"
+        description={`${deleteTarget?.registrationNo ?? ""} — ${deleteTarget?.fullName ?? ""}. Tindakan tidak bisa dibatalkan.`}
+        confirmLabel="Hapus"
+        destructive
+        loading={deleteBusy}
+        onConfirm={handleDelete}
+      />
+
+      {/* Konfirmasi loloskan — jadikan siswa aktif (REGISTERED). */}
+      <ConfirmDialog
+        open={lolosTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !lolosBusy) setLolosTarget(null);
+        }}
+        title={`Jadikan ${lolosTarget?.fullName ?? "pendaftar"} siswa aktif?`}
+        description={`Pendaftaran ${lolosTarget?.registrationNo ?? ""} diloloskan (REGISTERED), akun siswa diverifikasi, dan portal siswanya terbuka penuh.`}
+        confirmLabel="Loloskan"
+        loading={lolosBusy}
+        onConfirm={handleLoloskan}
+      />
 
       {/* Dialog berkas: semua unggahan siswa (pas foto + dokumen). */}
       <BerkasDialog

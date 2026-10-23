@@ -118,6 +118,10 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
   const enterFromRef = useRef<number>(xmid);
   const enterToRef = useRef<number>(xmid);
   const enterStartRef = useRef<number>(0);
+  // #37: webm hanya mulai di-fetch penuh pada interaksi pertama
+  // (pointerenter/focus); sebelumnya preload="auto" mengunduh 4 video scrub
+  // penuh saat hydrate.
+  const activatedRef = useRef<boolean>(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   // Gagal load hanya berlaku untuk src yang sedang aktif; ganti src otomatis reset.
   const videoFailed = failedSrc === src;
@@ -223,6 +227,27 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
     };
   }, [flushSeek]);
 
+  /**
+   * #37: mulai fetch penuh WebM pada interaksi pertama (pointerenter kartu /
+   * focus tombol perbesar). Sebelumnya `preload="auto"` mengunduh seluruh
+   * video scrub saat hydrate; kini hanya `preload="metadata"` (durasi untuk
+   * plumbing seek yang sudah ada) lalu `load()` dengan preload="auto" saat
+   * user benar-benar menunjukkan minat. Jalur mobile tidak terpengaruh:
+   * varian mobile tidak pernah merender <video>.
+   */
+  const activatePlayback = useCallback(() => {
+    if (activatedRef.current) return;
+    activatedRef.current = true;
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      video.preload = "auto";
+      video.load();
+    } catch {
+      /* abaikan */
+    }
+  }, []);
+
   useEffect(() => {
     const figure = figureRef.current;
     if (!figure || !useVideo) return;
@@ -246,6 +271,8 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
       scheduleFlush();
     };
     const onEnter = (e: MouseEvent) => {
+      // #37: interaksi pertama = sinyal minat -> mulai fetch video penuh.
+      activatePlayback();
       // Batalkan tween keluar bila re-enter di tengah glide, lalu buka
       // tween masuk baru dari posisi timeline saat ini (idle = xmid).
       cancelEnterTween();
@@ -330,13 +357,15 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
       clearWatchdog();
       seekingRef.current = false;
     };
-  }, [useVideo, resolveBounds, scheduleFlush, clearWatchdog, cancelEnterTween]);
+  }, [useVideo, resolveBounds, scheduleFlush, clearWatchdog, cancelEnterTween, activatePlayback]);
 
   // Reset posisi parkir per item (hanya ref, tanpa setState).
   useEffect(() => {
     durationRef.current = NaN;
     targetRef.current = xmid;
     seekingRef.current = false;
+    // src baru = elemen <video> baru (key={src}) -> boleh aktifkan lagi.
+    activatedRef.current = false;
     cancelEnterTween();
     clearWatchdog();
   }, [src, xmid, clearWatchdog, cancelEnterTween]);
@@ -372,12 +401,17 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
       data-tilt
       className="glass glass-glare group relative aspect-[4/3] overflow-hidden rounded-2xl"
     >
-      <div
+      {/* #26: overlay berbasis <button> — bisa di-tab & punya nama aksesibel,
+          gaya/tetap menutupi seluruh kartu seperti <div onClick> lama. */}
+      <button
+        type="button"
         className="absolute inset-0 z-20 cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           onOpen();
         }}
+        onFocus={activatePlayback}
+        aria-label={`Perbesar: ${label}`}
         title="Klik untuk memperbesar"
       />
       {useVideo ? (
@@ -387,7 +421,9 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           muted
           playsInline
-          preload="auto"
+          // #37: metadata dulu (durasi untuk plumbing seek); fetch penuh
+          // menyusul di interaksi pertama lewat activatePlayback().
+          preload="metadata"
           poster={poster}
           disablePictureInPicture
           aria-label={alt}

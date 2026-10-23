@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Bot,
   ExternalLink,
   Maximize2,
   MessageCircle,

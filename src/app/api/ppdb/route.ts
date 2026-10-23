@@ -8,12 +8,40 @@ import {
   buildAdminWaMessage,
   buildStudentWaMessage,
   isJurusan,
-  registrationNoFromCount,
+  registrationNoFromSeq,
   validatePpdbDraft,
 } from "@/lib/ppdb";
 import { sendWhatsApp } from "@/lib/ppdb-wa";
 import { sendPpdbConfirmationEmail } from "@/lib/ppdb-email";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+
+/**
+ * Nomor pendaftaran berikutnya dari urutan TERTINGGI yang masih ada di DB
+ * (C1). `count()` dipakai dulu; setelah admin menghapus pendaftaran, count()
+ * menunjuk nomor lama sehingga nomor dipakai ulang dan >5 tabrakan menghabiskan
+ * retry → 500 padahal form valid. Dengan MAX, nomor yang sudah terpakai selalu
+ * terlewati. Fallback bila agregat gagal: +1 dari nomor yang sedang dipegang.
+ */
+async function nextRegistrationNo(current?: string): Promise<string> {
+  const year = new Date().getFullYear();
+  const seqFrom = (no: string | null | undefined): number | null => {
+    const m = no ? /^PPDB-(\d{4})-(\d+)$/.exec(no) : null;
+    if (!m) return null;
+    return Number(m[1]) === year ? Number(m[2]) + 1 : null;
+  };
+  try {
+    const agg = await prisma.ppdbRegistration.aggregate({
+      _max: { registrationNo: true },
+    });
+    const seq = seqFrom(agg._max.registrationNo);
+    return registrationNoFromSeq(seq ?? 1, year);
+  } catch (error) {
+    console.warn("[ppdb] Gagal agregasi nomor pendaftaran, pakai fallback:", error);
+    const seq = seqFrom(current);
+    return registrationNoFromSeq(seq ?? 1, year);
+  }
+}
 
 /**
  * Endpoint pendaftaran PPDB.
@@ -46,6 +74,21 @@ export async function POST(request: Request) {
   }
   
   const userId = session.user.id;
+
+  // S4: endpoint ini memicu email & WhatsApp keluar (termasuk pada cabang
+  // re-submit) → batasi per IP supaya tidak dipakai mem-bombing penerima.
+  const rl = rateLimit(`ppdb:${clientIp(request)}`, {
+    limit: 15,
+    windowMs: 600_000,
+  });
+  if (!rl.ok) {
+    const message =
+      "Terlalu banyak permintaan pendaftaran. Tunggu beberapa menit lalu coba lagi.";
+    return NextResponse.json(
+      { message, error: message, retryAfterSec: rl.retryAfterSec },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
 
   let payload: unknown;
   try {
@@ -116,10 +159,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // Nomor urut dari jumlah pendaftar; kolom @unique menangkap tabrakan
-  // akibat dua request bersamaan, lalu diulang dengan offset.
-  const count = await prisma.ppdbRegistration.count();
-  let registrationNo = registrationNoFromCount(count);
+  // C1: nomor urut dari agregat MAX (lihat nextRegistrationNo) — pendaftaran
+  // terhapus tidak bikin nomor dipakai ulang; kolom @unique + retry tetap
+  // jaring pengaman bila ada pendaftar bersamaan.
+  let registrationNo = await nextRegistrationNo();
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
@@ -155,6 +198,41 @@ export async function POST(request: Request) {
       const isUniqueViolation =
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002";
+
+      if (isUniqueViolation) {
+        // C2: tabrakan userId = double-submit user yang sama (request kembar
+        // lolos cek `existing` di atas karena keduanya membaca sebelum tulis).
+        // Samakan responsnya dengan cabang "sudah pernah mendaftar": 200
+        // alreadyRegistered — BUKAN retry yang pasti habis lalu 500.
+        const target = (error.meta as { target?: unknown } | undefined)?.target;
+        const dupOnUserId = Array.isArray(target)
+          ? target.includes("userId")
+          : target === "userId";
+        if (dupOnUserId) {
+          const dup = await prisma.ppdbRegistration.findUnique({
+            where: { userId },
+          });
+          if (dup) {
+            const emailSent = await sendPpdbConfirmationEmail({
+              to: dup.email,
+              fullName: dup.fullName,
+              registrationNo: dup.registrationNo,
+              majorFirst: dup.majorFirst,
+              majorSecond: dup.majorSecond,
+            });
+            return NextResponse.json(
+              {
+                registrationNo: dup.registrationNo,
+                status: dup.status,
+                alreadyRegistered: true,
+                emailDelivered: emailSent,
+              },
+              { status: 200 }
+            );
+          }
+        }
+      }
+
       if (!isUniqueViolation || attempt === 4) {
         console.error("Gagal menyimpan pendaftaran PPDB:", error);
         return NextResponse.json(
@@ -162,7 +240,8 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      registrationNo = registrationNoFromCount(count + attempt + 1);
+      // Tabrakan registrationNo → ambil ulang nomor berikutnya yang masih bebas.
+      registrationNo = await nextRegistrationNo(registrationNo);
     }
   }
 
@@ -197,10 +276,16 @@ export async function POST(request: Request) {
   ]);
 
   if (toStudent.sent) {
-    await prisma.ppdbRegistration.update({
-      where: { registrationNo },
-      data: { waSentAt: new Date() },
-    });
+    // C3: update penanda WA hanyalah metadata — DB hiccup sesaat tidak boleh
+    // membuat client menerima 500 padahal pendaftaran sudah tersimpan.
+    try {
+      await prisma.ppdbRegistration.update({
+        where: { registrationNo },
+        data: { waSentAt: new Date() },
+      });
+    } catch (error) {
+      console.warn(`[ppdb] Gagal menandai waSentAt ${registrationNo}:`, error);
+    }
   }
 
   if (!toStudent.sent || !toAdmin.sent) {

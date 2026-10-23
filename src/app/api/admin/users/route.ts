@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
   const role = typeof body.role === "string" ? body.role : UserRole.USER;
 
   const fieldErrors: Record<string, string> = {};
-  if (name.length < 3) fieldErrors.name = "Nama minimal 3 karakter.";
+  // C13: ambang nama seragam (≥2) dengan register & account.
+  if (name.length < 2) fieldErrors.name = "Nama minimal 2 karakter.";
   if (!EMAIL_RE.test(email)) fieldErrors.email = "Format email tidak valid.";
   if (password.length < 8) {
     fieldErrors.password = "Password minimal 8 karakter.";
@@ -163,9 +164,16 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // C8: body wajib valid — `null`/bukan-objek harus 400, bukan 500 dari
+  // destructure tanpa guard.
   try {
-    const body = await request.json();
-    const { userId, newRole } = body;
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+    const { userId, newRole } = (body ?? {}) as { userId?: string; newRole?: string };
 
     if (!userId || !newRole) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

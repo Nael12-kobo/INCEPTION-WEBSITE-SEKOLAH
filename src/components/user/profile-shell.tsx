@@ -107,7 +107,7 @@ export function ProfileShell({
     //   danger: true,
     // });
     return items;
-  }, [isAdmin, handleLogout]);
+  }, [isAdmin]);
 
   const renderNavLinks = (onNavigate?: () => void) =>
     navItems.map((item) => {
@@ -299,8 +299,8 @@ export function ProfileShell({
           </main>
 
           <footer className="border-t border-slate-200 bg-card/60 py-5 text-center text-xs text-slate-400">
-            © {new Date().getFullYear()} SMK Telekomunikasi Tunas Harapan — Portal
-            internal.
+            © <span suppressHydrationWarning>{new Date().getFullYear()}</span> SMK
+            Telekomunikasi Tunas Harapan — Portal internal.
           </footer>
         </div>
       </div>

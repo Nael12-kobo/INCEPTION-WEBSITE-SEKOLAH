@@ -69,10 +69,13 @@ export function resetRateLimit(key: string): void {
 /**
  * IP client.
  *
- * `x-real-ip` diprioritaskan karena di-set oleh platform proxy (Vercel)
- * dan tidak bisa ditulis client. `x-forwarded-for` hanya fallback; nilainya
- * bisa berisi beberapa hop, jadi ambil yang terakhir (paling dekat dengan
- * proxy) bukan yang pertama (rawan disisipi client).
+ * Urutan (S3 — semua header bisa dipalsukan client bila TIDAK ada proxy
+ * tepercaya di depan, jadi ini tetap bergantung pada trusted proxy):
+ * 1. `x-real-ip` — di-set oleh platform proxy (Vercel), tidak bisa ditulis
+ *    client yang lewat proxy.
+ * 2. hop pertama `x-forwarded-for` — IP client sesuai catatan proxy.
+ * 3. fallback stabil "unknown" — JANGAN pakai `x-forwarded-host`: nilainya
+ *    bukan IP, dan bisa dibuat unik tiap request (= bypass rate limit).
  */
 export function clientIp(request: Request): string {
   const real = request.headers.get("x-real-ip");
@@ -80,11 +83,8 @@ export function clientIp(request: Request): string {
 
   const fwd = request.headers.get("x-forwarded-for");
   if (fwd) {
-    const hops = fwd
-      .split(",")
-      .map((h) => h.trim())
-      .filter(Boolean);
-    if (hops.length > 0) return hops[hops.length - 1];
+    const first = fwd.split(",")[0]?.trim();
+    if (first) return first;
   }
-  return request.headers.get("x-forwarded-host") ?? "unknown";
+  return "unknown";
 }

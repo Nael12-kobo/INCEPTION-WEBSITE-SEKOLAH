@@ -6,7 +6,6 @@ import { Jurusan } from "@/components/Jurusan";
 import { Fasilitas } from "@/components/Fasilitas";
 import { Berita } from "@/components/Berita";
 import { CtaPpdb } from "@/components/CtaPpdb";
-import { Footer } from "@/components/Footer";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { ambilBerita } from "@/lib/blog";
 
@@ -33,7 +32,8 @@ export default async function Home() {
         <Berita posts={berita} />
         <CtaPpdb />
       </main>
-      <Footer />
+      {/* Footer dirender SiteChrome (src/components/SiteChrome.tsx) agar
+          juga muncul di halaman non-home seperti /jurusan dan /sejarah. */}
     </div>
   );
 }

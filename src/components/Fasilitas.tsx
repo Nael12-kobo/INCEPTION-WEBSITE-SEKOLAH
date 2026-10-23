@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
-import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useTiltHover } from "@/hooks/useTiltHover";
 import { cn } from "@/lib/utils";
 import { ImageModal } from "@/components/ImageModal";
@@ -230,8 +229,6 @@ export function Fasilitas() {
   const [selectedImage, setSelectedImage] = useState<(typeof galeri)[0] | null>(
     null,
   );
-  // Mobile (< lg): modal cukup JPG — webm tidak di-fetch sama sekali.
-  const isDesktop = useIsDesktop();
 
   return (
     <section id="fasilitas" ref={ref} className="bg-transparent">

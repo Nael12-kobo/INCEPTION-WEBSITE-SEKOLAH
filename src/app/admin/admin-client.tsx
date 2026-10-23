@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import {
   UserRole,
   canEditUser,
@@ -8,7 +9,19 @@ import {
   isAdmin,
 } from "@/lib/roles";
 import { UserEditDialog } from "@/components/admin/user-edit-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { parseJsonSafe } from "@/components/admin/api-json";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface User {
   id: string;
@@ -34,11 +47,274 @@ interface PpdbRegistration {
 const PPDB_STATUSES = ["PENDING", "CONTACTED", "REGISTERED", "REJECTED"] as const;
 const PPDB_MAJORS = ["DKV", "PPLG", "TJKT", "TKR"] as const;
 
+/** Opsi jurusan untuk select: nilai saat ini ikut disertakan bila belum ada di daftar. */
+function majorOptions(current?: string): string[] {
+  const list: string[] = [...PPDB_MAJORS];
+  if (current && !list.includes(current)) list.unshift(current);
+  return list;
+}
+
 interface AdminClientProps {
   currentUser: { id: string; name: string | null; email: string | null; role: string };
   users: User[];
   ppdbRegistrations: PpdbRegistration[];
   accessibleRoles: string[];
+}
+
+/**
+ * Dialog form edit pendaftaran PPDB — pengganti rantai window.prompt/alert
+ * yang blocking. Semua field yang dulu bisa diedit tetap tersedia: nama,
+ * email, jurusan 1/2, catatan admin, dan status; aturan validasi juga sama
+ * (jurusan & status harus termasuk daftar yang valid, nama min. 2 karakter).
+ */
+function PpdbEditDialog({
+  registration,
+  onOpenChange,
+  onSave,
+}: {
+  registration: PpdbRegistration | null;
+  onOpenChange: (open: boolean) => void;
+  onSave: (id: string, data: Record<string, string>) => Promise<boolean>;
+}) {
+  const [fullName, setFullName] = useState(registration?.fullName ?? "");
+  const [email, setEmail] = useState(registration?.email ?? "");
+  const [majorFirst, setMajorFirst] = useState(registration?.majorFirst ?? "");
+  const [majorSecond, setMajorSecond] = useState(registration?.majorSecond ?? "");
+  const [notes, setNotes] = useState(registration?.notes ?? "");
+  const [status, setStatus] = useState(registration?.status ?? "");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!registration || saving) return;
+
+    // Semantik lama dipertahankan: nilai kosong = tidak dikirim (tanpa
+    // perubahan), kecuali catatan — dikosongkan berarti menghapus catatan lama.
+    const next: Record<string, string> = {};
+    const fieldErrors: Record<string, string> = {};
+
+    const m1 = majorFirst.trim();
+    if (m1) {
+      if (!(PPDB_MAJORS as readonly string[]).includes(m1.toUpperCase())) {
+        fieldErrors.majorFirst = `Jurusan 1 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`;
+      } else {
+        next.majorFirst = m1.toUpperCase();
+      }
+    }
+
+    const m2 = majorSecond.trim();
+    if (m2) {
+      if (!(PPDB_MAJORS as readonly string[]).includes(m2.toUpperCase())) {
+        fieldErrors.majorSecond = `Jurusan 2 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`;
+      } else {
+        next.majorSecond = m2.toUpperCase();
+      }
+    }
+
+    const name = fullName.trim();
+    if (name && name.length < 2) {
+      fieldErrors.fullName = "Nama lengkap minimal 2 karakter.";
+    } else if (name) {
+      next.fullName = name;
+    }
+
+    const mail = email.trim();
+    if (mail) next.email = mail;
+
+    const note = notes.trim();
+    if (note) next.notes = note;
+    else if (registration.notes) next.notes = "";
+
+    const st = status.trim();
+    if (st) {
+      if (!(PPDB_STATUSES as readonly string[]).includes(st.toUpperCase())) {
+        fieldErrors.status = `Status tidak valid. Pilih: ${PPDB_STATUSES.join(", ")}`;
+      } else {
+        next.status = st.toUpperCase();
+      }
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
+    if (Object.keys(next).length === 0) {
+      // Kompatibel dengan perilaku lama: semua kolom dikosongkan = batal edit.
+      onOpenChange(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const ok = await onSave(registration.id, next);
+      if (ok) onOpenChange(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldError = (key: string) =>
+    errors[key] ? (
+      <p id={`ppdb-edit-${key}-error`} className="font-caption text-xs text-rose-600">
+        {errors[key]}
+      </p>
+    ) : null;
+
+  return (
+    <Dialog
+      open={registration !== null}
+      onOpenChange={(o) => {
+        if (!o && !saving) onOpenChange(false);
+      }}
+    >
+      <DialogContent className="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>
+            Edit Pendaftaran {registration?.registrationNo}
+          </DialogTitle>
+          <DialogDescription>
+            Kolom yang dikosongkan tidak diubah, kecuali catatan — kosongkan
+            untuk menghapus catatan lama.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={submit} className="grid gap-4 py-2">
+          <div className="space-y-1.5">
+            <label htmlFor="ppdb-edit-name" className="font-caption text-sm font-semibold text-slate-700">
+              Nama lengkap
+            </label>
+            <Input
+              id="ppdb-edit-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              aria-invalid={errors.fullName ? true : undefined}
+              aria-describedby={errors.fullName ? "ppdb-edit-name-error" : undefined}
+              placeholder="Nama pendaftar"
+            />
+            {fieldError("fullName")}
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="ppdb-edit-email" className="font-caption text-sm font-semibold text-slate-700">
+              Email
+            </label>
+            <Input
+              id="ppdb-edit-email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={errors.email ? "ppdb-edit-email-error" : undefined}
+              placeholder="email@contoh.com"
+            />
+            {fieldError("email")}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label htmlFor="ppdb-edit-major1" className="font-caption text-sm font-semibold text-slate-700">
+                Jurusan 1
+              </label>
+              <select
+                id="ppdb-edit-major1"
+                value={majorFirst}
+                onChange={(e) => setMajorFirst(e.target.value)}
+                aria-invalid={errors.majorFirst ? true : undefined}
+                aria-describedby={errors.majorFirst ? "ppdb-edit-major1-error" : undefined}
+                className="flex h-10 w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+              >
+                <option value="">(tanpa perubahan)</option>
+                {majorOptions(registration?.majorFirst).map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              {fieldError("majorFirst")}
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="ppdb-edit-major2" className="font-caption text-sm font-semibold text-slate-700">
+                Jurusan 2
+              </label>
+              <select
+                id="ppdb-edit-major2"
+                value={majorSecond}
+                onChange={(e) => setMajorSecond(e.target.value)}
+                aria-invalid={errors.majorSecond ? true : undefined}
+                aria-describedby={errors.majorSecond ? "ppdb-edit-major2-error" : undefined}
+                className="flex h-10 w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+              >
+                <option value="">(tanpa perubahan)</option>
+                {majorOptions(registration?.majorSecond).map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              {fieldError("major2")}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="ppdb-edit-notes" className="font-caption text-sm font-semibold text-slate-700">
+              Catatan admin
+            </label>
+            <textarea
+              id="ppdb-edit-notes"
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Catatan internal (opsional)"
+              className="w-full rounded-xl border border-slate-200 bg-card px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/60"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="ppdb-edit-status" className="font-caption text-sm font-semibold text-slate-700">
+              Status
+            </label>
+            <select
+              id="ppdb-edit-status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              aria-invalid={errors.status ? true : undefined}
+              aria-describedby={errors.status ? "ppdb-edit-status-error" : undefined}
+              className="flex h-10 w-full rounded-xl border border-slate-200 bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            >
+              {(
+                registration &&
+                !(PPDB_STATUSES as readonly string[]).includes(registration.status)
+                  ? [registration.status, ...PPDB_STATUSES]
+                  : PPDB_STATUSES
+              ).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            {fieldError("status")}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving}
+              onClick={() => onOpenChange(false)}
+            >
+              Batal
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+              Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function AdminClient({
@@ -52,23 +328,31 @@ export function AdminClient({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
+  const toast = useToast();
+
+  // Konfirmasi hapus (user & pendaftaran PPDB) via dialog, bukan confirm() blocking.
+  const [deleteUserTarget, setDeleteUserTarget] = useState<User | null>(null);
+  const [deleteUserBusy, setDeleteUserBusy] = useState(false);
+  const [deleteRegTarget, setDeleteRegTarget] = useState<PpdbRegistration | null>(null);
+  const [deleteRegBusy, setDeleteRegBusy] = useState(false);
+
+  // Edit pendaftaran PPDB via dialog form (bukan rantai prompt).
+  const [ppdbEditTarget, setPpdbEditTarget] = useState<PpdbRegistration | null>(null);
 
   const role = currentUser.role;
 
   const refreshUsers = async () => {
     const usersRes = await fetch("/api/admin/users");
-    if (usersRes.ok) {
-      const data = await usersRes.json();
-      setUsers(data.users || []);
-    }
+    if (!usersRes.ok) return;
+    const data = await parseJsonSafe<{ users?: User[] }>(usersRes);
+    if (data?.users) setUsers(data.users);
   };
 
   const refreshPpdb = async () => {
     const res = await fetch("/api/admin/ppdb");
-    if (res.ok) {
-      const data = await res.json();
-      setPpdbRegistrations(data.registrations || []);
-    }
+    if (!res.ok) return;
+    const data = await parseJsonSafe<{ registrations?: PpdbRegistration[] }>(res);
+    if (data?.registrations) setPpdbRegistrations(data.registrations);
   };
 
   const handleEditUser = (user: User) => {
@@ -87,25 +371,31 @@ export function AdminClient({
     });
 
     if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || "Failed to update user");
+      const error = await parseJsonSafe<{ error?: string }>(res);
+      throw new Error(error?.error || "Gagal memperbarui user");
     }
 
     await refreshUsers();
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Hapus user ini? Tindakan tidak bisa dibatalkan.")) return;
-
+  const handleDeleteUser = async () => {
+    if (!deleteUserTarget || deleteUserBusy) return;
+    setDeleteUserBusy(true);
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/users/${deleteUserTarget.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to delete user");
+        const error = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(error?.error || "Gagal menghapus user");
       }
       await refreshUsers();
+      toast.success("User berhasil dihapus.");
+      setDeleteUserTarget(null);
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Failed to delete user");
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus user");
+    } finally {
+      setDeleteUserBusy(false);
     }
   };
 
@@ -118,114 +408,89 @@ export function AdminClient({
         body: JSON.stringify({ status }),
       });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to update status");
+        const error = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(error?.error || "Gagal mengubah status");
       }
       setPpdbRegistrations((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status } : r))
       );
+      toast.success("Status pendaftaran diperbarui.");
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Failed to update status");
+      toast.error(error instanceof Error ? error.message : "Gagal mengubah status");
       await refreshPpdb();
     } finally {
       setStatusUpdating(null);
     }
   };
 
-  const handleDeleteRegistration = async (id: string) => {
-    if (!confirm("Hapus pendaftaran PPDB ini?")) return;
-
+  const handleDeleteRegistration = async () => {
+    if (!deleteRegTarget || deleteRegBusy) return;
+    setDeleteRegBusy(true);
     try {
-      const res = await fetch(`/api/admin/ppdb/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/ppdb/${deleteRegTarget.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to delete registration");
+        const error = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(error?.error || "Gagal menghapus pendaftaran");
       }
-      setPpdbRegistrations((prev) => prev.filter((r) => r.id !== id));
+      setPpdbRegistrations((prev) => prev.filter((r) => r.id !== deleteRegTarget.id));
+      toast.success("Pendaftaran PPDB dihapus.");
+      setDeleteRegTarget(null);
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Failed to delete registration");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menghapus pendaftaran"
+      );
+    } finally {
+      setDeleteRegBusy(false);
     }
   };
 
   /**
-   * Edit cepat pendaftaran PPDB (jurusan 1, jurusan 2, nama, email, notes, status).
-   * Pakai window.prompt/confirm agar tidak butuh dialog UI baru — cukup fungsional
-   * untuk admin panel dan menghilangkan error TS2552 "handleEditRegistration undefined".
+   * Simpan hasil edit dialog pendaftaran PPDB. Kembali `true` bila sukses
+   * (dialog tertutup oleh pemanggil); kegagalan ditampilkan via toast.
    */
-  const handleEditRegistration = async (reg: PpdbRegistration) => {
-    if (!isAdmin(role)) return;
-
-    const next: Record<string, string> = {};
-
-    const major1 = window.prompt(
-      `Jurusan 1 (${PPDB_MAJORS.join(", ")})\nSaat ini: ${reg.majorFirst}`,
-      reg.majorFirst
-    );
-    if (major1 === null) return;
-    if (major1.trim() && !(PPDB_MAJORS as readonly string[]).includes(major1.trim().toUpperCase())) {
-      alert(`Jurusan 1 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`);
-      return;
-    }
-    if (major1.trim()) next.majorFirst = major1.trim().toUpperCase();
-
-    const major2 = window.prompt(
-      `Jurusan 2 (${PPDB_MAJORS.join(", ")})\nSaat ini: ${reg.majorSecond ?? "-"}`,
-      reg.majorSecond ?? ""
-    );
-    if (major2 === null) return;
-    if (major2.trim() && !(PPDB_MAJORS as readonly string[]).includes(major2.trim().toUpperCase())) {
-      alert(`Jurusan 2 tidak valid. Pilih: ${PPDB_MAJORS.join(", ")}`);
-      return;
-    }
-    if (major2.trim()) next.majorSecond = major2.trim().toUpperCase();
-
-    const fullName = window.prompt(`Nama lengkap\nSaat ini: ${reg.fullName}`, reg.fullName);
-    if (fullName === null) return;
-    if (fullName.trim() && fullName.trim().length >= 2) next.fullName = fullName.trim();
-
-    const email = window.prompt(`Email\nSaat ini: ${reg.email}`, reg.email);
-    if (email === null) return;
-    if (email.trim()) next.email = email.trim();
-
-    const notes = window.prompt(`Notes admin\nSaat ini: ${reg.notes ?? "-"}`, reg.notes ?? "");
-    if (notes === null) return;
-    if (notes.trim()) next.notes = notes.trim();
-    else if (reg.notes && !notes.trim()) next.notes = "";
-
-    const status = window.prompt(
-      `Status (${PPDB_STATUSES.join(", ")})\nSaat ini: ${reg.status}`,
-      reg.status
-    );
-    if (status === null) return;
-    if (status.trim() && !(PPDB_STATUSES as readonly string[]).includes(status.trim().toUpperCase())) {
-      alert(`Status tidak valid. Pilih: ${PPDB_STATUSES.join(", ")}`);
-      return;
-    }
-    if (status.trim()) next.status = status.trim().toUpperCase();
-
-    if (Object.keys(next).length === 0) {
-      alert("Tidak ada perubahan yang disimpan.");
-      return;
-    }
-
+  const handleUpdateRegistration = async (
+    id: string,
+    data: Record<string, string>
+  ): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/admin/ppdb/${reg.id}`, {
+      const res = await fetch(`/api/admin/ppdb/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal update pendaftaran");
+        const err = await parseJsonSafe<{ error?: string }>(res);
+        throw new Error(err?.error || "Gagal memperbarui pendaftaran");
       }
-      const data = (await res.json()) as { registration: PpdbRegistration };
-      setPpdbRegistrations((prev) =>
-        prev.map((r) => (r.id === reg.id ? { ...r, ...data.registration } : r))
-      );
+      const body = await parseJsonSafe<{ registration?: PpdbRegistration }>(res);
+      if (body?.registration) {
+        setPpdbRegistrations((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, ...body.registration } : r))
+        );
+      } else {
+        // Toleran-adiitif: respons tidak memuat registration — terapkan field
+        // yang diedit secara lokal, lalu segarkan dari server.
+        setPpdbRegistrations((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, ...data } : r))
+        );
+        void refreshPpdb();
+      }
+      toast.success("Pendaftaran PPDB diperbarui.");
+      return true;
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Gagal update pendaftaran");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal memperbarui pendaftaran"
+      );
       await refreshPpdb();
+      return false;
     }
+  };
+
+  const openPpdbEdit = (reg: PpdbRegistration) => {
+    if (!isAdmin(role)) return;
+    setPpdbEditTarget(reg);
   };
 
   return (
@@ -336,7 +601,7 @@ export function AdminClient({
                                 <Button
                                   size="sm"
                                   variant="destructive"
-                                  onClick={() => handleDeleteUser(user.id)}
+                                  onClick={() => setDeleteUserTarget(user)}
                                 >
                                   Delete
                                 </Button>
@@ -409,6 +674,7 @@ export function AdminClient({
                           onChange={(e) =>
                             handleUpdatePpdbStatus(registration.id, e.target.value)
                           }
+                          aria-label={`Ubah status pendaftaran ${registration.fullName}`}
                           className="rounded-md border border-input bg-background px-2 py-1 text-xs"
                         >
                           {PPDB_STATUSES.map((s) => (
@@ -426,14 +692,14 @@ export function AdminClient({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleEditRegistration(registration)}
+                            onClick={() => openPpdbEdit(registration)}
                           >
                             Edit
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDeleteRegistration(registration.id)}
+                            onClick={() => setDeleteRegTarget(registration)}
                           >
                             Delete
                           </Button>
@@ -455,6 +721,42 @@ export function AdminClient({
         currentUserRole={role}
         accessibleRoles={accessibleRoles}
         onSave={handleSaveUser}
+      />
+
+      {/* Edit pendaftaran PPDB — key per pendaftar supaya draft form ikut reset. */}
+      <PpdbEditDialog
+        key={ppdbEditTarget?.id ?? "none"}
+        registration={ppdbEditTarget}
+        onOpenChange={(o) => {
+          if (!o) setPpdbEditTarget(null);
+        }}
+        onSave={handleUpdateRegistration}
+      />
+
+      <ConfirmDialog
+        open={deleteUserTarget !== null}
+        onOpenChange={(o) => {
+          if (!o) setDeleteUserTarget(null);
+        }}
+        title="Hapus user ini?"
+        description={`Tindakan tidak bisa dibatalkan.${deleteUserTarget?.email ? ` ${deleteUserTarget.email} akan dihapus permanen.` : ""}`}
+        confirmLabel="Hapus"
+        destructive
+        loading={deleteUserBusy}
+        onConfirm={handleDeleteUser}
+      />
+
+      <ConfirmDialog
+        open={deleteRegTarget !== null}
+        onOpenChange={(o) => {
+          if (!o) setDeleteRegTarget(null);
+        }}
+        title="Hapus pendaftaran PPDB ini?"
+        description={`${deleteRegTarget?.registrationNo ?? ""} — ${deleteRegTarget?.fullName ?? ""}. Tindakan tidak bisa dibatalkan.`}
+        confirmLabel="Hapus"
+        destructive
+        loading={deleteRegBusy}
+        onConfirm={handleDeleteRegistration}
       />
     </div>
   );

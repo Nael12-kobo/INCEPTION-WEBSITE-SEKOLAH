@@ -16,6 +16,8 @@ import { clientIp, rateLimit, resetRateLimit } from "@/lib/rate-limit";
  */
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // S13 (risiko diterima): trustHost dibutuhkan di Vercel/serverless —
+  // Auth.js harus mempercayai x-forwarded-host di belakang proxy platform.
   trustHost: true,
   adapter: PrismaAdapter(prisma),
   /**
@@ -29,6 +31,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           Google({
             clientId: process.env.AUTH_GOOGLE_ID,
             clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            // Linking aman di sini: email Google selalu diverifikasi Google,
+            // jadi pihak lain tidak bisa mengklaim email korban (bandingkan
+            // GitHub yang izinnya dimatikan — emailnya bisa tak terverifikasi).
             allowDangerousEmailAccountLinking: true,
             authorization: {
               params: {
@@ -45,7 +50,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           GitHub({
             clientId: process.env.AUTH_GITHUB_ID,
             clientSecret: process.env.AUTH_GITHUB_SECRET,
-            allowDangerousEmailAccountLinking: true,
+            // S2: linking otomatis DIMATIKAN untuk GitHub — email GitHub
+            // bisa berupa noreply/unverified, sehingga siapa pun yang
+            // mendaftarkan email korban di GitHub bisa membajak akun sekolah.
+            // (Google tetap memakai linking karena email Google selalu
+            // terverifikasi oleh Google — lihat provider Google di atas.)
           }),
         ]
       : []),
@@ -204,9 +213,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.role = dbUser.role;
             token.roleSyncedAt = Date.now();
           } else {
-            // User tidak ditemukan di DB, gunakan role dari token atau default
-            token.role = token.role || "USER";
-            token.roleSyncedAt = Date.now();
+            // S14: akun sudah dihapus dari DB → hanguskan sesi (null =
+            // Auth.js menganggap token tidak valid). Jangan jatuh ke role
+            // lama di token: endpoint yang hanya percaya session.user.id
+            // tetap dilayani untuk user yang sudah tidak ada.
+            return null;
           }
         } catch (error) {
           console.error("[Auth JWT] Error syncing role from DB:", error);

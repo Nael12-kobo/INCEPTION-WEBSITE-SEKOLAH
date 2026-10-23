@@ -17,7 +17,7 @@ import {
  * password target: sesi dibuat langsung di server.
  */
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -64,14 +64,20 @@ export async function POST(
     );
   }
 
+  const cookieName = sessionCookieName(request);
   const token = await mintSessionToken({
     userId: target.id,
     role: target.role,
+    // S12: bawa nama & email target supaya session.user.name/email terisi
+    // (audit & header UI tidak lagi kosong selama mode impersonasi).
+    name: target.name,
+    email: target.email,
     impersonatorId: actor.id,
+    cookieName,
   });
 
   const res = NextResponse.json({ ok: true, redirectTo: "/dashboard" });
-  res.cookies.set(sessionCookieName(), token, sessionCookieOptions());
+  res.cookies.set(cookieName, token, sessionCookieOptions(request));
 
   await logAudit({
     actorId: actor.id,

@@ -2,9 +2,30 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-// Randomize later cycles after hydration; initial render stays deterministic.
+// Seeded PRNG (mulberry32) — deterministic, sama saat SSR dan hydration.
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Pengacakan untuk siklus berikutnya hanya terjadi setelah hydration.
+
 function randomIndex(max: number) {
   return Math.floor(Math.random() * max);
+}
+
+// Index awal per kartu: PRNG seeded deterministik sehingga SSR dan hydrasi
+// selalu memilih snippet yang sama (#10 — dulu Math.random() di useState init
+// memicu hydration mismatch). Generator dibuat segar per kartu (bukan satu
+// generator bersama di level modul) karena generator modul di server tidak
+// di-reset antar request render.
+function initialSnippetIndex(seed: number) {
+  return Math.floor(mulberry32(seed)() * TOTAL_SNIPPETS);
 }
 
 // All code snippets
@@ -62,10 +83,11 @@ function TypewriterText({ text, onCycleDone }: { text: string; onCycleDone: () =
         setDisplayed(text.slice(0, displayed.length - 1));
       }, 30);
     } else if (isDeleting && displayed.length === 0) {
+      // Reset lewat callback timer agar setState terjadi setelah effect selesai.
       timeout = setTimeout(() => {
         setIsDeleting(false);
         onCycleDone();
-      }, 0);
+      }, 30);
     }
 
     return () => clearTimeout(timeout);
@@ -80,16 +102,9 @@ function TypewriterText({ text, onCycleDone }: { text: string; onCycleDone: () =
 }
 
 // Individual code card — picks random snippet, re-randomizes after each cycle
-function CodeCard({
-  style,
-  animation,
-  initialIndex,
-}: {
-  style: React.CSSProperties;
-  animation: string;
-  initialIndex: number;
-}) {
-  const [snippetIdx, setSnippetIdx] = useState(initialIndex);
+function CodeCard({ style, animation, seed }: { style: React.CSSProperties; animation: string; seed: number }) {
+  // Index awal deterministik agar SSR dan hydration menggunakan snippet yang sama.
+  const [snippetIdx, setSnippetIdx] = useState(() => initialSnippetIndex(seed));
 
   const handleCycleDone = useCallback(() => {
     let next = randomIndex(TOTAL_SNIPPETS);
@@ -131,7 +146,9 @@ function CodeCard({
 export default function PPLGHeroDecorations() {
   // Inject keyframes once on mount
   useEffect(() => {
-    const id = "pplg-hero-decorations";
+    // Id unik per varian (desktop/mobile keduanya di-mount bersamaan) — id
+    // kembar membuat race "siapa yang unmount menghapus style" (#11).
+    const id = "pplg-hero-decorations-desktop";
     if (document.getElementById(id)) return;
 
     const style = document.createElement("style");
@@ -159,12 +176,12 @@ export default function PPLGHeroDecorations() {
         return (
           <CodeCard
             key={i}
+            seed={42 + i}
             style={{
               ...pos,
               "--cr": `${card.rotate}deg`,
             } as React.CSSProperties}
             animation={`pplg-float ${card.duration}s ease-in-out ${card.delay}s infinite`}
-            initialIndex={i % TOTAL_SNIPPETS}
           />
         );
       })}

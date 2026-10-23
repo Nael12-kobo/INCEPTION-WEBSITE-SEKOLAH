@@ -28,8 +28,9 @@ const shapes: {
   { type: "triangle", size: 50, top: "10%", left: "35%",  color: "border-cyan-300",   duration: 10, delay: 0.7, rotateStart: 0 },
   { type: "triangle", size: 40, top: "70%", right: "30%", color: "border-yellow-300", duration: 14, delay: 1.8, rotateStart: 60 },
   { type: "triangle", size: 35, top: "45%", left: "12%",  color: "border-pink-300",   duration: 8,  delay: 0,   rotateStart: 150 },
-  // Diamonds
-  { type: "diamond",  size: 45, top: "25%", right: "10%", color: "bg-emerald-300",  duration: 9,  delay: 1,   rotateStart: 0 },
+  // Diamonds (rotateStart 45 = transform rotate(45deg) lama yang dulu
+  // ditimpa keyframes; kini jadi bagian dari --cr)
+  { type: "diamond",  size: 45, top: "25%", right: "10%", color: "bg-emerald-300",  duration: 9,  delay: 1,   rotateStart: 45 },
   { type: "diamond",  size: 35, top: "60%", left: "40%",  color: "bg-violet-300",   duration: 12, delay: 2.2, rotateStart: 45 },
   // Rings
   { type: "ring",     size: 70, top: "5%",  right: "20%", color: "border-white",    duration: 15, delay: 0.4, rotateStart: 0 },
@@ -46,12 +47,15 @@ function Shape({ shape }: { shape: (typeof shapes)[0] }) {
   if ("left" in shape) posStyle.left = shape.left;
   if ("right" in shape) posStyle.right = shape.right;
 
-  const baseStyle: React.CSSProperties = {
+  // `--cr` = rotasi awal per bentuk, dipakai keyframes `dkv-spin` (pola yang
+  // sama dengan varian PPLG) supaya rotasi awal tidak ditimpa animasi.
+  const baseStyle = {
     ...posStyle,
     width: shape.size,
     height: shape.size,
+    "--cr": `${shape.rotateStart}deg`,
     animation: `dkv-spin ${shape.duration}s linear ${shape.delay}s infinite`,
-  };
+  } as React.CSSProperties;
 
   switch (shape.type) {
     case "circle":
@@ -93,7 +97,8 @@ function Shape({ shape }: { shape: (typeof shapes)[0] }) {
           style={{
             ...baseStyle,
             borderRadius: "4px",
-            transform: "rotate(45deg)",
+            // Rotasi 45deg "diamond" kini lewat --cr (rotateStart di data),
+            // bukan transform inline yang selama ini ditimpa animasi.
           }}
         />
       );
@@ -151,8 +156,8 @@ export default function DKVHeroDecorations() {
     style.id = id;
     style.textContent = `
       @keyframes dkv-spin {
-        0%   { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0%   { transform: rotate(var(--cr, 0deg)); }
+        100% { transform: rotate(calc(var(--cr, 0deg) + 360deg)); }
       }
     `;
     document.head.appendChild(style);
@@ -163,7 +168,10 @@ export default function DKVHeroDecorations() {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    // hidden md:block (#3): ~20 elemen dekoratif disembunyikan di bawah md
+    // (pola yang sama dengan varian PPLG/TJKT/TKRO) agar teks hero tetap
+    // terbaca di layar 360px; desktop tetap penuh.
+    <div className="absolute inset-0 hidden overflow-hidden pointer-events-none md:block">
       {shapes.map((shape, i) => (
         <Shape key={i} shape={shape} />
       ))}

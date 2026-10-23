@@ -160,7 +160,7 @@ export function ResetPasswordForm() {
             setPassword(e.target.value);
             if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: undefined }));
           }}
-          error={fieldErrors.password ? t("error.passwordLength") : undefined}
+          error={fieldErrors.password}
           disabled={submitting}
           required
         />
@@ -176,7 +176,7 @@ export function ResetPasswordForm() {
             setConfirm(e.target.value);
             if (fieldErrors.confirm) setFieldErrors((p) => ({ ...p, confirm: undefined }));
           }}
-          error={fieldErrors.confirm ? t("error.confirmPassword") : undefined}
+          error={fieldErrors.confirm}
           disabled={submitting}
           required
         />

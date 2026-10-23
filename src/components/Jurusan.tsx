@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Code2,
-  Network,
-  RadioTower,
-  Camera,
-  Engine,
-} from "lucide-react";
+import { ArrowUpRight, Code2, Network, Camera, Engine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,

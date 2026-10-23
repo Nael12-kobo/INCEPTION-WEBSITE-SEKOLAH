@@ -4,10 +4,20 @@ import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react"
 
 const jurusanLinks = ["Pengembangan Perangkat Lunak", "Teknik Jaringan Komputer Dan Telekomunikasi", "Desain Komunikasi Visual", "Teknik Kendaraan Ringan Otomotif"];
 const infoLinks = [
-  { label: "Profil Sekolah", href: "#profil" },
-  { label: "Fasilitas", href: "#fasilitas" },
-  { label: "Berita", href: "#berita" },
-  { label: "PPDB 2026", href: "#ppdb" },
+  { label: "Profil Sekolah", href: "/#profil" },
+  { label: "Fasilitas", href: "/#fasilitas" },
+  { label: "Berita", href: "/#berita" },
+  { label: "PPDB 2026", href: "/#ppdb" },
+];
+
+// Tidak ada URL sosial media resmi yang tercatat di repo, jadi href-nya
+// tetap mengarah ke beranda; label dibuat berbeda agar screen reader
+// bisa membedakan tiap link (#27).
+const socialLinks = [
+  { label: "Situs web resmi sekolah", Icon: Globe },
+  { label: "Akun media sosial sekolah", Icon: AtSign },
+  { label: "Kirim pesan ke sekolah", Icon: MessageCircle },
+  { label: "Kirim email ke sekolah", Icon: Mail },
 ];
 
 export function Footer() {
@@ -27,14 +37,14 @@ export function Footer() {
             kerja.
           </p>
           <div className="mt-4 flex gap-2">
-            {[Globe, AtSign, MessageCircle, Mail].map((Icon, i) => (
+            {socialLinks.map(({ label, Icon }) => (
               <Link
-                key={i}
-                href="#beranda"
-                aria-label="Media sosial sekolah"
+                key={label}
+                href="/#beranda"
+                aria-label={label}
                 className="flex h-10 w-10 items-center justify-center rounded-xl bg-card/5 ring-1 ring-white/10 transition-colors hover:bg-sky-600 hover:text-white sm:h-9 sm:w-9"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" aria-hidden />
               </Link>
             ))}
           </div>
@@ -45,7 +55,7 @@ export function Footer() {
           <ul className="mt-4 space-y-0 text-sm sm:space-y-2.5">
             {jurusanLinks.map((j) => (
               <li key={j}>
-                <Link href="#jurusan" className="block py-3 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
+                <Link href="/#jurusan" className="block py-3 text-neutral-400 transition-colors hover:text-sky-300 sm:py-0">
                   {j}
                 </Link>
               </li>

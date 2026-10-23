@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 import { EMAIL_RE } from "@/lib/ppdb";
+import { rateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 /**
  * Endpoint akun sendiri (user yang sedang login).
@@ -12,6 +13,28 @@ import { EMAIL_RE } from "@/lib/ppdb";
  * PATCH  — ubah nama/email sendiri (email baru wajib konfirmasi password).
  * PUT    — ganti kata sandi sendiri (wajib password lama).
  */
+
+/**
+ * Guard verifikasi kata sandi (S10): bcrypt cost 12 per percobaan → wajib
+ * dibatasi rate limit, kalau tidak endpoint ini jadi oracle brute-force.
+ * Key per user id; percobaan berhasil melepas hitungan.
+ */
+function verifyCurrentPasswordRate(userId: string) {
+  return rateLimit(`account:pw:${userId}`, { limit: 5, windowMs: 5 * 60_000 });
+}
+
+function tooManyAttempts(retryAfterSec: number): NextResponse {
+  const message =
+    "Terlalu banyak percobaan konfirmasi kata sandi. Tunggu beberapa menit lalu coba lagi.";
+  return NextResponse.json(
+    {
+      message,
+      errors: { currentPassword: message },
+      retryAfterSec,
+    },
+    { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
+  );
+}
 
 async function requireSession() {
   const session = await auth();
@@ -50,20 +73,32 @@ export async function PATCH(request: NextRequest) {
     typeof body.currentPassword === "string" ? body.currentPassword : "";
 
   const fieldErrors: Record<string, string> = {};
-  if (name !== undefined && name.length < 3) {
-    fieldErrors.name = "Nama minimal 3 karakter.";
+  // C13: ambang nama seragam (≥2) dengan register & admin/users.
+  if (name !== undefined && name.length < 2) {
+    fieldErrors.name = "Nama minimal 2 karakter.";
   }
 
   let emailChanged = false;
   if (email !== undefined && email !== user.email) {
     if (!EMAIL_RE.test(email)) {
       fieldErrors.email = "Format email tidak valid.";
-    } else if (user.passwordHash && !currentPassword) {
+    } else if (!user.passwordHash) {
+      // S5: akun OAuth tanpa kata sandi TIDAK boleh mengganti email hanya
+      // dengan sesi — sesi curian bisa mengalihkan email akun diam-diam.
+      // Wajib set kata sandi dulu (menu Keamanan Akun, form memang
+      // membolehkannya untuk akun OAuth), baru email boleh diganti.
+      fieldErrors.email =
+        "Akun Anda belum memiliki kata sandi. Atur kata sandi dulu di menu Keamanan Akun, lalu ulangi perubahan email.";
+    } else if (!currentPassword) {
       fieldErrors.currentPassword =
         "Konfirmasi kata sandi saat ini untuk mengubah email.";
-    } else if (user.passwordHash) {
+    } else {
+      const rl = verifyCurrentPasswordRate(user.id);
+      if (!rl.ok) return tooManyAttempts(rl.retryAfterSec);
       const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!valid) {
+      if (valid) {
+        resetRateLimit(`account:pw:${user.id}`);
+      } else {
         fieldErrors.currentPassword = "Kata sandi saat ini salah.";
       }
     }
@@ -146,16 +181,20 @@ export async function PUT(request: NextRequest) {
     if (!currentPassword) {
       fieldErrors.currentPassword = "Masukkan kata sandi saat ini.";
     } else {
+      // S10: pembatas laju tebakan kata sandi (bcrypt cost 12 per request).
+      const rl = verifyCurrentPasswordRate(user.id);
+      if (!rl.ok) return tooManyAttempts(rl.retryAfterSec);
       const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!valid) {
+      if (valid) {
+        resetRateLimit(`account:pw:${user.id}`);
+      } else {
         fieldErrors.currentPassword = "Kata sandi saat ini salah.";
       }
     }
-  } else {
-    // Akun OAuth tanpa password: boleh set password pertama kali tanpa password lama.
-    fieldErrors.currentPassword = "";
-    delete fieldErrors.currentPassword;
   }
+  // Catatan: akun OAuth tanpa passwordHash melewati verifikasi password lama
+  // karena ini justru proses SET password pertama kali (satu-satunya jalan
+  // mereka mengaktifkan login credentials).
 
   if (Object.keys(fieldErrors).length > 0) {
     return NextResponse.json({ errors: fieldErrors }, { status: 400 });
