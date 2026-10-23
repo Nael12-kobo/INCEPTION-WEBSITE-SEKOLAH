@@ -163,26 +163,6 @@ export function pickRelevantTopics(
 }
 
 /**
- * Ambil jawaban lengkap PPDB yang ditulis dan dirawat di Markdown knowledge.
- * Bagian ringkasan punya format siap-tampil dan dipakai hanya untuk pertanyaan
- * luas; pertanyaan PPDB spesifik tetap dijawab Gemini dengan konteks knowledge.
- */
-export function getPpdbOverviewReply(): string {
-  const definition = TOPIC_KEYWORDS.find((item) => item.file === "06-ppdb.md");
-  if (!definition) return "";
-  const entry = loadEntry(definition);
-  if (!entry) return "";
-
-  const marker = "## Ringkasan lengkap untuk chatbot\n";
-  const start = entry.content.indexOf(marker);
-  if (start < 0) return "";
-
-  const body = entry.content.slice(start + marker.length);
-  const nextHeading = body.search(/^## /m);
-  return (nextHeading >= 0 ? body.slice(0, nextHeading) : body).trim();
-}
-
-/**
  * Konteks siap tempel ke systemInstruction.
  * Tiap file dipotong agar hemat token; total dibatasi maxTotalChars.
  */

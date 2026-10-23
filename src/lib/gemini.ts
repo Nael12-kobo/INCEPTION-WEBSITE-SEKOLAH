@@ -14,7 +14,10 @@ ATURAN PANJANG DAN KELENGKAPAN JAWABAN (wajib):
 - Jawab HANYA inti pertanyaan dalam Bahasa Indonesia yang ramah.
 - Tanpa basa-basi pembuka, tanpa mengulang pertanyaan user, tanpa penutup generik ("semoga membantu", "ada yang bisa saya bantu lagi?").
 - Pertanyaan spesifik cukup 1-3 kalimat, tetapi harus memuat semua rincian relevan yang tersedia di konteks. Untuk pertanyaan luas seperti “info PPDB”, “jelaskan PPDB”, atau “apa saja syarat dan alurnya”, berikan ringkasan terstruktur yang lengkap, bukan satu kalimat.
-- Untuk ringkasan umum PPDB, sertakan tahun ajaran/gelombang, biaya pendaftaran dan biaya pendidikan, beasiswa yang tercatat, pilihan dua jurusan, berkas, alur pendaftaran, notifikasi WhatsApp, materi wawancara, dan tes kesehatan bila datanya tersedia. Jelaskan bahwa pembebasan biaya pendaftaran gelombang pertama tercatat sebagai kesempatan/promo, bukan janji yang pasti berlaku untuk semua orang.
+- Untuk permintaan umum seperti “info PPDB”, kamu WAJIB merangkum seluruh informasi relevan yang tersedia di Konteks resmi menjadi panduan komprehensif dan terstruktur. Jangan hanya memberi overview singkat: targetkan 8–12 bagian/poin dengan detail praktis.
+- Cakup: tahun ajaran/status gelombang dan catatan tanggal; seluruh empat jurusan beserta nama, kode, dan bidang utamanya; beasiswa prestasi dan Bea Pendidikan Bina Lingkungan berikut kriteria/lokasi yang diketahui; asrama; biaya PP dan SPP serta ketidakpastian promo biaya pendaftaran; dokumen; semua data yang perlu diisi formulir; cara membuat akun dan menemukan formulir di dashboard; pilihan 2 jurusan berbeda; nomor pendaftaran, verifikasi admin, jadwal tes WhatsApp/SMS, kunjungan ke sekolah dan daftar ulang; materi wawancara; seluruh jenis pemeriksaan kesehatan; batas validasi formulir; alamat, telepon, email dan cara menemukan tombol WhatsApp resmi.
+- Untuk pertanyaan luas tentang PPDB, gunakan detail konkret dari seluruh bagian “Ringkasan lengkap untuk chatbot” dalam knowledge, jangan abaikan bagian akhir dokumen, dan targetkan sekitar 700–1200 kata jika konteks mendukung. Jangan mengulang informasi yang sama demi memanjangkan jawaban.
+- Jelaskan bahwa pembebasan biaya pendaftaran gelombang pertama tercatat sebagai kesempatan/promo, tetapi daftar persyaratan juga menyebut biaya pendaftaran; jangan menjanjikan gratis untuk semua orang. Jangan mengarang biaya seragam, MPLS, sepatu, tarif asrama, tanggal pembukaan/penutupan, tanggal tes, atau nilai beasiswa yang tidak tercatat.
 - Untuk pertanyaan biaya PPDB, sebutkan semua angka biaya yang tercatat: pendaftar gelombang pertama berkesempatan mendapat pembebasan biaya pendaftaran, tetapi daftar persyaratan juga mencantumkan pembayaran biaya pendaftaran. Jangan menyatakan semua peserta pasti gratis; sarankan mengonfirmasi apakah promo berlaku. Biaya Pendidikan Spesial (Early Registration): PP Rp3.500.000 (dapat diangsur) dan SPP Rp250.000. Jangan mengarang biaya lain, tanggal, atau nilai beasiswa.
 - Jika ditanya di luar topik sekolah, jawab seperlunya lalu arahkan kembali ke info sekolah.
 - Jurusan otomotif selalu tulis TKRO (TKR hanya alias lama di database, artinya sama).
@@ -81,12 +84,13 @@ function resolveModels(): {
   };
 }
 
-function geminiConfig() {
+function geminiConfig(maxOutputTokens = 800) {
   return {
     temperature: 0.7,
-    // Beri ruang untuk jawaban topik luas seperti panduan PPDB lengkap.
-    maxOutputTokens: 800,
-    httpOptions: { timeout: 30_000 },
+    // Pertanyaan umum PPDB memakai anggaran token lebih besar agar jawaban
+    // komprehensif tidak terpotong menjadi ringkasan pendek.
+    maxOutputTokens,
+    httpOptions: { timeout: 60_000 },
   };
 }
 
@@ -101,7 +105,8 @@ function geminiConfig() {
 export async function streamGemini(
   messages: { role: "user" | "assistant"; content: string }[],
   knowledgeContext: string,
-  onToken: (chunk: string) => void
+  onToken: (chunk: string) => void,
+  options: { maxOutputTokens?: number } = {}
 ): Promise<void> {
   const { apiKey, model, fallbackApiKey, fallbackModel } = resolveModels();
   const systemInstruction = buildSystemInstruction(knowledgeContext);
@@ -114,7 +119,7 @@ export async function streamGemini(
     const stream = await ai.models.generateContentStream({
       model: modelName,
       contents,
-      config: { systemInstruction, ...geminiConfig() },
+      config: { systemInstruction, ...geminiConfig(options.maxOutputTokens) },
     });
     for await (const chunk of stream) {
       if (chunk.text) {

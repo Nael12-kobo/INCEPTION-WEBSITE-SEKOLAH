@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { streamGemini } from "@/lib/gemini";
-import { getKnowledgeContext, getPpdbOverviewReply } from "@/lib/knowledge";
+import { getKnowledgeContext } from "@/lib/knowledge";
 import {
   getCachedAnswer,
   normalizeQuestion,
@@ -369,25 +369,23 @@ export async function POST(request: Request) {
 
       let reply = "";
       try {
-        if (ppdbOverviewRequested) {
-          // "Info PPDB" harus selalu lengkap dan akurat; jangan bergantung pada
-          // model generatif yang terkadang mereduksinya menjadi satu kalimat.
-          reply = getPpdbOverviewReply();
-          if (!reply) throw new Error("Ringkasan PPDB tidak ditemukan di knowledge/06-ppdb.md");
-          sourceFiles = ["06-ppdb.md", "08-berita.md", "07-kontak.md"];
-          send({ t: "token", v: reply });
-        } else if (cached) {
+        if (cached) {
           // Hit cache: satu chunk utuh, langsung selesai (nol panggilan Gemini).
           reply = cached.reply;
           sourceFiles = cached.sources;
           send({ t: "token", v: reply });
         } else {
-          await streamGemini(messages, knowledge, (chunk) => {
-            // Client putus di tengah → hentikan tarikan Gemini (hemat kuota).
-            if (closed) throw new Error("CLIENT_DISCONNECTED");
-            reply += chunk;
-            send({ t: "token", v: chunk });
-          });
+          await streamGemini(
+            messages,
+            knowledge,
+            (chunk) => {
+              // Client putus di tengah → hentikan tarikan Gemini (hemat kuota).
+              if (closed) throw new Error("CLIENT_DISCONNECTED");
+              reply += chunk;
+              send({ t: "token", v: chunk });
+            },
+            { maxOutputTokens: ppdbOverviewRequested ? 1800 : 800 }
+          );
           if (!reply.trim()) {
             throw new Error("Gemini mengembalikan respons kosong.");
           }
