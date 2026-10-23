@@ -22,6 +22,24 @@ function toTitle(firstUserText: string): string {
   return t.length > 60 ? `${t.slice(0, 57)}...` : t || "Percakapan baru";
 }
 
+/** Toleransi salah ketik umum agar "PPBD" tetap mengambil knowledge PPDB. */
+function normalizePpdbTerm(text: string): string {
+  return text.replace(/\bppbd\b/gi, "ppdb");
+}
+
+function isPpdbOverviewRequest(text: string): boolean {
+  const normalized = normalizePpdbTerm(text);
+  const mentionsPpdb =
+    /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar ulang)\b/i.test(
+      normalized
+    );
+  const asksForOverview =
+    /\b(info|informasi|lengkap|semua|jelaskan|jelasin|apa saja|ringkasan|overview|tentang)\b/i.test(
+      normalized
+    );
+  return mentionsPpdb && asksForOverview;
+}
+
 /**
  * Snapshot jumlah pendaftar PPDB per jurusan, diambil dari database
  * (tabel ppdb_registrations) dengan cache singkat. Ditempel ke konteks
@@ -29,6 +47,27 @@ function toTitle(firstUserText: string): string {
  * bukan angka statis di markdown yang bisa basi.
  */
 const PPDB_CACHE_MS = 5 * 60_000; // 5 menit
+
+/**
+ * Jawaban deterministik untuk permintaan "info PPDB" yang luas.
+ * Dibuat dari fakta knowledge/06-ppdb.md, 08-berita.md, dan 07-kontak.md
+ * agar model tidak mereduksi permintaan ringkasan menjadi 1–2 kalimat atau
+ * mengarang tanggal/biaya yang tidak tercatat.
+ */
+const PPDB_OVERVIEW_REPLY = [
+  "**PPDB SMK Telekomunikasi Tunas Harapan — Tahun Ajaran 2026/2027**",
+  "",
+  "- **Gelombang dan kuota:** Dokumen resmi yang tersedia mencatat Gelombang 1. Situs menyebut kuota 3 kelas per jurusan.",
+  "- **Beasiswa dan promo:** 20 pendaftar Gelombang 1 yang berprestasi akademik atau non-akademik berpeluang mendapat beasiswa SPP selama 1 tahun. Dokumen juga mencatat kesempatan gratis biaya pendaftaran, tetapi bagian persyaratan mencantumkan pembayaran biaya pendaftaran. Konfirmasikan promo yang berlaku kepada panitia.",
+  "- **Biaya Pendidikan Spesial (Early Registration):** PP Rp3.500.000 (dapat diangsur) dan SPP Rp250.000. Konfirmasikan kepada panitia apakah ada rincian biaya lain.",
+  "- **Pilihan jurusan:** Wajib memilih 2 jurusan berbeda. Pilihan pertama menjadi prioritas, sedangkan pilihan kedua menjadi cadangan.",
+  "- **Dokumen:** Fotokopi rapor semester 1–5, fotokopi akta kelahiran, fotokopi Kartu Keluarga, dan 5 lembar pas foto ukuran 3×4. Isi data sesuai akta kelahiran dan bawa dokumen asli saat datang ke sekolah.",
+  "- **Cara mendaftar:** Login menggunakan akun, isi formulir online, lalu simpan nomor pendaftaran otomatis. Tunggu jadwal tes melalui WhatsApp (SMS menjadi alternatif), datang ke sekolah membawa dokumen asli, lalu selesaikan daftar ulang dan biaya pendidikan. Formulir online merupakan bukti pendaftaran sementara.",
+  "- **Materi wawancara:** Biodata calon siswa, bakat dan minat, karakter dan sikap, kesediaan menaati peraturan sekolah, serta kesanggupan orang tua/wali membiayai pendidikan.",
+  "- **Tes kesehatan:** Tes buta warna dan pendengaran, pemeriksaan tato/tindik/cacat tubuh, pemeriksaan penyakit keturunan yang tercantum dalam dokumen (misalnya asma, tremor, dan jantung), serta pengukuran tinggi dan berat badan.",
+  "- **Tanggal penting:** Dokumen yang tersedia tidak mencantumkan tanggal pasti pembukaan/penutupan gelombang atau tanggal tes. Jadwal tes akan disampaikan kepada pendaftar.",
+].join("\n");
+
 let ppdbCache: { at: number; text: string } | null = null;
 
 async function getPpdbLiveContext(): Promise<string> {
@@ -242,6 +281,7 @@ export async function POST(request: Request) {
   let sourceFiles: string[] = [];
   let knowledge = "";
   let knowledgeMatched = true;
+  let ppdbOverviewRequested = false;
   // Konteks PPDB live ikut menempel → jawaban memuat angka berubah-ubah,
   // sehingga TIDAK boleh masuk cache (angka live bisa basi 24 jam).
   let liveAppended = false;
@@ -255,8 +295,11 @@ export async function POST(request: Request) {
     const userTurns = messages
       .filter((m) => m.role === "user")
       .map((m) => m.content);
-    const query = userTurns.slice(-2).join(" ");
-    const knowledgeQuery = query || messages[messages.length - 1]?.content || "";
+    const query = normalizePpdbTerm(userTurns.slice(-2).join(" "));
+    const knowledgeQuery = normalizePpdbTerm(
+      query || messages[messages.length - 1]?.content || ""
+    );
+    ppdbOverviewRequested = isPpdbOverviewRequest(knowledgeQuery);
     const isPpdbQuestion =
       /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar|daftar ulang|biaya pendaftaran|berkas pendaftaran)\b/i.test(
         knowledgeQuery
@@ -315,8 +358,8 @@ export async function POST(request: Request) {
     );
   // Ganti namespace cache PPDB agar jawaban lama yang terlalu singkat/
   // belum memakai konteks lengkap tidak terpakai selama TTL 24 jam.
-  const cacheKey = isSingleTurn
-    ? `${isPpdbCacheEntry ? "ppdb-v2:" : ""}${normalizeQuestion(lastQuestion)}`
+  const cacheKey = isSingleTurn && !ppdbOverviewRequested
+    ? `${isPpdbCacheEntry ? "ppdb-v2:" : ""}${normalizeQuestion(normalizePpdbTerm(lastQuestion))}`
     : "";
   const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 
@@ -347,7 +390,13 @@ export async function POST(request: Request) {
 
       let reply = "";
       try {
-        if (cached) {
+        if (ppdbOverviewRequested) {
+          // "Info PPDB" harus selalu lengkap dan akurat; jangan bergantung pada
+          // model generatif yang terkadang mereduksinya menjadi satu kalimat.
+          reply = PPDB_OVERVIEW_REPLY;
+          sourceFiles = ["06-ppdb.md", "08-berita.md", "07-kontak.md"];
+          send({ t: "token", v: reply });
+        } else if (cached) {
           // Hit cache: satu chunk utuh, langsung selesai (nol panggilan Gemini).
           reply = cached.reply;
           sourceFiles = cached.sources;
