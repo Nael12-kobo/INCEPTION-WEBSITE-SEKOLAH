@@ -12,8 +12,8 @@ import { prisma } from "@/lib/prisma";
  * Semua operasi best-effort: kegagalan DB TIDAK boleh menggagalkan chat.
  */
 
-/** TTL cache jawaban biasa: 24 jam. */
-const CACHE_TTL_MS = 24 * 60 * 60_000;
+/** TTL jawaban statis: 12 jam; fakta sekolah dapat berubah. */
+const CACHE_TTL_MS = 12 * 60 * 60_000;
 
 /**
  * Normalisasi pertanyaan jadi kunci cache:
@@ -64,10 +64,11 @@ export async function getCachedAnswer(
 export async function setCachedAnswer(
   key: string,
   reply: string,
-  sources: string[]
+  sources: string[],
+  ttlMs = CACHE_TTL_MS
 ): Promise<void> {
   try {
-    const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
+    const expiresAt = new Date(Date.now() + ttlMs);
     await prisma.chatQACache.upsert({
       where: { key },
       create: { key, reply, sources, expiresAt },

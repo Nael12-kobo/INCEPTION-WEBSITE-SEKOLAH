@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 /**
  * Rate limiter in-memory sederhana (fixed window per key).
  *
@@ -87,4 +89,37 @@ export function clientIp(request: Request): string {
     if (first) return first;
   }
   return "unknown";
+}
+
+
+let warnedRedisFallback = false;
+
+/** Shared limiter for public AI APIs. Set both Upstash variables in Vercel to share counters across serverless instances. */
+export async function rateLimitAsync(key: string, { limit, windowMs }: { limit: number; windowMs: number }): Promise<RateLimitResult> {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.replace(/\/+$/, "");
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return rateLimit(key, { limit, windowMs });
+  const redisKey = "neru:ratelimit:" + createHash("sha256").update(key).digest("hex");
+  const script = "local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end; local ttl = redis.call('PTTL', KEYS[1]); return {count, ttl}";
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify(["EVAL", script, "1", redisKey, String(windowMs)]),
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error("Upstash REST returned " + response.status);
+    const payload = await response.json() as { result?: unknown; error?: string };
+    if (payload.error || !Array.isArray(payload.result) || payload.result.length < 2) throw new Error("Unexpected Upstash command result");
+    const count = Number(payload.result[0]);
+    const ttlMs = Number(payload.result[1]);
+    if (!Number.isFinite(count) || count < 1 || !Number.isFinite(ttlMs)) throw new Error("Invalid Upstash counter response");
+    return { ok: count <= limit, remaining: Math.max(0, limit - count), retryAfterSec: Math.max(1, Math.ceil(Math.max(0, ttlMs) / 1000)) };
+  } catch (error) {
+    if (!warnedRedisFallback) {
+      warnedRedisFallback = true;
+      console.warn("[rate-limit] Upstash unavailable; using per-instance fallback. Check UPSTASH_REDIS_REST_URL/TOKEN.", error);
+    }
+    return rateLimit(key, { limit, windowMs });
+  }
 }

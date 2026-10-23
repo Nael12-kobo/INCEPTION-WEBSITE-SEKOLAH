@@ -119,6 +119,33 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+
+/** Normalisasi + sinonim ringan untuk retrieval; teks asli tetap dikirim ke Gemini. */
+export function normalizeKnowledgeQuery(text: string): string {
+  return text.normalize("NFKC").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’]/g, "'")
+    .replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
+}
+export function expandKnowledgeQuery(text: string): string {
+  const normalized = normalizeKnowledgeQuery(text);
+  const expansions: string[] = [];
+  const families: [RegExp, string][] = [
+    [/\b(biaya|harga|tarif|bayar|pembayaran|uang masuk|uang sekolah|spp|pp)\b/i, "biaya pendidikan biaya pendaftaran spp pp"],
+    [/\b(syarat|persyaratan|dokumen|berkas|rapor|rapot|akta|akte|kk|lampiran|pas foto|fotokopi|foto copy)\b/i, "syarat berkas pendaftaran rapor akta kartu keluarga pas foto"],
+    [/\b(alur|prosedur|tahapan|pendaftaran|mendaftar|registrasi|daftar ulang|formulir)\b/i, "ppdb spmb pendaftaran formulir alur"],
+    [/\b(kapan|tanggal|jadwal|gelombang|dibuka|ditutup|tutup|tenggat|deadline)\b/i, "ppdb jadwal tanggal gelombang"],
+    [/\b(dimana|di mana|lokasi|letak|alamat|rute|arah)\b/i, "kontak alamat lokasi sekolah"],
+    [/\b(kontak|hubungi|telepon|telp|whatsapp|nomor wa|email|nomor hp)\b/i, "kontak telepon whatsapp email"],
+    [/\b(beasiswa|bantuan biaya|keringanan|potongan|bina lingkungan)\b/i, "beasiswa ppdb berita"],
+    [/\b(jurusan|keahlian|program studi|prodi|coding|ngoding|website|pemrograman|jaringan|desain|otomotif|mesin)\b/i, "jurusan pplg tjkt dkv tkro"],
+    [/\b(ekskul|ekstrakurikuler|acara|event|kegiatan|agenda)\b/i, "kegiatan agenda ekstrakurikuler"],
+    [/\b(berdiri|didirikan|sejarah|awal mula|tahun berdiri)\b/i, "sejarah sekolah yayasan"],
+  ];
+  for (const [pattern, expansion] of families) if (pattern.test(normalized)) expansions.push(expansion);
+  return [...new Set([normalized, ...expansions])].join(" ");
+}
+
 /**
  * Cocokkan keyword terhadap teks user.
  * Keyword pendek (≤3 huruf, mis. "wa", "bk", "lab", "smk") wajib cocok
@@ -139,7 +166,7 @@ export function pickRelevantTopics(
   text: string,
   maxFiles = 3
 ): { files: string[]; matched: boolean } {
-  const lower = text.toLowerCase();
+  const lower = expandKnowledgeQuery(text);
   const scored = TOPIC_KEYWORDS.map((def) => {
     let score = 0;
     for (const kw of def.keywords) {
@@ -186,6 +213,7 @@ export function getKnowledgeContext(
   // lalu dilengkapi dengan hasil pencocokan keyword.
   const files = Array.from(new Set([...includeFiles, ...picked.files]));
   const parts: string[] = [];
+  const usedFiles: string[] = [];
   let total = 0;
 
   for (const file of files) {
@@ -197,10 +225,11 @@ export function getKnowledgeContext(
     const chunk = `--- Sumber: knowledge/${entry.file} ---\n${body}`;
     if (total + chunk.length > maxTotalChars) break;
     parts.push(chunk);
+    usedFiles.push(entry.file);
     total += chunk.length;
   }
 
   // Fallback: direktori knowledge hilang → kembalikan string kosong,
   // pemanggil tetap lanjut dengan SYSTEM_PROMPT lama.
-  return { files, context: parts.join("\n\n"), matched: picked.matched };
+  return { files: usedFiles, context: parts.join("\n\n"), matched: picked.matched };
 }

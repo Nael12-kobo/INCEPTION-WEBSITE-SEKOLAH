@@ -9,7 +9,8 @@ import {
   recordMissedQuestion,
   setCachedAnswer,
 } from "@/lib/chat-cache";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitAsync } from "@/lib/rate-limit";
+import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, normalizePpdbTerm } from "@/lib/ai-query";
 
 interface IncomingMessage {
   role: "user" | "assistant";
@@ -20,24 +21,6 @@ interface IncomingMessage {
 function toTitle(firstUserText: string): string {
   const t = firstUserText.trim().replace(/\s+/g, " ");
   return t.length > 60 ? `${t.slice(0, 57)}...` : t || "Percakapan baru";
-}
-
-/** Toleransi salah ketik umum agar "PPBD" tetap mengambil knowledge PPDB. */
-function normalizePpdbTerm(text: string): string {
-  return text.replace(/\bppbd\b/gi, "ppdb");
-}
-
-function isPpdbOverviewRequest(text: string): boolean {
-  const normalized = normalizePpdbTerm(text);
-  const mentionsPpdb =
-    /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar ulang)\b/i.test(
-      normalized
-    );
-  const asksForOverview =
-    /\b(info|informasi|lengkap|semua|jelaskan|jelasin|apa saja|ringkasan|overview|tentang)\b/i.test(
-      normalized
-    );
-  return mentionsPpdb && asksForOverview;
 }
 
 /**
@@ -60,8 +43,9 @@ async function getPpdbLiveContext(): Promise<string> {
     });
     const total = byMajor.reduce((sum, r) => sum + r._count._all, 0);
     if (total === 0) {
-      ppdbCache = { at: Date.now(), text: "" };
-      return "";
+      const text = "Data live database PPDB saat ini menunjukkan 0 pendaftaran tercatat. Ini hanya jumlah baris pendaftaran yang tercatat saat pemeriksaan, BUKAN jumlah kuota atau sisa kursi. Jangan menyimpulkan kuota habis atau masih tersedia dari angka ini.";
+      ppdbCache = { at: Date.now(), text };
+      return text;
     }
     const label: Record<string, string> = {
       DKV: "DKV",
@@ -80,9 +64,9 @@ async function getPpdbLiveContext(): Promise<string> {
     ppdbCache = { at: Date.now(), text };
     return text;
   } catch (error) {
-    // DB gagal → jangan gagalkan chat; lewati saja konteks kuota.
+    // Chat tetap berjalan, tetapi jangan biarkan AI mengira angka live sudah diverifikasi.
     console.warn("[/api/chat] Gagal mengambil data PPDB live:", error);
-    return "";
+    return "Data live jumlah pendaftar PPDB sedang tidak dapat diverifikasi. Jangan menebak total, sisa kuota, atau jumlah pendaftar; sarankan pengguna mengonfirmasi ke panitia.";
   }
 }
 
@@ -229,11 +213,11 @@ export async function POST(request: Request) {
   // tanpa ini satu script bisa menghabiskan seluruh kuota GEMINI_API_KEY.
   // Dihitung per IP; lihat catatan batasan serverless di lib/rate-limit.
   const ip = clientIp(request);
-  const perMinute = rateLimit(`chat:min:${ip}`, {
+  const perMinute = await rateLimitAsync(`chat:min:${ip}`, {
     limit: 20,
     windowMs: 60_000,
   });
-  const perHour = rateLimit(`chat:hour:${ip}`, {
+  const perHour = await rateLimitAsync(`chat:hour:${ip}`, {
     limit: 150,
     windowMs: 3_600_000,
   });
@@ -274,27 +258,19 @@ export async function POST(request: Request) {
     const userTurns = messages
       .filter((m) => m.role === "user")
       .map((m) => m.content);
+    const currentQuestion = messages[messages.length - 1]?.content ?? "";
     const query = normalizePpdbTerm(userTurns.slice(-2).join(" "));
-    const knowledgeQuery = normalizePpdbTerm(
-      query || messages[messages.length - 1]?.content || ""
-    );
-    ppdbOverviewRequested = isPpdbOverviewRequest(knowledgeQuery);
-    const isPpdbQuestion =
-      /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar|daftar ulang|biaya pendaftaran|biaya pendidikan|berkas pendaftaran|beasiswa|spp|asrama|seragam|mpls|sepatu|zonasi)\b|bina lingkungan|early registration/i.test(
-        knowledgeQuery
-      );
-    const isBroadPpdbQuestion =
-      isPpdbQuestion &&
-      /\b(info|informasi|lengkap|semua|jelaskan|alur|persyaratan|syarat|prosedur|apa saja)\b/i.test(
-        knowledgeQuery
-      );
+    const knowledgeQuery = normalizePpdbTerm(query || currentQuestion);
+    ppdbOverviewRequested = isPpdbOverviewRequest(currentQuestion, knowledgeQuery);
+    const ppdbQuestion = isPpdbQuestion(currentQuestion, knowledgeQuery);
+    const isBroadPpdbQuestion = ppdbOverviewRequested;
     const picked = getKnowledgeContext(knowledgeQuery, {
-      maxFiles: isBroadPpdbQuestion ? 1 : 3,
-      maxCharsPerFile: isPpdbQuestion ? 10500 : 3500,
-      maxTotalChars: isPpdbQuestion ? 14000 : 9000,
+      maxFiles: 3,
+      maxCharsPerFile: ppdbQuestion ? 10500 : 3500,
+      maxTotalChars: ppdbQuestion ? 14000 : 9000,
       includeFiles: isBroadPpdbQuestion
         ? ["06-ppdb.md", "08-berita.md", "07-kontak.md"]
-        : isPpdbQuestion
+        : ppdbQuestion
           ? ["06-ppdb.md"]
           : [],
     });
@@ -305,14 +281,12 @@ export async function POST(request: Request) {
     // Konteks PPDB live dari DB hanya untuk pertanyaan yang menanyakan
     // JUMLAH pendaftar/kuota — pertanyaan lain (biaya, syarat, cara daftar)
     // tidak membutuhkannya, jadi hemat token input DAN tetap cacheable.
-    const wantsPpdbCount =
-      /\b(pendaftar|mendaftar|terdaftar|kuota|sisa|jumlah)\b/i.test(query);
+    const wantsPpdbCount = asksPpdbApplicantCount(currentQuestion, knowledgeQuery);
     if (wantsPpdbCount) {
       const live = await getPpdbLiveContext();
-      if (live) {
-        knowledge = `${knowledge}\n\n${live}`;
-        liveAppended = true;
-      }
+      knowledge = knowledge + "\n\n" + live;
+      // Zero/error results also bypass cache; counts are time-sensitive.
+      liveAppended = true;
     }
   } catch {
     knowledge = "";
@@ -338,7 +312,7 @@ export async function POST(request: Request) {
   // Ganti namespace cache PPDB agar jawaban lama yang terlalu singkat/
   // belum memakai konteks lengkap tidak terpakai selama TTL 24 jam.
   const cacheKey = isSingleTurn && !ppdbOverviewRequested
-    ? `${isPpdbCacheEntry ? "ppdb-v2:" : ""}${normalizeQuestion(normalizePpdbTerm(lastQuestion))}`
+    ? "school-ai-v3:" + (isPpdbCacheEntry ? "ppdb:" : "general:") + normalizeQuestion(normalizePpdbTerm(lastQuestion))
     : "";
   const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 
@@ -384,14 +358,14 @@ export async function POST(request: Request) {
               reply += chunk;
               send({ t: "token", v: chunk });
             },
-            { maxOutputTokens: ppdbOverviewRequested ? 1800 : 800 }
+            { maxOutputTokens: ppdbOverviewRequested ? 2400 : 800 }
           );
           if (!reply.trim()) {
             throw new Error("Gemini mengembalikan respons kosong.");
           }
           // Pertanyaan tunggal tanpa angka live → simpan untuk kunjungan berikutnya.
           if (cacheKey) {
-            void setCachedAnswer(cacheKey, reply, sourceFiles);
+            void setCachedAnswer(cacheKey, reply, sourceFiles, isPpdbCacheEntry ? 60 * 60_000 : undefined);
           }
         }
 

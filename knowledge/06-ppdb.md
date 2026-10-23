@@ -16,6 +16,9 @@ source:
 
 ## Fakta resmi
 
+- **Tanggal pemeriksaan knowledge: 23 Oktober 2026.** Data gelombang di bawah ini adalah untuk tahun pelajaran **2026/2027, Gelombang 1**.
+- **Siklus 2027/2028 belum terverifikasi.** Sumber yang tersedia belum memberikan kalender pembukaan/penutupan, ketentuan biaya, atau status gelombang resmi untuk tahun pelajaran 2027/2028. Jangan menyajikan data 2026/2027 sebagai kepastian untuk siklus berikutnya; arahkan calon siswa untuk konfirmasi ke sekretariat.
+
 - Tahun ajaran: **2026/2027**, fase: **Gelombang 1**.
 - Kuota: **3 kelas per jurusan** (klaim situs). Pendaftar gelombang pertama berkesempatan **beasiswa + gratis biaya pendaftaran**.
 - Beasiswa terdata: **SPP 1 tahun untuk 20 pendaftar gelombang pertama** berprestasi akademik/non-akademik (lihat `08-berita.md`). Jangan janjikan nominal lain.

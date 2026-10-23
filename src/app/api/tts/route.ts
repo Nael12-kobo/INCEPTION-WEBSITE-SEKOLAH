@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FishAudioClient, RealtimeEvents } from "fish-audio";
 import { normalizeForSpeech } from "@/lib/tts-normalizer";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitAsync } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   // S1: endpoint publik (guest dipakai oleh chat) TANPA auth → rate limit
   // per IP wajib ada, pola yang sama dengan /api/chat (20/menit), supaya
   // script anonim tidak menghabiskan kuota Fish Audio berbayar.
-  const rl = rateLimit(`tts:${clientIp(request)}`, {
+  const rl = await rateLimitAsync(`tts:${clientIp(request)}`, {
     limit: 20,
     windowMs: 60_000,
   });

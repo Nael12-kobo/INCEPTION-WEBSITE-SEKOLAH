@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimitAsync } from "@/lib/rate-limit";
 
 /**
  * POST /api/chat/feedback
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   // Tameng spam: 10 feedback / menit / IP — cukup longgar untuk user
   // wajar, memblokir script yang menembak tabel berkali-kali.
   const ip = clientIp(request);
-  const rl = rateLimit(`feedback:${ip}`, { limit: 10, windowMs: 60_000 });
+  const rl = await rateLimitAsync(`feedback:${ip}`, { limit: 10, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { message: "Terlalu banyak feedback. Tunggu sebentar ya." },
