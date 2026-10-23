@@ -1,5 +1,7 @@
 "use client";
 
+import { getSpeechText } from "@/lib/chat-speech";
+
 import {
   createContext,
   useCallback,
@@ -58,46 +60,9 @@ function unlockSpeech(): void {
   window.dispatchEvent(new Event("nara:unlock-audio"));
 }
 
-/**
- * Balasan di layar boleh panjang dan terperinci; audio harus tetap singkat.
- * Khusus jawaban PPDB yang panjang, TTS cukup memberi pengantar dan memberi
- * tahu pengguna bahwa rincian lengkap tersedia dalam teks chat.
- */
-function getSpeechText(text: string, sources: string[] = []): string {
-  const fullText = text.trim();
-  if (!fullText) return "";
-
-  const isPpdb =
-    sources.includes("06-ppdb.md") ||
-    /\b(?:PPDB|SPMB)\b/i.test(fullText);
-  if (isPpdb && fullText.length > 220) {
-    return "Berikut ringkasan informasi PPDB. Detail biaya, persyaratan, dan alur pendaftaran bisa kamu baca pada jawaban di layar.";
-  }
-
-  // Jawaban pendek tetap dibacakan utuh.
-  if (fullText.length <= 260) return fullText;
-
-  // Untuk jawaban panjang lain, bacakan kalimat pertama saja lalu arahkan
-  // pengguna ke teks lengkap yang tetap tampil di bubble chat.
-  const plainText = fullText
-    .replace(/^\s*[-*•]+\s*/gm, "")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\x60([^\x60]+)\x60/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
-  const firstSentence = plainText.match(/^.{1,200}?[.!?](?=\s|$)/)?.[0]?.trim();
-  if (firstSentence && firstSentence.length <= 200) {
-    return `${firstSentence} Detail lengkapnya bisa kamu baca pada jawaban di layar.`;
-  }
-  const shortLead = plainText.slice(0, 150).replace(/\s+\S*$/, "").trim();
-  return shortLead
-    ? `${shortLead}. Detail lengkapnya bisa kamu baca pada jawaban di layar.`
-    : "Detail lengkapnya bisa kamu baca pada jawaban di layar.";
-}
-
-async function speakReply(text: string, sources: string[] = []): Promise<void> {
+async function speakReply(text: string): Promise<void> {
   if (typeof window === "undefined" || !text.trim()) return;
-  const speechText = getSpeechText(text, sources);
+  const speechText = getSpeechText(text);
   if (!speechText) return;
 
   try {
@@ -319,7 +284,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             },
           ]);
           // Suara dimatikan → lewati TTS sepenuhnya (tanpa fetch /api/tts).
-          if (voiceRef.current) void speakReply(reply, sources);
+          if (voiceRef.current) void speakReply(reply);
           if (typeof data.conversationId === "string") {
             setConversationId(data.conversationId);
           }
@@ -478,7 +443,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             },
           ]);
         }
-        if (voiceRef.current) void speakReply(reply, sources);
+        if (voiceRef.current) void speakReply(reply);
         if (typeof donePayload.conversationId === "string") {
           setConversationId(donePayload.conversationId);
         }
