@@ -256,9 +256,26 @@ export async function POST(request: Request) {
       .filter((m) => m.role === "user")
       .map((m) => m.content);
     const query = userTurns.slice(-2).join(" ");
-    const picked = getKnowledgeContext(
-      query || messages[messages.length - 1]?.content || ""
-    );
+    const knowledgeQuery = query || messages[messages.length - 1]?.content || "";
+    const isPpdbQuestion =
+      /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar|daftar ulang|biaya pendaftaran|berkas pendaftaran)\b/i.test(
+        knowledgeQuery
+      );
+    const isBroadPpdbQuestion =
+      isPpdbQuestion &&
+      /\b(info|informasi|lengkap|semua|jelaskan|alur|persyaratan|syarat|prosedur|apa saja)\b/i.test(
+        knowledgeQuery
+      );
+    const picked = getKnowledgeContext(knowledgeQuery, {
+      maxFiles: isBroadPpdbQuestion ? 1 : 3,
+      maxCharsPerFile: 3500,
+      maxTotalChars: 9000,
+      includeFiles: isBroadPpdbQuestion
+        ? ["06-ppdb.md", "08-berita.md", "07-kontak.md"]
+        : isPpdbQuestion
+          ? ["06-ppdb.md"]
+          : [],
+    });
     sourceFiles = picked.files;
     knowledge = picked.context;
     knowledgeMatched = picked.matched;
@@ -291,8 +308,15 @@ export async function POST(request: Request) {
   // tidak boleh dipakai ulang lintas user.
   const isSingleTurn =
     messages.filter((m) => m.role === "user").length === 1 && !liveAppended;
+  const lastQuestion = messages[messages.length - 1]?.content ?? "";
+  const isPpdbCacheEntry =
+    /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar|daftar ulang|biaya pendaftaran)\b/i.test(
+      lastQuestion
+    );
+  // Ganti namespace cache PPDB agar jawaban lama yang terlalu singkat/
+  // belum memakai konteks lengkap tidak terpakai selama TTL 24 jam.
   const cacheKey = isSingleTurn
-    ? normalizeQuestion(messages[messages.length - 1].content)
+    ? `${isPpdbCacheEntry ? "ppdb-v2:" : ""}${normalizeQuestion(lastQuestion)}`
     : "";
   const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 

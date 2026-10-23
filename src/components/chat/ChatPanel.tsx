@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  ArrowRight,
   Bot,
   Phone,
   Send,
@@ -215,6 +216,25 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                     message.text
                   )}
                 </div>
+                {message.role === "assistant" &&
+                  message.id !== "greeting" &&
+                  message.sources?.includes("06-ppdb.md") && (
+                    <div className="mt-2 rounded-xl border border-blue-100 bg-blue-50/70 p-3 dark:border-blue-900/60 dark:bg-blue-950/30">
+                      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        Formulir, informasi PPDB, dan tombol WhatsApp panitia tersedia di halaman PPDB.
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="mt-2 bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        <Link href="/ppdb">
+                          Buka halaman PPDB
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 {message.role === "assistant" && !!message.sources?.length && (
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                     <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">

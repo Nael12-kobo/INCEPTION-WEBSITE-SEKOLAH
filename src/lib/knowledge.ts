@@ -166,10 +166,23 @@ export function pickRelevantTopics(
  */
 export function getKnowledgeContext(
   text: string,
-  opts: { maxFiles?: number; maxCharsPerFile?: number; maxTotalChars?: number } = {}
+  opts: {
+    maxFiles?: number;
+    maxCharsPerFile?: number;
+    maxTotalChars?: number;
+    includeFiles?: string[];
+  } = {}
 ): { files: string[]; context: string; matched: boolean } {
-  const { maxFiles = 3, maxCharsPerFile = 2000, maxTotalChars = 6000 } = opts;
-  const { files, matched } = pickRelevantTopics(text, maxFiles);
+  const {
+    maxFiles = 3,
+    maxCharsPerFile = 3500,
+    maxTotalChars = 9000,
+    includeFiles = [],
+  } = opts;
+  const picked = pickRelevantTopics(text, maxFiles);
+  // Dokumen wajib (mis. panduan PPDB lengkap) ditempatkan lebih dulu,
+  // lalu dilengkapi dengan hasil pencocokan keyword.
+  const files = Array.from(new Set([...includeFiles, ...picked.files]));
   const parts: string[] = [];
   let total = 0;
 
@@ -187,5 +200,5 @@ export function getKnowledgeContext(
 
   // Fallback: direktori knowledge hilang → kembalikan string kosong,
   // pemanggil tetap lanjut dengan SYSTEM_PROMPT lama.
-  return { files, context: parts.join("\n\n"), matched };
+  return { files, context: parts.join("\n\n"), matched: picked.matched };
 }
