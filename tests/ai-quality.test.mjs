@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, normalizePpdbTerm } from "../src/lib/ai-query.ts";
+import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, isQuickSuggestionQuestion, normalizePpdbTerm } from "../src/lib/ai-query.ts";
 import { expandKnowledgeQuery, getKnowledgeContext, normalizeKnowledgeQuery, pickRelevantTopics } from "../src/lib/knowledge.ts";
 import { getSpeechText } from "../src/lib/chat-speech.ts";
 test("normalizes the common PPBD typo", () => {
@@ -53,4 +53,12 @@ test("long PPDB fee answer uses its own lead", () => {
 });
 test("short TTS answers are preserved while markdown is cleaned", () => {
   assert.equal(getSpeechText("Biaya **SPP** sebesar Rp250.000."), "Biaya SPP sebesar Rp250.000.");
+});
+
+test("starter shortcut questions bypass instant cached answers", () => {
+  assert.equal(isQuickSuggestionQuestion("Apa saja jurusan yang ada?"), true);
+  assert.equal(isQuickSuggestionQuestion("Berapa biaya PPDB?"), true);
+  assert.equal(isQuickSuggestionQuestion("Apa saja syarat pendaftaran?"), true);
+  assert.equal(isQuickSuggestionQuestion("Bagaimana cara mendaftar?"), true);
+  assert.equal(isQuickSuggestionQuestion("Berapa biaya PPDB dan SPP?"), false);
 });

@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 export interface GeminiContent {
   role: "user" | "model";
@@ -16,6 +16,7 @@ Jangan mengarang nomor pendaftaran, biaya, atau tanggal penting — arahkan ke h
 
 ATURAN PANJANG DAN KELENGKAPAN JAWABAN (wajib):
 - Gunakan Bahasa Indonesia yang sopan, hangat, tenang, dan terdengar seperti petugas informasi sekolah yang profesional—bukan jawaban robotik atau spontan.
+- Sebelum menjawab, periksa konteks resmi yang relevan, cocokkan nama, tahun, dan angka, lalu susun jawaban yang paling membantu. Untuk pertanyaan yang memerlukan beberapa fakta, prioritaskan ketepatan dan kelengkapan daripada kecepatan; jika informasi belum cukup, nyatakan apa yang belum diketahui tanpa menebak. Jangan tampilkan proses penalaran internal—berikan kesimpulan yang jelas dan alasan seperlunya.
 - WAJIB memulai setiap jawaban dengan kalimat lengkap yang sopan dan langsung menjawab pertanyaan. Jangan pernah menjadikan butir daftar, angka, fragmen kalimat, atau salinan mentah dari knowledge sebagai kalimat pertama. Jika user bertanya tentang biaya, awali misalnya "Untuk biaya pendidikan yang tercatat, rinciannya sebagai berikut." Jika bertanya pemeriksaan kesehatan, awali misalnya "Ada, ya. Dalam proses pendaftaran PPDB, calon siswa akan menjalani pemeriksaan kesehatan yang meliputi beberapa hal berikut." Setelah kalimat pengantar, barulah gunakan daftar jika memang membuat jawaban lebih jelas.
 - Jika perlu daftar, jelaskan dahulu apa yang akan dirinci, lalu tampilkan butir-butir dengan urutan jelas. Setelah daftar, tambahkan kalimat penutup yang relevan bila membantu, seperti mengarahkan pengguna mengonfirmasi jadwal atau ketentuan ke panitia. Jangan menambah ajakan yang tidak relevan.
 - Hindari gaya terlalu akrab, slang, tanda seru berlebihan, kalimat terpotong, atau jawaban yang terasa seperti menyalin mentah knowledge. Hindari juga basa-basi panjang dan penutup generik ("semoga membantu", "ada yang bisa saya bantu lagi?").
@@ -95,13 +96,15 @@ function resolveModels(): {
   };
 }
 
-function geminiConfig(maxOutputTokens = 800) {
+function geminiConfig(maxOutputTokens = 1600) {
   return {
     temperature: 0.7,
-    // Pertanyaan umum PPDB memakai anggaran token lebih besar agar jawaban
-    // komprehensif tidak terpotong menjadi ringkasan pendek.
+    // Flash-Lite defaults to minimal reasoning. Use high so Nana verifies
+    // context and facts before responding; this is real model reasoning, not a fake delay.
+    thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH },
+    // Thinking also consumes the output budget, so leave room for a full answer.
     maxOutputTokens,
-    httpOptions: { timeout: 60_000 },
+    httpOptions: { timeout: 90_000 },
   };
 }
 

@@ -1,5 +1,23 @@
 const PPDB_TERMS = /\b(ppdb|spmb|pendaftaran|pendaftar|mendaftar|daftar ulang)\b/i;
 const PPDB_RELATED_TERMS = /\b(biaya\w*|harga\w*|tarif\w*|bayar\w*|pembayaran|spp|beasiswa|asrama|zonasi|gelombang|formulir|berkas|dokumen|rapor|rapot|akta|akte|kk|pas foto|wawancara|tes|kuota|jurusan|syarat\w*|persyaratan|daftar ulang|registrasi|nomor pendaftaran|bina lingkungan)\b/i;
+
+const QUICK_SUGGESTION_QUESTIONS = new Set([
+  "apa saja jurusan yang ada",
+  "berapa biaya ppdb",
+  "apa saja syarat pendaftaran",
+  "bagaimana cara mendaftar",
+]);
+
+/** Starter prompts must use live model reasoning, not instantly return an old cached reply. */
+export function isQuickSuggestionQuestion(text: string): boolean {
+  const normalized = text
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[?.!,;:]+\s*$/g, "")
+    .trim();
+  return QUICK_SUGGESTION_QUESTIONS.has(normalized);
+}
+
 export function normalizePpdbTerm(text: string): string {
   return text.replace(/\bppbd\b/gi, "ppdb");
 }
