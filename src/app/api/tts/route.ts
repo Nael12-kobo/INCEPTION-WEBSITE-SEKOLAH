@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         top_p: 0.7,
         prosody: {
           // Slightly slower, more comfortable pace for a school assistant.
-          speed: 0.88,
+          speed: 0.8,
           volume: 1,
         },
       },
