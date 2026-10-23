@@ -67,13 +67,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const isExcited =
-    text.includes("!") ||
-    /\b(wah|mantap|keren|bagus|selamat|senang|yuk|ayo|tertarik)\b/i.test(text);
-  const direction = isExcited
-    ? "[excited, energetic, upbeat, playful, friendly Indonesian, smiling while speaking, lively intonation, natural conversational pauses]"
-    : "[warm, cheerful, relaxed, friendly Indonesian, natural conversational speech, varied intonation and natural pauses]";
-  const speechText = `${direction} ${text}`;
+  // Gunakan satu arahan suara yang stabil agar jawaban tidak terdengar
+  // terlalu bersemangat atau berubah-ubah hanya karena tanda seru/kata tertentu.
+  const speechText = `[pitch up] [enthusiastic, bright, warm, friendly, smiling while speaking, lively but natural Indonesian intonation, relaxed speaking pace, gentle natural pauses] ${text}`;
   const fish = new FishAudioClient({ apiKey });
   const textStream = (async function* () {
     yield speechText.slice(0, 5000);
@@ -84,16 +80,17 @@ export async function POST(request: Request) {
       {
         text: "",
         reference_id: referenceId,
-        chunk_length: 100,
+        chunk_length: 200,
         normalize: false,
         format: "mp3",
         sample_rate: 44100,
-        latency: "balanced",
-        temperature: isExcited ? 0.78 : 0.72,
-        top_p: isExcited ? 0.92 : 0.9,
+        latency: "normal",
+        temperature: 0.7,
+        top_p: 0.7,
         prosody: {
-          speed: isExcited ? 1.06 : 1.03,
-          volume: isExcited ? 1.05 : 1.03,
+          // Slightly slower, more comfortable pace for a school assistant.
+          speed: 0.8,
+          volume: 1,
         },
       },
       textStream,

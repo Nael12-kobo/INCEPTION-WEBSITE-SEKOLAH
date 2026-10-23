@@ -4,6 +4,7 @@ const cases = [
   { name: "PPDB fee details", question: "Berapa biaya PPDB?", checks: [["PP amount", /3\.500\.000/], ["SPP amount", /250\.000/], ["promo conflict", /konfirmasi|tidak konsisten|belum pasti|daftar persyaratan/i]], source: "06-ppdb.md" },
   { name: "PPDB document requirements", question: "Syarat berkas PPDB apa saja?", checks: [["rapor", /rapor/i], ["birth certificate", /akta/i], ["family card", /kartu keluarga|KK\b/i], ["3x4 photos", /pas foto|3\s*[×x]\s*4/i]], source: "06-ppdb.md" },
   { name: "all four majors", question: "Apa saja jurusan yang tersedia?", checks: [["PPLG", /\bPPLG\b/i], ["TJKT", /\bTJKT\b/i], ["DKV", /\bDKV\b/i], ["TKRO", /\bTKRO\b/i]], source: "02-jurusan.md" },
+  { name: "polite health-check answer", question: "apakah nanti saat mendaftar ada cek kesehatan ?", checks: [["polite opening", /^(Ada, ya|Ya,|Dalam proses pendaftaran|Pada proses PPDB)/i], ["not abrupt bullet", /^(?!\\s*-)/], ["color vision", /buta warna/i], ["hearing", /pendengaran/i], ["polite next step", /konfirmasi|panitia|sekolah/i]], source: "06-ppdb.md" },
 ];
 function parseSse(text) {
   let reply = "", sources = [], error = "";

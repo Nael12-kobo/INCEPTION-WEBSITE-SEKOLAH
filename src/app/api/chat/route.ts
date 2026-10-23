@@ -10,7 +10,7 @@ import {
   setCachedAnswer,
 } from "@/lib/chat-cache";
 import { clientIp, rateLimitAsync } from "@/lib/rate-limit";
-import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, normalizePpdbTerm } from "@/lib/ai-query";
+import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, isQuickSuggestionQuestion, normalizePpdbTerm } from "@/lib/ai-query";
 
 interface IncomingMessage {
   role: "user" | "assistant";
@@ -311,8 +311,8 @@ export async function POST(request: Request) {
     );
   // Ganti namespace cache PPDB agar jawaban lama yang terlalu singkat/
   // belum memakai konteks lengkap tidak terpakai selama TTL 24 jam.
-  const cacheKey = isSingleTurn && !ppdbOverviewRequested
-    ? "school-ai-v3:" + (isPpdbCacheEntry ? "ppdb:" : "general:") + normalizeQuestion(normalizePpdbTerm(lastQuestion))
+  const cacheKey = isSingleTurn && !ppdbOverviewRequested && !isQuickSuggestionQuestion(lastQuestion)
+    ? "school-ai-v5:" + (isPpdbCacheEntry ? "ppdb:" : "general:") + normalizeQuestion(normalizePpdbTerm(lastQuestion))
     : "";
   const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 
@@ -358,7 +358,7 @@ export async function POST(request: Request) {
               reply += chunk;
               send({ t: "token", v: chunk });
             },
-            { maxOutputTokens: ppdbOverviewRequested ? 2400 : 800 }
+            { maxOutputTokens: ppdbOverviewRequested ? 3200 : 1600 }
           );
           if (!reply.trim()) {
             throw new Error("Gemini mengembalikan respons kosong.");

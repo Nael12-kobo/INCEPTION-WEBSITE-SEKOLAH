@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, normalizePpdbTerm } from "../src/lib/ai-query.ts";
+import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, isQuickSuggestionQuestion, normalizePpdbTerm } from "../src/lib/ai-query.ts";
 import { expandKnowledgeQuery, getKnowledgeContext, normalizeKnowledgeQuery, pickRelevantTopics } from "../src/lib/knowledge.ts";
+import { getSpeechText } from "../src/lib/chat-speech.ts";
 test("normalizes the common PPBD typo", () => {
   assert.equal(normalizePpdbTerm("Info PPBD 2027 dong"), "Info ppdb 2027 dong");
   assert.equal(normalizeKnowledgeQuery(" Di MANA sekolahnya? "), "di mana sekolahnya");
@@ -34,4 +35,30 @@ test("source list only includes documents actually placed in context", () => {
   assert.ok(result.files.includes("06-ppdb.md"));
   assert.ok(result.files.every((file) => result.context.includes("Sumber: knowledge/" + file)));
   assert.deepEqual(new Set(result.files), new Set(["06-ppdb.md", "08-berita.md", "07-kontak.md"]));
+});
+
+test("long PPDB health answer reads the relevant question, not generic PPDB intro", () => {
+  const reply = "Ada, ya. Dalam proses pendaftaran PPDB di SMK Telekomunikasi Tunas Harapan, calon siswa akan menjalani pemeriksaan kesehatan yang meliputi beberapa hal berikut:\n\n- Tes buta warna\n- Tes pendengaran\n- Pemeriksaan tato, tindik, dan kondisi fisik\n- Pemeriksaan kondisi kesehatan tertentu\n- Pengukuran tinggi dan berat badan";
+  const spoken = getSpeechText(reply);
+  assert.match(spoken, /pemeriksaan kesehatan/i);
+  assert.match(spoken, /Tes buta warna|calon siswa/i);
+  assert.doesNotMatch(spoken, /Detail biaya, persyaratan, dan alur pendaftaran/);
+  assert.ok(spoken.length < 280);
+});
+test("long PPDB fee answer uses its own lead", () => {
+  const reply = "Untuk biaya pendidikan yang tercatat dalam Penerimaan Peserta Didik Baru, rincian dan ketentuannya adalah sebagai berikut.\n\n- PP Rp3.500.000, dapat diangsur\n- SPP Rp250.000 per bulan\n\nSilakan konfirmasi ketentuan promo kepada panitia.";
+  const spoken = getSpeechText(reply);
+  assert.match(spoken, /biaya pendidikan/i);
+  assert.doesNotMatch(spoken, /ringkasan informasi PPDB/i);
+});
+test("short TTS answers are preserved while markdown is cleaned", () => {
+  assert.equal(getSpeechText("Biaya **SPP** sebesar Rp250.000."), "Biaya SPP sebesar Rp250.000.");
+});
+
+test("starter shortcut questions bypass instant cached answers", () => {
+  assert.equal(isQuickSuggestionQuestion("Apa saja jurusan yang ada?"), true);
+  assert.equal(isQuickSuggestionQuestion("Berapa biaya PPDB?"), true);
+  assert.equal(isQuickSuggestionQuestion("Apa saja syarat pendaftaran?"), true);
+  assert.equal(isQuickSuggestionQuestion("Bagaimana cara mendaftar?"), true);
+  assert.equal(isQuickSuggestionQuestion("Berapa biaya PPDB dan SPP?"), false);
 });
