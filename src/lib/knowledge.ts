@@ -25,7 +25,9 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     keywords: [
       "ppdb", "spmb", "pendaftaran", "pendaftar", "daftar", "gelombang", "syarat",
       "berkas", "rapor", "akta", "kartu keluarga", "pas foto", "formulir", "nomor pendaftaran", "daftar ulang",
-      "tes", "wawancara", "biaya", "beasiswa", "kuota", "login",
+      "tes", "wawancara", "biaya", "biaya pendidikan", "spp", "pp", "beasiswa",
+      "bina lingkungan", "asrama", "bebas zonasi", "early registration", "seragam",
+      "mpls", "sepatu", "kuota", "login",
     ],
   },
   {
@@ -158,6 +160,26 @@ export function pickRelevantTopics(
     return { files: ["01-profil-sekolah.md", "07-kontak.md"], matched: false };
   }
   return { files: scored, matched: true };
+}
+
+/**
+ * Ambil jawaban lengkap PPDB yang ditulis dan dirawat di Markdown knowledge.
+ * Bagian ringkasan punya format siap-tampil dan dipakai hanya untuk pertanyaan
+ * luas; pertanyaan PPDB spesifik tetap dijawab Gemini dengan konteks knowledge.
+ */
+export function getPpdbOverviewReply(): string {
+  const definition = TOPIC_KEYWORDS.find((item) => item.file === "06-ppdb.md");
+  if (!definition) return "";
+  const entry = loadEntry(definition);
+  if (!entry) return "";
+
+  const marker = "## Ringkasan lengkap untuk chatbot\n";
+  const start = entry.content.indexOf(marker);
+  if (start < 0) return "";
+
+  const body = entry.content.slice(start + marker.length);
+  const nextHeading = body.search(/^## /m);
+  return (nextHeading >= 0 ? body.slice(0, nextHeading) : body).trim();
 }
 
 /**
