@@ -52,8 +52,8 @@ interface HistoryItem {
  *   Offset framing responsif via prop (dibaca VrmViewer lewat ref, tanpa reload).
  * - Desktop (lg+): VRM berada di kolom kiri dengan lebar responsif sekitar
  *   30vw (dibatasi 26rem–34rem); panel chat memakai seluruh sisa lebar kanan.
- * - Mobile: VRM full-screen di belakang; panel chat menempel di depan bawah
- *   setinggi 30% dengan gradient transparan ke atas; tombol expand → fullscreen.
+ * - Mobile: VRM full-screen di belakang; panel chat setinggi 45% secara
+ *   default dan membesar hingga 88% saat diperluas.
  */
 export function ChatPageClient() {
   const {
@@ -191,7 +191,7 @@ export function ChatPageClient() {
             : "pointer-events-none scale-[0.98] opacity-0",
         )}
       >
-        {/* offsetY di mobile: angkat badan agar wajah di atas panel chat 30%.
+        {/* offsetY di mobile: angkat badan agar wajah berada di atas panel chat.
             Dibaca VrmViewer via ref — ganti breakpoint tanpa reload model. */}
         <VrmViewer
           speaking={isTyping && voiceEnabled}
@@ -200,63 +200,56 @@ export function ChatPageClient() {
         />
       </div>
 
-      {/* ===== DESKTOP overlay: badge + info + panel chat kanan ===== */}
-      {isDesktop && (
-        <>
-          <div className="chat-stagger absolute left-6 top-6 flex items-center gap-2">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="chat-back bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-98"
-            >
-              <Link href="/" onClick={goHome}>
-                <ArrowLeft className="chat-back-icon h-4 w-4" /> Beranda
-              </Link>
-            </Button>
-          </div>
-          <div
-            className="chat-reveal pointer-events-none absolute bottom-6 left-6 max-w-sm rounded-2xl border border-border bg-card/90 p-4 shadow-sm backdrop-blur-xl"
-            style={{ "--reveal-i": 2 } as CSSProperties}
+      {/* ===== DESKTOP: panel chat mengisi ruang di samping karakter ===== */}
+      {isDesktop && showCharacter && (
+        <div className="chat-stagger absolute left-6 top-6 z-10 flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="chat-back bg-card/70 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-0.5 active:scale-98"
           >
-            <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-              <Bot className="h-4 w-4 text-blue-600" /> Asisten Chat Sekolah
-              {/* <span className="text-blue-600"> Asisten Chat Sekolah</span> */}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Asisten sekolah berbasis AI, dapat membantu menjawab pertanyaan
-              seputar sekolah, jurusan, fasilitas, dan informasi PPDB.
-            </p>
+            <Link href="/" onClick={goHome}>
+              <ArrowLeft className="chat-back-icon h-4 w-4" /> Beranda
+            </Link>
+          </Button>
+        </div>
+      )}
+      {isDesktop && (
+        <aside
+          className={cn(
+            "chat-aside-in absolute inset-0 flex min-h-0 flex-col bg-background transition-[left] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            showCharacter
+              ? "border-l border-border shadow-[-24px_0_60px_-40px_rgb(15_23_42/0.28)] lg:left-[clamp(26rem,30vw,34rem)] lg:w-auto"
+              : "left-0 w-full border-0 shadow-none",
+          )}
+        >
+          <DesktopHeader
+            onGoHome={goHome}
+            onHistory={() => setShowHistory((v) => !v)}
+            onNew={() => {
+              clearChat();
+              setShowHistory(false);
+            }}
+            showCharacter={showCharacter}
+            onToggleCharacter={toggleCharacter}
+            voiceEnabled={voiceEnabled}
+            onToggleVoice={toggleVoice}
+          />
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ChatMessages />
           </div>
-
-          {/* Panel chat memenuhi semua ruang di kanan kolom karakter. */}
-          <aside className="chat-aside-in absolute bottom-0 left-0 right-0 top-0 flex w-full min-h-0 flex-col border-l border-border bg-background shadow-[-24px_0_60px_-40px_rgb(15_23_42/0.28)] lg:left-[clamp(26rem,30vw,34rem)] lg:w-auto">
-            <DesktopHeader
-              onHistory={() => setShowHistory((v) => !v)}
-              onNew={() => {
-                clearChat();
-                setShowHistory(false);
-              }}
-              showCharacter={showCharacter}
-              onToggleCharacter={toggleCharacter}
-              voiceEnabled={voiceEnabled}
-              onToggleVoice={toggleVoice}
-            />
-            <div className="flex min-h-0 flex-1 flex-col">
-              <ChatMessages />
-            </div>
-            <ChatInput autoFocus />
-            <HistoryDrawer
-              open={showHistory}
-              items={history}
-              loading={historyLoading}
-              activeId={conversationId}
-              onPick={openHistory}
-              onDelete={deleteHistory}
-              onClose={() => setShowHistory(false)}
-            />
-          </aside>
-        </>
+          <ChatInput autoFocus />
+          <HistoryDrawer
+            open={showHistory}
+            items={history}
+            loading={historyLoading}
+            activeId={conversationId}
+            onPick={openHistory}
+            onDelete={deleteHistory}
+            onClose={() => setShowHistory(false)}
+          />
+        </aside>
       )}
 
       {/* ===== MOBILE overlay: top bar + panel chat bawah ===== */}
@@ -339,22 +332,13 @@ export function ChatPageClient() {
             </div>
           </div>
 
-          {/* Panel chat bawah — 45% default, expand → 88%.
-            Dulu 30%: di layar 640px tingginya cuma ~192px, dan setelah
-            dikurangi handle + ChatInput tersisa ~80px untuk pesan
-            (kurang dari satu balasan). */}
+          {/* Panel chat bawah — 45% default, expand → 88%. */}
           <section
             className={cn(
               "chat-sheet absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t",
-              // Panel memakai warna latar standar situs (bg-background),
-              // bukan gelas biru transparan: teks pesan harus terbaca jelas
-              // di atas karakter 3D. Collapsed masih diberi blur tipis karena
-              // 5% area karakter tetap mengintip di belakang tepi panel;
-              // expanded dilepas (tak berguna di atas bg solid + hemat GPU).
               expanded
                 ? "border-border bg-background shadow-[0_-12px_40px_-12px_rgb(15_23_42/0.22)]"
                 : "border-border bg-background/95 shadow-[0_-12px_40px_-12px_rgb(15_23_42/0.28)] backdrop-blur-xl",
-              // home indicator iPhone: viewportFit=cover aktif, jadi beri ruang
               "pb-[env(safe-area-inset-bottom)]",
               expanded ? "h-[88%]" : "h-[45%]",
             )}
@@ -419,6 +403,7 @@ export function ChatPageClient() {
 }
 
 function DesktopHeader({
+  onGoHome,
   onHistory,
   onNew,
   showCharacter,
@@ -426,6 +411,7 @@ function DesktopHeader({
   voiceEnabled,
   onToggleVoice,
 }: {
+  onGoHome: (event: MouseEvent<HTMLAnchorElement>) => void;
   onHistory: () => void;
   onNew: () => void;
   showCharacter: boolean;
@@ -436,6 +422,18 @@ function DesktopHeader({
   return (
     <div className="chat-stagger flex items-center justify-between border-b border-border bg-card p-4">
       <div className="flex items-center gap-3">
+        {!showCharacter && (
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-9 shrink-0 gap-1.5 px-2.5 text-slate-700"
+          >
+            <Link href="/" onClick={onGoHome}>
+              <ArrowLeft className="h-4 w-4" /> Beranda
+            </Link>
+          </Button>
+        )}
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
           <Bot className="h-5 w-5" />
         </div>

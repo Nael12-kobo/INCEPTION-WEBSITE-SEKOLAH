@@ -106,6 +106,7 @@ export function VrmViewer({
   );
   const [hint, setHint] = useState("");
   const [loadingFrame, setLoadingFrame] = useState(0);
+  const [loadingFramesReady, setLoadingFramesReady] = useState(false);
 
   useEffect(() => {
     speakingRef.current = speaking;
@@ -129,6 +130,29 @@ export function VrmViewer({
   useEffect(() => {
     if (status !== "loading") return;
 
+    let cancelled = false;
+    const preloadFrames = LOADING_FRAME_PATHS.map(
+      (path) =>
+        new Promise<void>((resolve) => {
+          const image = new Image();
+          image.onload = () => resolve();
+          image.onerror = () => resolve();
+          image.src = path;
+        }),
+    );
+
+    void Promise.all(preloadFrames).then(() => {
+      if (!cancelled) setLoadingFramesReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "loading" || !loadingFramesReady) return;
+
     let animationFrame = 0;
     const startedAt = performance.now();
     const frameDuration = 1000 / LOADING_FRAME_RATE;
@@ -149,7 +173,7 @@ export function VrmViewer({
 
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [status]);
+  }, [loadingFramesReady, status]);
 
   /**
    * Versi cache model. Ganti angka ini (atau set NEXT_PUBLIC_VRM_VERSION)
