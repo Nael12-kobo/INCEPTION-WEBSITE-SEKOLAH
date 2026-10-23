@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
   // Gunakan satu arahan suara yang stabil agar jawaban tidak terdengar
   // terlalu bersemangat atau berubah-ubah hanya karena tanda seru/kata tertentu.
-  const speechText = `[warm] ${text}`;
+  const speechText = `[warm, relaxed speaking pace, clear Indonesian pronunciation, gentle natural pauses] ${text}`;
   const fish = new FishAudioClient({ apiKey });
   const textStream = (async function* () {
     yield speechText.slice(0, 5000);
@@ -88,7 +88,8 @@ export async function POST(request: Request) {
         temperature: 0.7,
         top_p: 0.7,
         prosody: {
-          speed: 1,
+          // Slightly slower, more comfortable pace for a school assistant.
+          speed: 0.88,
           volume: 1,
         },
       },
