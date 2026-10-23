@@ -312,7 +312,7 @@ export async function POST(request: Request) {
   // Ganti namespace cache PPDB agar jawaban lama yang terlalu singkat/
   // belum memakai konteks lengkap tidak terpakai selama TTL 24 jam.
   const cacheKey = isSingleTurn && !ppdbOverviewRequested
-    ? "school-ai-v3:" + (isPpdbCacheEntry ? "ppdb:" : "general:") + normalizeQuestion(normalizePpdbTerm(lastQuestion))
+    ? "school-ai-v4:" + (isPpdbCacheEntry ? "ppdb:" : "general:") + normalizeQuestion(normalizePpdbTerm(lastQuestion))
     : "";
   const cached = cacheKey ? await getCachedAnswer(cacheKey) : null;
 
