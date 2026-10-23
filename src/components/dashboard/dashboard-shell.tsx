@@ -8,7 +8,6 @@ import { signOut, useSession } from "next-auth/react";
 import {
   Award,
   BarChart3,
-  CalendarDays,
   CalendarRange,
   ClipboardCheck,
   FileUp,
@@ -17,10 +16,7 @@ import {
   LayoutDashboard,
   ListTodo,
   Lock,
-  Megaphone,
   Menu,
-  Network,
-  Newspaper,
   UserRound,
   Shield,
   ShieldCheck,
@@ -81,16 +77,6 @@ const navSections: NavSection[] = [
       { href: "/dashboard#ringkasan", label: "Ringkasan", icon: LayoutDashboard },
       // "Statistik" berisi data agregat seluruh sekolah — hanya admin.
       { href: "/dashboard#statistik", label: "Statistik", icon: BarChart3, adminOnly: true },
-    ],
-  },
-  {
-    title: "Akademik",
-    items: [
-      { href: "/academic", label: "Portal Akademik", icon: GraduationCap },
-      { href: "/dashboard#agenda", label: "Agenda", icon: CalendarDays },
-      { href: "/dashboard#jurusan", label: "Jurusan", icon: Network },
-      { href: "/dashboard#berita", label: "Berita", icon: Newspaper },
-      { href: "/ppdb", label: "PPDB", icon: Megaphone },
     ],
   },
   {
