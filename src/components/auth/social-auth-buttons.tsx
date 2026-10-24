@@ -73,7 +73,10 @@ export function SocialAuthButtons({ className }: { className?: string }) {
     try {
       // OAuth: mengarahkan browser ke provider; bila redirect gagal (mis. provider
       // belum dikonfigurasi), NextAuth melempar error yang kita tampilkan inline.
-      await signIn(provider, { redirectTo: "/dashboard" });
+      // Sesudah callback Google, mendarat di `/auth/continue` — rute server yang
+      // mengarahkan per peran (admin → /admin/overview, siswa → /dashboard),
+      // sama persis dengan alur email/sandi di login-form.tsx.
+      await signIn(provider, { redirectTo: "/auth/continue" });
     } catch {
       setError(t("error.generic"));
       setPending(null);

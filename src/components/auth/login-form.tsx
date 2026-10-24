@@ -108,6 +108,11 @@ export function LoginForm() {
        * Dulu selalu dilempar ke /dashboard sehingga user yang mencoba
        * buka /admin berakhir di dashboard.
        *
+       * Tanpa callbackUrl, tujuannya `/auth/continue` — rute server yang
+       * memilih halaman berdasar peran: ADMIN/SUPER_ADMIN → /admin/overview,
+       * USER → /dashboard (keputusannya cuma ada di satu tempat, dipakai
+       * juga oleh tombol Google).
+       *
        * Hanya path relatif yang diterima supaya tidak jadi open redirect:
        * tolak `//domain` dan `/\domain` (browser memperlakukan `\` = `/`).
        */
@@ -116,7 +121,7 @@ export function LoginForm() {
         cb && cb.startsWith("/") && !cb.startsWith("//") && !cb.includes("\\")
           ? cb
           : null;
-      router.push(safeCallback ?? "/dashboard");
+      router.push(safeCallback ?? "/auth/continue");
       router.refresh();
     } catch {
       setFormError(t("error.generic"));

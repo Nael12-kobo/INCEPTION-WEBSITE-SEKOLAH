@@ -393,6 +393,21 @@ export function isSuperAdmin(userRole: string | null | undefined): boolean {
   return userRole === UserRole.SUPER_ADMIN;
 }
 
+/** Tujuan sesudah login: admin langsung ke Admin Panel, siswa ke dashboard. */
+export const ADMIN_HOME_PATH = "/admin/overview";
+export const USER_HOME_PATH = "/dashboard";
+
+/**
+ * Halaman mendarat setelah berhasil login (email/sandi maupun Google).
+ * Admin/SUPER_ADMIN diarahkan langsung ke Admin Panel supaya tidak perlu
+ * buka menu Admin Panel satu kali lagi; USER tetap ke dashboard portal.
+ *
+ * Dipakai oleh rute `/auth/continue` (server) — lihat src/app/auth/continue.
+ */
+export function landingPathForRole(userRole: string | null | undefined): string {
+  return isAdmin(userRole) ? ADMIN_HOME_PATH : USER_HOME_PATH;
+}
+
 export function hasPermission(
   userRole: string | null | undefined,
   permission: Permission
