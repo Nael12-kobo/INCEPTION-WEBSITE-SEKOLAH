@@ -286,7 +286,6 @@ export function ProfileShell({
                   image: user.image,
                   initials,
                   role: user.role,
-                  statusLabel: { text: user.role, tone: "neutral" as const },
                 }}
                 items={userDropdownItems}
                 onLogout={handleLogout}

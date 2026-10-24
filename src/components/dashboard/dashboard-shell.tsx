@@ -617,7 +617,6 @@ export function DashboardShell({
                           image: user.image,
                           initials: user.initials,
                           role: user.role,
-                          statusLabel: { text: formatRoleLabel(user.role), tone: "neutral" as const },
                         }}
                         items={userDropdownItems}
                         onLogout={handleLogout}
@@ -690,7 +689,6 @@ export function DashboardShell({
                   image: user.image,
                   initials: user.initials,
                   role: user.role,
-                  statusLabel: { text: formatRoleLabel(user.role), tone: "neutral" as const },
                 }}
                 items={userDropdownItems}
                 onLogout={handleLogout}
