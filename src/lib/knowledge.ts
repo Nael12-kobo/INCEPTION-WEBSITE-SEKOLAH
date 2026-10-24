@@ -36,7 +36,7 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     keywords: [
       "kontak", "alamat", "telepon", "telp", "whatsapp", "wa", "email",
       "lokasi", "maps", "sekretariat", "panitia", "hubungi", "nomor wa",
-      "umbul", "tengaran", "semarang",
+      "instagram", "umbul", "tengaran", "semarang",
     ],
   },
   {

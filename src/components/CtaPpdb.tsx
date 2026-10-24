@@ -5,6 +5,7 @@ import { ArrowRight, ClipboardList, FileCheck2, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
+import { SUPPORT_IG_URL } from "@/lib/support";
 
 const steps = [
   {
@@ -79,7 +80,9 @@ export function CtaPpdb() {
                   asChild
                   className="border-white/50 bg-card/15 text-white backdrop-blur hover:bg-card/25 hover:text-white"
                 >
-                  <Link href="#profil">Hubungi Panitia</Link>
+                  <a href={SUPPORT_IG_URL} target="_blank" rel="noopener noreferrer">
+                    Hubungi Panitia
+                  </a>
                 </Button>
               </span>
             </div>

@@ -10,6 +10,7 @@ import {
   setCachedAnswer,
 } from "@/lib/chat-cache";
 import { clientIp, rateLimitAsync } from "@/lib/rate-limit";
+import { supportMarkdownLink } from "@/lib/support";
 import { asksPpdbApplicantCount, isPpdbOverviewRequest, isPpdbQuestion, isQuickSuggestionQuestion, normalizePpdbTerm } from "@/lib/ai-query";
 
 interface IncomingMessage {
@@ -160,11 +161,14 @@ async function persistConversation(
   }
 }
 
-/** Pesan ramah untuk kegagalan Gemini (dikirim sebagai event error SSE). */
+/** Pesan ramah untuk kegagalan Gemini (dikirim sebagai event error SSE).
+ *  Semua kendala diarahkan ke kanal bantuan resmi (Instagram @smk_tth;
+ *  WhatsApp panitia belum aktif — lihat src/lib/support.ts). */
 function geminiFailureMessage(error: unknown): string {
+  const contact = supportMarkdownLink();
   return error instanceof Error && error.message.includes("GEMINI_API_KEY")
-    ? "Layanan AI belum dikonfigurasi (GEMINI_API_KEY kosong). Hubungi admin."
-    : "Maaf, asisten AI sedang sibuk. Coba lagi sebentar ya.";
+    ? `Layanan AI belum dikonfigurasi (GEMINI_API_KEY kosong). Hubungi ${contact}.`
+    : `Maaf, asisten AI sedang sibuk. Coba lagi sebentar ya. Bila berlanjut, hubungi ${contact}.`;
 }
 
 /**

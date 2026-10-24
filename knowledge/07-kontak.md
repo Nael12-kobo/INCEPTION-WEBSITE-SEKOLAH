@@ -1,10 +1,11 @@
 ---
 topic: kontak
-keywords: kontak, alamat, telepon, telp, hp, whatsapp, wa, email, lokasi, maps, sekretariat, panitia, hubungi
-updated: 2026-10-06
+keywords: kontak, alamat, telepon, telp, hp, whatsapp, wa, email, lokasi, maps, sekretariat, panitia, hubungi, instagram
+updated: 2026-10-24
 source:
   - src/app/ppdb/page.tsx
   - src/lib/ppdb.ts
+  - src/lib/support.ts
   - src/components/Footer.tsx
 ---
 
@@ -14,9 +15,14 @@ source:
 
 - Alamat: **Jl. Umbul Senjoyo I No. 3, Desa Bener, Kec. Tengaran, Kabupaten Semarang, Jawa Tengah**.
 - Telepon: **(0298) 313040** (`tel:+62298313040`).
-- WhatsApp admin PPDB: via tombol **"Chat WhatsApp PPDB" / "Tanya PPDB"** di halaman `/ppdb` (nomor dari env `PPDB_WA_NUMBER`, jangan karang nomornya — arahkan user klik tombol di situs).
 - Email: **info@smktunasharapan.sch.id**.
-- Halaman terkait: `/ppdb` (formulir + tombol WA), footer situs (info umum).
+- Halaman terkait: `/ppdb` (formulir), footer situs (info umum).
+- Instagram (kanal bantuan resmi): [https://www.instagram.com/smk_tth/](https://www.instagram.com/smk_tth/)
+
+## Kanal bantuan saat ini
+
+- **WhatsApp panitia belum aktif** — jangan arahkan user menghubungi nomor WA.
+- Untuk pertanyaan/kendala yang butuh jawaban manusia, arahkan ke **Instagram resmi `@smk_tth`**: tombolnya ada di header halaman `/ppdb` ("Tanya PPDB"), kartu "Butuh bantuan?" di `/ppdb`, link "Hubungi Petugas" di chat, dan ikon sosial di footer.
 
 ## Deprecated (jangan dipakai sebagai jawaban utama)
 
@@ -24,5 +30,5 @@ source:
 
 ## Jangan jawab / jangan karang
 
-- Jangan karang nomor WA berupa angka, jam buka, atau akun media sosial spesifik (ikon medsos di footer hanya link `#beranda`, bukan akun resmi).
-- Untuk pertanyaan di luar info di atas, arahkan datang langsung ke alamat kanonis atau klik tombol WA di `/ppdb`.
+- Jangan karang nomor WA berupa angka, jam buka, atau akun media sosial selain Instagram resmi di atas.
+- Untuk pertanyaan di luar info di atas, arahkan datang langsung ke alamat kanonis atau klik tombol Instagram di `/ppdb`.

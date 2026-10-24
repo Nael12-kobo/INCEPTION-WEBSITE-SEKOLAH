@@ -1,6 +1,7 @@
 "use client";
 
 import { getSpeechText } from "@/lib/chat-speech";
+import { SUPPORT_IG_URL, supportMarkdownLink } from "@/lib/support";
 
 import {
   createContext,
@@ -11,6 +12,17 @@ import {
   useRef,
   useState,
 } from "react";
+
+/**
+ * Pesan kendala di chat ditutup tautan kanal bantuan resmi (Instagram
+ * @smk_tth — WA panitia belum aktif, lihat src/lib/support.ts). Pesan dari
+ * server yang sudah memuat tautan itu tidak ditempel dua kali.
+ */
+function withContact(message: string): string {
+  return message.includes(SUPPORT_IG_URL)
+    ? message
+    : `${message} Hubungi ${supportMarkdownLink()}.`;
+}
 
 export interface ChatMessage {
   id: string;
@@ -457,9 +469,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             role: "assistant",
             text: aborted
               ? "Waktu tunggu habis. Coba kirim lagi ya."
-              : error instanceof Error
-                ? error.message
-                : "Maaf, terjadi kesalahan. Coba lagi ya.",
+              : error instanceof Error && error.message
+                ? withContact(error.message)
+                : withContact("Maaf, terjadi kesalahan. Coba lagi ya."),
             timestamp: nowTime(),
           },
         ]);

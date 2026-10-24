@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Bot,
-  Phone,
   Send,
   ShieldCheck,
   ThumbsDown,
@@ -14,8 +13,10 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
 import { cn } from "@/lib/utils";
 import { SOURCE_META } from "@/lib/chat-sources";
+import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 import { useChat } from "./chat-store";
 import { MarkdownLite } from "./MarkdownLite";
 import { ChatWelcome } from "./ChatWelcome";
@@ -221,7 +222,7 @@ export function ChatMessages({ compact = false }: { compact?: boolean }) {
                   message.sources?.includes("06-ppdb.md") && (
                     <div className="mt-2 rounded-xl border border-blue-100 bg-blue-50/70 p-3 dark:border-blue-900/60 dark:bg-blue-950/30">
                       <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        Formulir, informasi PPDB, dan tombol WhatsApp panitia tersedia di halaman PPDB.
+                        Formulir, informasi PPDB, dan kanal {SUPPORT_CHANNEL} panitia tersedia di halaman PPDB.
                       </p>
                       <Button
                         asChild
@@ -353,15 +354,17 @@ export function ChatInput({ autoFocus = false }: { autoFocus?: boolean }) {
         </Button>
       </div>
       <div className="mt-2.5 flex items-center justify-between gap-1">
-        {/* Pengalihan ke petugas: WA resmi hanya lewat tombol di /ppdb
-            (nomor dari env) — jangan karang nomor di sini. */}
-        <Link
-          href="/ppdb"
+        {/* Pengalihan ke petugas: kanal resmi dari env (NEXT_PUBLIC_SUPPORT_IG_URL,
+            default Instagram — WA panitia belum aktif). Jangan karang nomor di sini. */}
+        <a
+          href={SUPPORT_IG_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center gap-1 text-[13px] font-medium text-blue-600 transition-colors hover:text-blue-700 hover:underline"
         >
-          <Phone className="h-3 w-3" />
+          <InstagramIcon className="h-3.5 w-3.5" />
           Hubungi Petugas
-        </Link>
+        </a>
         <p
           className={cn(
             "text-right text-[12.5px] tabular-nums transition-colors duration-300",

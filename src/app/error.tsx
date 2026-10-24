@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
+import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 
 /**
  * Error boundary tingkat root.
@@ -65,6 +67,15 @@ export default function RootError({
         >
           Kembali ke beranda
         </Link>
+        <a
+          href={SUPPORT_IG_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-sky-300 bg-card px-5 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-50"
+        >
+          <InstagramIcon className="h-4 w-4" />
+          Lapor kendala via {SUPPORT_CHANNEL}
+        </a>
       </div>
     </div>
   );

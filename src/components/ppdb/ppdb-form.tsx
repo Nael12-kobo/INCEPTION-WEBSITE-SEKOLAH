@@ -11,7 +11,6 @@ import {
   CircleUser,
   Loader2,
   MapPin,
-  MessageCircle,
   Phone,
   Send,
   Sparkles,
@@ -20,7 +19,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
 import { cn } from "@/lib/utils";
+import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 import {
   GENDER_OPTIONS,
   JURUSAN_OPTIONS,
@@ -72,7 +73,7 @@ const INITIAL: PpdbValues = {
 type SubmitState =
   | { status: "idle" }
   | { status: "submitting" }
-  | { status: "done"; registrationNo: string; waUrl: string; alreadyRegistered: boolean; whatsappDelivered: boolean; emailDelivered: boolean }
+  | { status: "done"; registrationNo: string; alreadyRegistered: boolean; whatsappDelivered: boolean; emailDelivered: boolean }
   | { status: "error"; message: string; errors: Record<string, string> };
 
 export function PpdbForm({
@@ -202,7 +203,6 @@ export function PpdbForm({
       setState({
         status: "done",
         registrationNo: data.registrationNo,
-        waUrl: data.waUrl,
         alreadyRegistered: Boolean(data.alreadyRegistered),
         whatsappDelivered: Boolean(data.whatsappDelivered),
         emailDelivered: Boolean(data.emailDelivered),
@@ -615,8 +615,8 @@ function SuccessCard({
       <div className="space-y-4 px-6 py-7 sm:px-8">
         <p className="text-sm leading-relaxed text-slate-600">
           {state.whatsappDelivered
-            ? "Detail pendaftaran sudah kami kirim ke nomor WhatsApp Anda. Mohon balas konfirmasi agar proses lebih cepat."
-            : "Konfirmasi WhatsApp belum terkirim otomatis. Silakan kirim pesan berikut ke nomor sekolah agar data Anda tercatat lebih cepat."}
+            ? `Detail pendaftaran sudah kami kirim ke nomor WhatsApp Anda. Agar segera diverifikasi panitia, konfirmasi via ${SUPPORT_CHANNEL}.`
+            : `Konfirmasi WhatsApp belum terkirim otomatis. Silakan konfirmasi pendaftaran Anda via ${SUPPORT_CHANNEL} agar data Anda tercatat lebih cepat.`}
         </p>
         <p className="text-sm leading-relaxed text-slate-600">
           {state.emailDelivered
@@ -625,10 +625,12 @@ function SuccessCard({
         </p>
 
         <div className="flex flex-wrap gap-3">
+          {/* Konfirmasi via kanal bantuan resmi (env) — WhatsApp panitia
+              belum aktif, jadi defaultnya Instagram @smk_tth. */}
           <Button asChild size="lg">
-            <a href={state.waUrl} target="_blank" rel="noopener noreferrer">
-              <MessageCircle aria-hidden />
-              Kirim via WhatsApp
+            <a href={SUPPORT_IG_URL} target="_blank" rel="noopener noreferrer">
+              <InstagramIcon aria-hidden />
+              Konfirmasi via {SUPPORT_CHANNEL}
             </a>
           </Button>
           <Button asChild variant="outline" size="lg">

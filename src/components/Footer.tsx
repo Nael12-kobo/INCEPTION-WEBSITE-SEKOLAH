@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AtSign, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
+import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 
 const jurusanLinks = ["Pengembangan Perangkat Lunak", "Teknik Jaringan Komputer Dan Telekomunikasi", "Desain Komunikasi Visual", "Teknik Kendaraan Ringan Otomotif"];
 const infoLinks = [
@@ -10,15 +12,26 @@ const infoLinks = [
   { label: "PPDB 2026", href: "/#ppdb" },
 ];
 
-// Tidak ada URL sosial media resmi yang tercatat di repo, jadi href-nya
-// tetap mengarah ke beranda; label dibuat berbeda agar screen reader
-// bisa membedakan tiap link (#27).
+// Kanal bantuan resmi (Instagram @smk_tth, dari env NEXT_PUBLIC_SUPPORT_IG_URL)
+// dapat URL asli; link sosial lain yang belum punya URL resmi tetap ke beranda.
+// Label dibuat berbeda agar screen reader bisa membedakan tiap link (#27).
 const socialLinks = [
-  { label: "Situs web resmi sekolah", Icon: Globe },
-  { label: "Akun media sosial sekolah", Icon: AtSign },
-  { label: "Kirim pesan ke sekolah", Icon: MessageCircle },
-  { label: "Kirim email ke sekolah", Icon: Mail },
+  { label: "Situs web resmi sekolah", Icon: Globe, href: "/#beranda" },
+  {
+    label: `Kanal ${SUPPORT_CHANNEL} resmi sekolah`,
+    Icon: InstagramIcon,
+    href: SUPPORT_IG_URL,
+  },
+  {
+    label: `Kirim pesan ke sekolah via ${SUPPORT_CHANNEL}`,
+    Icon: MessageCircle,
+    href: SUPPORT_IG_URL,
+  },
+  { label: "Kirim email ke sekolah", Icon: Mail, href: "/#beranda" },
 ];
+
+const SOCIAL_CLS =
+  "flex h-10 w-10 items-center justify-center rounded-xl bg-card/5 ring-1 ring-white/10 transition-colors hover:bg-sky-600 hover:text-white sm:h-9 sm:w-9";
 
 export function Footer() {
   return (
@@ -37,16 +50,29 @@ export function Footer() {
             kerja.
           </p>
           <div className="mt-4 flex gap-2">
-            {socialLinks.map(({ label, Icon }) => (
-              <Link
-                key={label}
-                href="/#beranda"
-                aria-label={label}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-card/5 ring-1 ring-white/10 transition-colors hover:bg-sky-600 hover:text-white sm:h-9 sm:w-9"
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-              </Link>
-            ))}
+            {socialLinks.map(({ label, Icon, href }) =>
+              href.startsWith("http") ? (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className={SOCIAL_CLS}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                </a>
+              ) : (
+                <Link
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className={SOCIAL_CLS}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                </Link>
+              ),
+            )}
           </div>
         </div>
 

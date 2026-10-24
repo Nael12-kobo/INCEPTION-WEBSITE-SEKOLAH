@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Bot, MapPin, MessageCircle, Phone, ArrowRight, LogIn } from "lucide-react";
+import { BadgeCheck, Bot, MapPin, Phone, ArrowRight, LogIn } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuthLogo } from "@/components/auth/logo";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
 import { PpdbHero } from "@/components/ppdb/ppdb-hero";
 import {
   JURUSAN_OPTIONS,
   PPDB_PHASE,
   PPDB_YEAR,
-  WA_ADMIN_URL,
 } from "@/lib/ppdb";
+import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: `PPDB ${PPDB_YEAR} — SMK Telekomunikasi Tunas Harapan`,
@@ -61,8 +62,8 @@ export default async function PpdbPage() {
               asChild
               className="hidden sm:inline-flex"
             >
-              <a href={WA_ADMIN_URL} target="_blank" rel="noopener noreferrer">
-                <MessageCircle aria-hidden />
+              <a href={SUPPORT_IG_URL} target="_blank" rel="noopener noreferrer">
+                <InstagramIcon aria-hidden />
                 Tanya PPDB
               </a>
             </Button>
@@ -254,6 +255,14 @@ export default async function PpdbPage() {
                   <Bot aria-hidden />
                   Tanya Asisten AI
                 </Link>
+              </Button>
+              {/* Kendala yang butuh manusia → Instagram resmi (WA panitia
+                  belum aktif; lihat src/lib/support.ts). */}
+              <Button asChild variant="outline" className="mt-2 w-full">
+                <a href={SUPPORT_IG_URL} target="_blank" rel="noopener noreferrer">
+                  <InstagramIcon aria-hidden />
+                  Hubungi Panitia via {SUPPORT_CHANNEL}
+                </a>
               </Button>
             </div>
           </aside>
