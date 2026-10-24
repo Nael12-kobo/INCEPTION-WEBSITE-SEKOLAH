@@ -37,7 +37,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             allowDangerousEmailAccountLinking: true,
             authorization: {
               params: {
-                prompt: "consent",
+                // select_account: WAJIB selalu menampilkan account chooser.
+                // Tanpa ini Google boleh melewati pemilihan akun dan langsung
+                // memakai akun Google yang sedang aktif di browser — user yang
+                // berniat masuk akun A bisa berakhir masuk akun B (pernah kejadian:
+                // login ingin ke naelkocakgaming, jadinya nathanaelputraprasetya1).
+                prompt: "consent select_account",
                 access_type: "offline",
                 response_type: "code",
               },
