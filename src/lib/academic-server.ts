@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 import {
   ACADEMIC_DOMAINS,
   ATTENDANCE_STATUSES,
@@ -68,11 +69,16 @@ export async function validateAcademic(
       const startTime = str(b, "startTime");
       const endTime = str(b, "endTime");
       const subject = str(b, "subject");
+      const major = str(b, "major");
       if (!DAY_OPTIONS.includes(day as (typeof DAY_OPTIONS)[number]))
         return fail("Hari tidak valid.");
       if (!TIME_RE.test(startTime) || !TIME_RE.test(endTime))
         return fail("Jam mulai/selesai tidak valid (HH:mm).");
       if (!subject) return fail("Mata pelajaran wajib diisi.");
+      if (!major) return fail("Jurusan wajib dipilih untuk jadwal.");
+      const jurusanOptions = await getPpdbJurusanOptions();
+      if (!jurusanOptions.some((option) => option.value === major))
+        return fail("Jurusan tidak valid atau sudah tidak aktif.");
       return {
         ok: true,
         data: {
@@ -81,7 +87,7 @@ export async function validateAcademic(
           endTime,
           subject,
           teacher: optStr(b, "teacher"),
-          major: optStr(b, "major"),
+          major,
         },
       };
     }
@@ -145,8 +151,14 @@ export async function validateAcademic(
       const title = str(b, "title");
       const subject = str(b, "subject");
       const dueAt = optStr(b, "dueAt");
+      const major = optStr(b, "major");
       if (!title) return fail("Judul tugas wajib diisi.");
       if (!subject) return fail("Mata pelajaran wajib diisi.");
+      if (major) {
+        const jurusanOptions = await getPpdbJurusanOptions();
+        if (!jurusanOptions.some((option) => option.value === major))
+          return fail("Jurusan tidak valid atau sudah tidak aktif.");
+      }
       if (dueAt && !DATE_RE.test(dueAt) && !DATE_TIME_RE.test(dueAt))
         return fail("Tenggat tidak valid.");
       return {
@@ -156,7 +168,7 @@ export async function validateAcademic(
           subject,
           description: optStr(b, "description"),
           dueAt,
-          major: optStr(b, "major"),
+          major,
         },
       };
     }
@@ -206,7 +218,10 @@ export async function listAcademic(domain: AcademicDomain): Promise<unknown[]> {
     case "schedule": {
       const rows = await prisma.academicSchedule.findMany();
       return rows.sort(
-        (a, b) => dayRank(a.day) - dayRank(b.day) || a.startTime.localeCompare(b.startTime)
+        (a, b) =>
+          dayRank(a.day) - dayRank(b.day) ||
+          a.startTime.localeCompare(b.startTime) ||
+          (a.major ?? "").localeCompare(b.major ?? ""),
       );
     }
     case "grades": {

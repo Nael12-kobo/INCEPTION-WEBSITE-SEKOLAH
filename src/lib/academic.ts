@@ -28,7 +28,8 @@ export const ACADEMIC_META: Record<
   schedule: {
     label: "Jadwal",
     title: "Jadwal Peserta",
-    description: "Jadwal pelajaran, piket, dan kegiatan harian per jurusan.",
+    description:
+      "Jadwal pelajaran dan kegiatan diatur terpisah untuk setiap jurusan.",
   },
   grades: {
     label: "Nilai",

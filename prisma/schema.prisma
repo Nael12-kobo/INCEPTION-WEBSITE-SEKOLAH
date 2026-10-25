@@ -282,7 +282,8 @@ model PpdbDocumentReview {
 // Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "YYYY-MM-DDTHH:mm")
 // agar bebas masalah zona waktu dan cocok langsung dengan input form.
 
-/// Jadwal pelajaran/piket — berlaku per jurusan atau semua (major null).
+/// Jadwal pelajaran/piket per jurusan. major null hanya tersisa untuk data lama
+/// yang belum ditetapkan; jadwal tersebut tidak ditampilkan ke portal siswa.
 model AcademicSchedule {
   id        String   @id @default(cuid())
   day       String // "Senin" .. "Sabtu"
@@ -290,7 +291,7 @@ model AcademicSchedule {
   endTime   String // "09:00"
   subject   String
   teacher   String?
-  major     String? // JurusanValue; null = semua jurusan
+  major     String? // Pilihan jurusan; null = data lama belum ditetapkan
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

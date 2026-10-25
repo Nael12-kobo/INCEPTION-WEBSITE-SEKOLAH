@@ -27,7 +27,7 @@ import {
   type AcademicDomain,
   type AttendanceStatus,
 } from "@/lib/academic";
-import { JURUSAN_OPTIONS, JurusanLabel, type JurusanValue } from "@/lib/ppdb";
+import { JurusanLabel, type PpdbJurusanOption } from "@/lib/ppdb";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import type { ReactNode } from "react";
@@ -83,11 +83,6 @@ function localToday(): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-const JURUSAN_SELECT: { value: string; label: string }[] = [
-  { value: "", label: "Semua jurusan" },
-  ...JURUSAN_OPTIONS.map((j) => ({ value: j.value, label: j.nama })),
-];
-
 function UserCell({ row }: { row: AcademicRow }) {
   const u = row.user;
   if (!u) return <span className="text-slate-400">—</span>;
@@ -137,7 +132,7 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
         key: "major",
         label: "Jurusan",
         type: "select",
-        options: JURUSAN_SELECT,
+        required: true,
       },
     ],
     defaults: {
@@ -162,8 +157,8 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
         label: "Jurusan",
         render: (r) =>
           r.major
-            ? JurusanLabel(r.major as JurusanValue)
-            : "Semua jurusan",
+            ? JurusanLabel(String(r.major))
+            : <span className="font-medium text-amber-600">Belum ditetapkan</span>,
       },
     ],
   },
@@ -316,7 +311,7 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
         type: "textarea",
         placeholder: "penjelasan singkat untuk siswa",
       },
-      { key: "major", label: "Jurusan", type: "select", options: JURUSAN_SELECT },
+      { key: "major", label: "Jurusan", type: "select" },
     ],
     defaults: {
       title: "",
@@ -337,7 +332,7 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
         key: "major",
         label: "Jurusan",
         render: (r) =>
-          r.major ? JurusanLabel(r.major as JurusanValue) : "Semua jurusan",
+          r.major ? JurusanLabel(String(r.major)) : "Semua jurusan",
       },
     ],
   },
@@ -403,9 +398,11 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
 export function AcademicAdminClient({
   initialRows,
   students,
+  jurusanOptions,
 }: {
   initialRows: AcademicRows;
   students: StudentOption[];
+  jurusanOptions: readonly PpdbJurusanOption[];
 }) {
   const [domain, setDomain] = React.useState<AcademicDomain>("schedule");
   const [rows, setRows] = React.useState<AcademicRows>(initialRows);
@@ -422,7 +419,42 @@ export function AcademicAdminClient({
   const [deleteTarget, setDeleteTarget] = React.useState<AcademicRow | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-  const cfg = DOMAIN_CONFIG[domain];
+  const cfg = React.useMemo(() => {
+    const base = DOMAIN_CONFIG[domain];
+    const jurusanSelect = jurusanOptions.map((item) => ({
+      value: item.value,
+      label: `${item.nama} (${item.kode})`,
+    }));
+    const fields = base.fields.map((field) => {
+      if (field.key !== "major") return field;
+      return {
+        ...field,
+        options:
+          domain === "tasks"
+            ? [{ value: "", label: "Semua jurusan" }, ...jurusanSelect]
+            : jurusanSelect,
+      };
+    });
+    const columns = base.columns.map((column) => {
+      if (column.key !== "major") return column;
+      return {
+        ...column,
+        render: (row: AcademicRow) => {
+          if (!row.major) {
+            return domain === "schedule" ? (
+              <span className="font-medium text-amber-600">Belum ditetapkan</span>
+            ) : (
+              "Semua jurusan"
+            );
+          }
+          const value = String(row.major);
+          const option = jurusanOptions.find((item) => item.value === value);
+          return option ? `${option.nama} (${option.kode})` : JurusanLabel(value);
+        },
+      };
+    });
+    return { ...base, fields, columns };
+  }, [domain, jurusanOptions]);
   const list = rows[domain] ?? [];
 
   const refresh = React.useCallback(async (d: AcademicDomain) => {
@@ -661,7 +693,9 @@ export function AcademicAdminClient({
                   : `Tambah ${cfg.addLabel}`}
               </DialogTitle>
               <DialogDescription>
-                Data langsung tampil di portal siswa setelah disimpan.
+                {domain === "schedule"
+                  ? "Pilih satu jurusan. Jadwal hanya akan tampil kepada siswa jurusan tersebut, bukan semua jurusan."
+                  : "Data langsung tampil di portal siswa setelah disimpan."}
               </DialogDescription>
             </DialogHeader>
 
@@ -729,11 +763,17 @@ export function AcademicAdminClient({
                           ))}
                         </>
                       ) : (
-                        (field.options ?? []).map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))
+                        <>
+                          {field.required &&
+                          !field.options?.some((option) => option.value === "") ? (
+                            <option value="">Pilih {field.label.toLowerCase()}…</option>
+                          ) : null}
+                          {(field.options ?? []).map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </>
                       )}
                     </select>
                   ) : (

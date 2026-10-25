@@ -11,6 +11,7 @@ import {
   type AttendanceStatus,
 } from "@/lib/academic";
 import { JurusanLabel, type JurusanValue } from "@/lib/ppdb";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 
 /**
  * Isi konten halaman /student/* sesuai domain akademik (Bagian C).
@@ -46,9 +47,16 @@ async function scheduleSection(
   studentMajor: string | null
 ): Promise<AcademicSectionResult> {
   const rows = await prisma.academicSchedule.findMany();
-  const visible = rows.filter(
-    (r) => !r.major || !studentMajor || r.major === studentMajor
-  );
+  // Jadwal tanpa jurusan (data lama yang sebelumnya berlaku global) tidak
+  // ditampilkan ke semua siswa. Admin perlu menetapkan jurusannya dahulu.
+  const visible = studentMajor
+    ? rows.filter((r) => r.major === studentMajor)
+    : [];
+  const jurusanOptions = await getPpdbJurusanOptions();
+  const labelJurusan = (value: string) => {
+    const option = jurusanOptions.find((item) => item.value === value);
+    return option ? `${option.nama} (${option.kode})` : JurusanLabel(value);
+  };
   const groups = DAY_OPTIONS.map((day) => ({
     day,
     items: visible
@@ -85,7 +93,7 @@ async function scheduleSection(
                       {item.subject}
                       {item.major ? (
                         <span className="ml-2 text-xs font-medium text-slate-400">
-                          {JurusanLabel(item.major as JurusanValue)}
+                          {labelJurusan(item.major)}
                         </span>
                       ) : null}
                     </td>
