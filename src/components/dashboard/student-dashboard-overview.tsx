@@ -9,6 +9,7 @@ import {
   GraduationCap,
   ListTodo,
   MapPin,
+  type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { prisma } from "@/lib/prisma";
 import {
   ATTENDANCE_LABELS,
@@ -73,6 +73,37 @@ function EmptyLine({ children }: { children: string }) {
     <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
       {children}
     </p>
+  );
+}
+
+function StudentStatCard({
+  icon: Icon,
+  value,
+  valueSuffix = "",
+  label,
+  sublabel,
+}: {
+  icon: LucideIcon;
+  value: number | string;
+  valueSuffix?: string;
+  label: string;
+  sublabel: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">
+            {value}{valueSuffix}
+          </p>
+          <p className="mt-1 truncate text-xs text-slate-500">{sublabel}</p>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
+          <Icon className="h-5 w-5" aria-hidden />
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -234,34 +265,30 @@ export async function StudentDashboardOverview({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
+        <StudentStatCard
           icon={CalendarDays}
           value={displaySchedule.length}
           label={isTodaySchedule ? "Jadwal hari ini" : "Jadwal terdekat"}
           sublabel={displayScheduleDay || "Belum ada jadwal"}
-          colorTone="sky"
         />
-        <StatCard
+        <StudentStatCard
           icon={Award}
           value={average === null ? "—" : average.toFixed(1)}
           label="Rata-rata nilai"
           sublabel={`${gradeSummary._count._all} nilai tercatat`}
-          colorTone="emerald"
         />
-        <StatCard
+        <StudentStatCard
           icon={ClipboardCheck}
           value={attendancePercent === null ? "—" : attendancePercent}
           valueSuffix={attendancePercent === null ? "" : "%"}
           label="Kehadiran"
           sublabel={attendanceTotal ? `${attendance.HADIR} dari ${attendanceTotal} presensi hadir` : "Belum ada data absensi"}
-          colorTone="violet"
         />
-        <StatCard
+        <StudentStatCard
           icon={ListTodo}
           value={upcomingTasks.length}
           label="Tugas mendatang"
           sublabel="Tugas sesuai jurusanmu"
-          colorTone="amber"
         />
       </div>
 
