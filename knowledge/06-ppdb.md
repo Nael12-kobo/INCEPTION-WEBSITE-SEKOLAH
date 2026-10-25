@@ -78,6 +78,17 @@ Tes Tato, Tindik dan Cacat Tubuh
 Tes Penyakit Keturunan (Asma, Tremor, Jantung, dll)
 Ukur Tinggi dan Berat Badan
 
+## Seragam yang di dapat
+- Seragam OSIS "Putih Abu-Abu"
+- Seragam jurusan "merah=PPLG, Abu-abu=TKJ, Orange=TKR, Biru=DKV"
+- seragam Tonti
+- Seragam batik
+- Seragam Pramuka
+- Seragam Olahraga
+- Aksesoris topi, dasi, kaos kaki, sepatu
+note: semua seragam masih berbentuk kain
+
+
 ## Informasi tambahan terverifikasi dari halaman PPDB
 
 - Status yang ditampilkan situs: tahun pelajaran **2026/2027**, **Gelombang 1**, dan **bebas zonasi**. Sumber resmi yang diperiksa tidak mencantumkan tanggal buka/tutup pendaftaran atau tanggal tes yang pasti; jangan mengarang jadwal PPDB 2027.
