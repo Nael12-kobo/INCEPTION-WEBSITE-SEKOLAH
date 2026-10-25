@@ -7,7 +7,9 @@ import { Fasilitas } from "@/components/Fasilitas";
 import { Berita } from "@/components/Berita";
 import { CtaPpdb } from "@/components/CtaPpdb";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
-import { ambilBerita } from "@/lib/blog";
+import { gabungBerita } from "@/lib/berita-server";
+import { getJurusanAktif } from "@/lib/jurusan-server";
+import { getSemuaSiteContent } from "@/lib/site-content-server";
 
 export const metadata: Metadata = {
   title: "SMK Telekomunikasi Tunas Harapan | Profil, Program, dan PPDB",
@@ -16,21 +18,28 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // Berita terbaru dari situs resmi sekolah — di-cache 1 jam oleh Next,
-  // dan diam-diam mengembalikan [] kalau situsnya lagi tidak bisa diakses.
-  const berita = await ambilBerita(9);
+  // Berita = gabungan buatan admin (tabel `beritas`) + situs resmi sekolah
+  // (WordPress, di-cache 1 jam). Keduanya diam-diam mengembalikan [] kalau
+  // sumbernya tidak bisa diakses, jadi homepage tidak pernah gagal render.
+  // `konten` = teks section beranda yang diedit dari Admin Panel > Konten
+  // Situs; selalu berbentuk lengkap (fallback otomatis ke nilai default).
+  const [berita, jurusan, konten] = await Promise.all([
+    gabungBerita(9),
+    getJurusanAktif(),
+    getSemuaSiteContent(),
+  ]);
 
   return (
     <div className="relative flex min-h-dvh flex-col  font-sans text-slate-900">
       <HomeBackdrop />
       <main className="relative flex-1">
-        <Hero />
-        <Stats />
-        <Profil />
-        <Jurusan />
-        <Fasilitas />
+        <Hero konten={konten.hero} />
+        <Stats konten={konten.statistik} />
+        <Profil konten={konten.profil} />
+        <Jurusan items={jurusan} />
+        <Fasilitas konten={konten.fasilitas} />
         <Berita posts={berita} />
-        <CtaPpdb />
+        <CtaPpdb konten={konten["ppdb-cta"]} />
       </main>
       {/* Footer dirender SiteChrome (src/components/SiteChrome.tsx) agar
           juga muncul di halaman non-home seperti /jurusan dan /sejarah. */}

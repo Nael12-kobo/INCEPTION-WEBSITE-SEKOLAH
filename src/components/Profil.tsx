@@ -4,16 +4,20 @@ import Image from "next/image";
 import { CheckCircle2, Quote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExternalImage } from "@/components/external-image";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
+import { SITE_CONTENT_DEFAULTS, type ProfilKonten } from "@/lib/site-content";
 
-const visiMisi = [
-  "Unggul dalam teknologi telekomunikasi dan informatika",
-  "Berkarakter, disiplin, dan berakhlak mulia",
-  "Siap kerja, siap kuliah, siap berwirausaha",
-];
-
-export function Profil() {
+/**
+ * Section profil beranda (ringkasan sekolah, poin visi-misi, testimoni) —
+ * diedit lewat Admin Panel > Konten Situs (`site_contents.profil`).
+ */
+export function Profil({
+  konten = SITE_CONTENT_DEFAULTS.profil,
+}: {
+  konten?: ProfilKonten;
+}) {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "alternate", distance: 170 });
   useTiltHover(ref, { maxTilt: 7, scale: 1.02 });
   return (
@@ -25,22 +29,19 @@ export function Profil() {
       <div className="tilt-scene relative mx-auto grid max-w-6xl items-start gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2">
         <div data-scrub-item data-scrub-dir="left">
           <Badge variant="secondary" className="glass-chip border-white/60">
-            Profil Sekolah
+            {konten.badge}
           </Badge>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Mencetak talenta digital yang{" "}
+            {konten.judulAwal}{" "}
             <span className="bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text text-transparent dark:to-blue-500">
-              kompeten & berkarakter
+              {konten.judulAccent}
             </span>
           </h2>
           <p className="mt-4 leading-relaxed text-slate-600">
-            SMK Telekomunikasi Tunas Harapan adalah sekolah menengah kejuruan yang fokus pada
-            bidang telekomunikasi, jaringan komputer, dan pengembangan perangkat lunak.
-            Pembelajaran memadukan teori, praktik laboratorium, sertifikasi industri, dan magang
-            di perusahaan mitra.
+            {konten.paragraf}
           </p>
           <ul className="mt-6 space-y-3">
-            {visiMisi.map((v) => (
+            {konten.poin.map((v) => (
               <li
                 key={v}
                 data-magnetic
@@ -67,17 +68,29 @@ export function Profil() {
               <Quote className="h-6 w-6 text-sky-500" />
             </span>
             <blockquote className="mt-3 text-lg font-medium leading-relaxed text-slate-800">
-              “ Di SMK Telekomunikasi Tunas Harapan saya dibimbing menjadi yang terbaik di bidang Komputer Jaringan,
-              dengan Guru yang berintegrasi tinggi dan sudah bersertifikasi Cisco saya dapat dengan mudah memahami apa yang di sampaikan,
-              serta fasilitasnya pun mendukung selama pembelajaran. Oleh karena itu membuat saya siap dan percaya diri untuk bersaing dengan Lulusan SMK lain.
-              Saat saya lulus saya langsung diterima di Perusahaan Hosting Terbesar di Jakarta.
-              Dan saat ini saya bekerja sebagai IT Senior Network & Infrastruktur di Transcosmos Indonesia site Semarang ”
+              {konten.testimoni.teks}
             </blockquote>
             <div className="mt-6 flex items-center gap-3">
-              <Image src="/agil.jpg" alt="Foto Visentius Agiola Stanlay" width={12} height={12} className="h-10 w-10 rounded-full object-cover" />
+              {/* Foto bisa path lokal atau URL bebas — URL eksternal tidak
+                  lewat optimizer Next (lihat src/components/external-image.tsx). */}
+              {konten.testimoni.foto.startsWith("http") ? (
+                <ExternalImage
+                  src={konten.testimoni.foto}
+                  alt={`Foto ${konten.testimoni.nama}`}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={konten.testimoni.foto}
+                  alt={`Foto ${konten.testimoni.nama}`}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              )}
               <div>
-                <p className="text-sm font-bold text-slate-900">Visentius Agiola Stanlay</p>
-                <p className="text-xs text-slate-500">IT Senior Network & Infrastruktur</p>
+                <p className="text-sm font-bold text-slate-900">{konten.testimoni.nama}</p>
+                <p className="text-xs text-slate-500">{konten.testimoni.peran}</p>
               </div>
             </div>
           </CardContent>

@@ -36,6 +36,15 @@ export const JURUSAN_OPTIONS = [
 
 export type JurusanValue = (typeof JURUSAN_OPTIONS)[number]["value"];
 
+/** Pilihan jurusan yang dikirim ke formulir; opsi tambahan diambil dari
+ * database di server setelah lolos validasi admin. */
+export type PpdbJurusanOption = {
+  value: string;
+  kode: string;
+  nama: string;
+  deskripsi: string;
+};
+
 const JURUSAN_CODES: Record<JurusanValue, string> = {
   DKV: "DKV/MM",
   PPLG: "PPLG/RPL",
@@ -56,8 +65,14 @@ export function isJurusan(value: unknown): value is JurusanValue {
   return typeof value === "string" && JURUSAN_VALUES.includes(value as JurusanValue);
 }
 
-export function JurusanLabel(value: JurusanValue) {
-  return `${JURUSAN_NAMES[value]} (${JURUSAN_CODES[value]})`;
+export function JurusanLabel(value: string) {
+  if (value in JURUSAN_NAMES) {
+    const known = value as JurusanValue;
+    return JURUSAN_NAMES[known] + " (" + JURUSAN_CODES[known] + ")";
+  }
+  // Nilai tambahan disimpan sebagai slug huruf besar agar tetap terbaca
+  // di notifikasi/rekap yang tidak membawa katalog lengkap.
+  return value.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 export const GENDER_OPTIONS = [
@@ -107,8 +122,8 @@ export type PpdbValues = {
   previousSchool: string;
   address: string;
   phone: string;
-  majorFirst: JurusanValue;
-  majorSecond: JurusanValue;
+  majorFirst: string;
+  majorSecond: string;
   parentName: string;
   parentPhone: string;
 };
@@ -172,7 +187,10 @@ function ageInYears(date: Date): number {
  * Validasi payload form. Dipanggil form client (untuk pesan inline) dan route
  * server (sebagai sumber kebenaran), sehingga keduanya tidak bisa berbeda.
  */
-export function validatePpdbDraft(draft: PpdbDraft): PpdbValidation {
+export function validatePpdbDraft(
+  draft: PpdbDraft,
+  jurusanOptions: readonly PpdbJurusanOption[] = JURUSAN_OPTIONS,
+): PpdbValidation {
   const errors: Record<string, string> = {};
 
   const fullName = str(draft.fullName);
@@ -215,9 +233,10 @@ export function validatePpdbDraft(draft: PpdbDraft): PpdbValidation {
 
   if (!isValidPhone(phone)) errors.phone = "Nomor WhatsApp tidak valid.";
 
-  if (!isJurusan(majorFirst)) {
+  const jurusanValues = new Set(jurusanOptions.map((option) => option.value));
+  if (!jurusanValues.has(majorFirst)) {
     errors.majorFirst = "Pilih jurusan pertama.";
-  } else if (!isJurusan(majorSecond)) {
+  } else if (!jurusanValues.has(majorSecond)) {
     errors.majorSecond = "Pilih jurusan kedua.";
   } else if (majorSecond === majorFirst) {
     errors.majorSecond = "Jurusan kedua harus berbeda dari yang pertama.";
@@ -241,8 +260,8 @@ export function validatePpdbDraft(draft: PpdbDraft): PpdbValidation {
       previousSchool,
       address,
       phone,
-      majorFirst: majorFirst as JurusanValue,
-      majorSecond: majorSecond as JurusanValue,
+      majorFirst,
+      majorSecond,
       parentName,
       parentPhone,
     },
@@ -252,10 +271,10 @@ export function validatePpdbDraft(draft: PpdbDraft): PpdbValidation {
 /**
  * Nomor pendaftaran berurutan, mis. PPDB-2026-0007.
  *
- * Route /api/ppdb menurunkan nomor urut dari agregat MAX kolom registrationNo
- * (bukan count()): pendaftaran yang dihapus admin TIDAK membuat nomor lama
- * dipakai ulang, dan nomor yang sudah terpakai selalu terlewati meski ada
- * baris terhapus (C1). Kolom @unique tetap jaring pengaman terakhir.
+ * Route /api/ppdb menurunkan nomor urut tertinggi secara numerik (bukan count
+ * atau MAX teks): pendaftaran yang dihapus admin TIDAK membuat nomor lama
+ * dipakai ulang, termasuk saat nomor melewati 9999 (C1). Kolom @unique tetap
+ * jaring pengaman terakhir.
  */
 export function registrationNoFromSeq(
   seq: number,
@@ -268,16 +287,18 @@ export function registrationNoFromSeq(
 export function buildStudentWaMessage(input: {
   registrationNo: string;
   fullName: string;
-  majorFirst: JurusanValue;
-  majorSecond: JurusanValue;
+  majorFirst: string;
+  majorSecond: string;
+  majorFirstLabel?: string;
+  majorSecondLabel?: string;
 }): string {
   return [
     `Halo *${input.fullName}*, terima kasih sudah mendaftar di`,
     `*SMK Telekomunikasi Tunas Harapan* 🎓`,
     "",
     `*No. Pendaftaran:* ${input.registrationNo}`,
-    `*Jurusan 1:* ${JurusanLabel(input.majorFirst)}`,
-    `*Jurusan 2:* ${JurusanLabel(input.majorSecond)}`,
+    `*Jurusan 1:* ${input.majorFirstLabel ?? JurusanLabel(input.majorFirst)}`,
+    `*Jurusan 2:* ${input.majorSecondLabel ?? JurusanLabel(input.majorSecond)}`,
     "",
     "Informasi jadwal tes, syarat berkas, dan jadwal daftar ulang",
     "akan kami kirimkan ke nomor ini melalui WhatsApp.",
@@ -293,9 +314,11 @@ export function buildAdminWaMessage(input: {
   registrationNo: string;
   fullName: string;
   phone: string;
-  majorFirst: JurusanValue;
-  majorSecond: JurusanValue;
+  majorFirst: string;
+  majorSecond: string;
   parentName: string;
+  majorFirstLabel?: string;
+  majorSecondLabel?: string;
 }): string {
   return [
     `*Pendaftaran baru — PPDB ${PPDB_YEAR}*`,
@@ -303,8 +326,8 @@ export function buildAdminWaMessage(input: {
     `No: ${input.registrationNo}`,
     `Nama: ${input.fullName}`,
     `WA: ${input.phone}`,
-    `Jurusan 1: ${JurusanLabel(input.majorFirst)}`,
-    `Jurusan 2: ${JurusanLabel(input.majorSecond)}`,
+    `Jurusan 1: ${input.majorFirstLabel ?? JurusanLabel(input.majorFirst)}`,
+    `Jurusan 2: ${input.majorSecondLabel ?? JurusanLabel(input.majorSecond)}`,
     `Orang tua/wali: ${input.parentName}`,
   ].join("\n");
 }

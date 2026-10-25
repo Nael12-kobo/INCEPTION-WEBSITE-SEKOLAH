@@ -12,6 +12,8 @@ import { ProgramsSection } from "@/components/dashboard/programs-section";
 import { SessionProvider } from "next-auth/react";
 import { UserRole, isAdmin as checkIsAdminRole } from "@/lib/roles";
 import { isStudentStatus } from "@/lib/ppdb";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
+import { getSiteContent } from "@/lib/site-content-server";
 import type { BarChartDatum } from "@/components/ui/bar-chart";
 import type { DonutSegment } from "@/components/ui/donut-chart";
 
@@ -74,6 +76,10 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/auth/login?callbackUrl=/dashboard");
 
   const userId = session.user.id;
+  const [jurusanOptions, portalKonten] = await Promise.all([
+    getPpdbJurusanOptions(),
+    getSiteContent("portal-siswa"),
+  ]);
 
   const now = new Date();
   const sevenDaysAgo = addDays(startOfDayWib(now), -6);
@@ -341,6 +347,8 @@ export default async function DashboardPage() {
             status: r.status,
             note: r.note,
           }))}
+          jurusanOptions={jurusanOptions}
+          portalKonten={portalKonten}
         />
         {/* Kartu "Akun Saya" hanya untuk non-admin — dashboard admin fokus
             pada pengelolaan (kartu siswa seperti PPDB & akun disembunyikan). */}

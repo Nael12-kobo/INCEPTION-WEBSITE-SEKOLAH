@@ -43,11 +43,14 @@ import {
 } from "@/components/dashboard/berkas-checklist";
 import {
   FIELD_LABELS,
+  JURUSAN_OPTIONS,
+  type PpdbJurusanOption,
   PPDB_REQUIREMENT_GROUPS,
   PPDB_REQUIREMENT_TOTAL,
   EMAIL_RE,
 } from "@/lib/ppdb";
 import { cn } from "@/lib/utils";
+import type { PortalSiswaKonten } from "@/lib/site-content";
 
 function timeAgoShort(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -69,48 +72,6 @@ function greeting(hour: number) {
   if (hour >= 15 && hour < 18) return "Selamat sore";
   return "Selamat malam";
 }
-
-const agenda = [
-  {
-    tanggal: "2 Okt",
-    bulan: "2026",
-    judul: "Ujian Tengah Semester (UTS)",
-    tempat: "Seluruh ruang kelas",
-  },
-  {
-    tanggal: "8 Okt",
-    bulan: "2026",
-    judul: "Job Fair & rekrutmen mitra industri",
-    tempat: "Aula lantai 2",
-  },
-  {
-    tanggal: "15 Okt",
-    bulan: "2026",
-    judul: "Pekan Literasi Digital",
-    tempat: "Perpustakaan & lab komputer",
-  },
-  {
-    tanggal: "24 Okt",
-    bulan: "2026",
-    judul: "Study tour ke Balai TELKOM",
-    tempat: "Kelas XI semua jurusan",
-  },
-];
-
-const pengumuman = [
-  {
-    judul: "Pengisian KIP Kuliah gelombang 2 dibuka s.d. 10 Okt",
-    badge: "Akademik",
-  },
-  {
-    judul: "Wajib lapor wali kelas untuk rencana magang semester depan",
-    badge: "Magang",
-  },
-  {
-    judul: "Jadwal piket lab fiber optik diperbarui — cek papan informasi",
-    badge: "Fasilitas",
-  },
-];
 
 export type AdminActivity = {
   id: string;
@@ -175,6 +136,8 @@ export interface DashboardOverviewProps {
   documents?: StudentDocumentItem[];
   /** Penilaian admin per item berkas — keterangan status untuk siswa. */
   reviews?: StudentReviewItem[];
+  jurusanOptions?: readonly PpdbJurusanOption[];
+  portalKonten: PortalSiswaKonten;
 }
 
 export function DashboardOverview({
@@ -195,6 +158,8 @@ export function DashboardOverview({
   photoVersion = null,
   documents = [],
   reviews = [],
+  jurusanOptions = JURUSAN_OPTIONS,
+  portalKonten,
 }: DashboardOverviewProps) {
   const ref = useAnimeReveal<HTMLElement>();
   const { data: session } = useSession();
@@ -267,8 +232,7 @@ export function DashboardOverview({
               {greeting(hour)}, {firstName}!
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-sky-50/90 sm:text-base">
-              Semua kebutuhan sekolah Anda dalam satu tempat — jadwal, pengumuman,
-              hingga informasi PPDB. Silakan jelajahi menu di sisi kiri.
+              {portalKonten.deskripsiSapaan}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button
@@ -294,7 +258,7 @@ export function DashboardOverview({
             <p className="mt-1 text-lg font-bold leading-snug">{todayLabel}</p>
             <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-sky-50/90">
               <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-              Semester ganjil 2026/2027
+              {portalKonten.semester}
             </p>
           </div>
         </div>
@@ -394,16 +358,16 @@ export function DashboardOverview({
         >
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
-              <CardTitle className="font-h4">Agenda Terdekat</CardTitle>
+              <CardTitle className="font-h4">{portalKonten.agendaJudul}</CardTitle>
               <CardDescription className="mt-1">
-                Empat kegiatan terjadwal berikutnya.
+                {portalKonten.agendaDeskripsi}
               </CardDescription>
             </div>
-            <Badge variant="secondary">Oktober</Badge>
+            <Badge variant="secondary">{portalKonten.agendaBulan}</Badge>
           </CardHeader>
           <CardContent>
             <ol className="relative space-y-1 border-l border-sky-100 pl-0">
-              {agenda.map((a) => (
+              {portalKonten.agenda.map((a) => (
                 <li
                   key={a.judul}
                   className="relative flex gap-4 rounded-2xl px-3 py-3 transition-colors hover:bg-sky-50/70"
@@ -426,8 +390,8 @@ export function DashboardOverview({
         <Card className="bg-card lg:col-span-2">
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
-              <CardTitle className="font-h4">Pengumuman</CardTitle>
-              <CardDescription className="mt-1">Info penting pekan ini.</CardDescription>
+              <CardTitle className="font-h4">{portalKonten.pengumumanJudul}</CardTitle>
+              <CardDescription className="mt-1">{portalKonten.pengumumanDeskripsi}</CardDescription>
             </div>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
               <BellRing className="h-4 w-4" aria-hidden />
@@ -435,7 +399,7 @@ export function DashboardOverview({
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {pengumuman.map((p) => (
+              {portalKonten.pengumuman.map((p) => (
                 <li
                   key={p.judul}
                   className="rounded-xl border border-slate-200 bg-card p-3 hover:bg-sky-50/50 transition-colors"
@@ -451,7 +415,7 @@ export function DashboardOverview({
             </ul>
             <p className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-slate-400">
               <Megaphone className="h-3.5 w-3.5" aria-hidden />
-              Diperbarui oleh bagian kesiswaan
+              {portalKonten.pengumumanFooter}
             </p>
           </CardContent>
         </Card>
@@ -696,6 +660,7 @@ export function DashboardOverview({
                 <div id="ppdb-inline-form" className="pt-1">
                   <PpdbForm
                     defaultEmail={userEmail}
+                    jurusanOptions={jurusanOptions}
                     variant="dashboard"
                     onSubmitted={handleFormSubmitted}
                     defaultHasPhoto={hasPhoto}

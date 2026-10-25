@@ -7,7 +7,7 @@ import {
   WA_ADMIN,
   buildAdminWaMessage,
   buildStudentWaMessage,
-  isJurusan,
+  JurusanLabel,
   registrationNoFromSeq,
   validatePpdbDraft,
 } from "@/lib/ppdb";
@@ -15,31 +15,39 @@ import { sendWhatsApp } from "@/lib/ppdb-wa";
 import { sendPpdbConfirmationEmail } from "@/lib/ppdb-email";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 
 /**
- * Nomor pendaftaran berikutnya dari urutan TERTINGGI yang masih ada di DB
- * (C1). `count()` dipakai dulu; setelah admin menghapus pendaftaran, count()
- * menunjuk nomor lama sehingga nomor dipakai ulang dan >5 tabrakan menghabiskan
- * retry → 500 padahal form valid. Dengan MAX, nomor yang sudah terpakai selalu
- * terlewati. Fallback bila agregat gagal: +1 dari nomor yang sedang dipegang.
+ * Ambil nomor berikutnya dari urutan numerik tertinggi di DB. Kolom nomor
+ * bertipe teks, sehingga MAX teks akan menganggap "9999" lebih besar dari
+ * "10000" dan bisa membuat nomor yang sama dicoba berulang kali.
  */
-async function nextRegistrationNo(current?: string): Promise<string> {
-  const year = new Date().getFullYear();
+async function nextRegistrationNo(
+  current?: string,
+  year = new Date().getFullYear(),
+): Promise<string> {
   const seqFrom = (no: string | null | undefined): number | null => {
     const m = no ? /^PPDB-(\d{4})-(\d+)$/.exec(no) : null;
     if (!m) return null;
-    return Number(m[1]) === year ? Number(m[2]) + 1 : null;
+    return Number(m[1]) === year ? Number(m[2]) : null;
   };
   try {
-    const agg = await prisma.ppdbRegistration.aggregate({
-      _max: { registrationNo: true },
-    });
-    const seq = seqFrom(agg._max.registrationNo);
-    return registrationNoFromSeq(seq ?? 1, year);
+    const pattern = `^PPDB-${year}-([0-9]+)$`;
+    const rows = await prisma.$queryRaw<Array<{ maxSeq: bigint | null }>>`
+      SELECT MAX((substring("registrationNo" from ${pattern}))::bigint) AS "maxSeq"
+      FROM "ppdb_registrations"
+    `;
+    const dbMax = rows[0]?.maxSeq;
+    const dbSeq = dbMax == null ? 0 : Number(dbMax);
+    if (!Number.isSafeInteger(dbSeq) || dbSeq < 0) {
+      throw new Error("Urutan nomor pendaftaran di luar rentang aman.");
+    }
+    const currentSeq = seqFrom(current) ?? 0;
+    return registrationNoFromSeq(Math.max(dbSeq, currentSeq) + 1, year);
   } catch (error) {
-    console.warn("[ppdb] Gagal agregasi nomor pendaftaran, pakai fallback:", error);
+    console.warn("[ppdb] Gagal membaca urutan nomor pendaftaran, pakai fallback:", error);
     const seq = seqFrom(current);
-    return registrationNoFromSeq(seq ?? 1, year);
+    return registrationNoFromSeq((seq ?? 0) + 1, year);
   }
 }
 
@@ -97,15 +105,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid JSON body." }, { status: 400 });
   }
 
-  const result = validatePpdbDraft((payload ?? {}) as Record<string, unknown>);
+  const jurusanOptions = await getPpdbJurusanOptions();
+  const labelJurusan = (value: string) => {
+    const option = jurusanOptions.find((item) => item.value === value);
+    return option ? option.nama + " (" + option.kode + ")" : JurusanLabel(value);
+  };
+  const result = validatePpdbDraft(
+    (payload ?? {}) as Record<string, unknown>,
+    jurusanOptions,
+  );
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 });
   }
   const draft = result.data;
-
-  if (!isJurusan(draft.majorFirst) || !isJurusan(draft.majorSecond)) {
-    return NextResponse.json({ message: "Pilihan jurusan tidak valid." }, { status: 400 });
-  }
 
   const existing = await prisma.ppdbRegistration.findUnique({ where: { userId } });
   if (existing) {
@@ -115,6 +127,8 @@ export async function POST(request: Request) {
       registrationNo: existing.registrationNo,
       majorFirst: existing.majorFirst,
       majorSecond: existing.majorSecond,
+      majorFirstLabel: labelJurusan(existing.majorFirst),
+      majorSecondLabel: labelJurusan(existing.majorSecond),
     });
     if (!emailSent) {
       console.warn(
@@ -159,12 +173,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // C1: nomor urut dari agregat MAX (lihat nextRegistrationNo) — pendaftaran
+  // C1: nomor urut dari MAX numerik (lihat nextRegistrationNo) — pendaftaran
   // terhapus tidak bikin nomor dipakai ulang; kolom @unique + retry tetap
   // jaring pengaman bila ada pendaftar bersamaan.
-  let registrationNo = await nextRegistrationNo();
+  const registrationYear = new Date().getFullYear();
+  let registrationNo = await nextRegistrationNo(undefined, registrationYear);
 
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
     try {
       const created = await prisma.ppdbRegistration.create({
         data: {
@@ -200,40 +215,39 @@ export async function POST(request: Request) {
         error.code === "P2002";
 
       if (isUniqueViolation) {
-        // C2: tabrakan userId = double-submit user yang sama (request kembar
-        // lolos cek `existing` di atas karena keduanya membaca sebelum tulis).
-        // Samakan responsnya dengan cabang "sudah pernah mendaftar": 200
-        // alreadyRegistered — BUKAN retry yang pasti habis lalu 500.
-        const target = (error.meta as { target?: unknown } | undefined)?.target;
-        const dupOnUserId = Array.isArray(target)
-          ? target.includes("userId")
-          : target === "userId";
-        if (dupOnUserId) {
-          const dup = await prisma.ppdbRegistration.findUnique({
+        // Dua request dari akun yang sama bisa lolos pemeriksaan awal secara
+        // bersamaan. Pada P2002, cek userId tanpa bergantung pada format meta
+        // target Prisma/driver; bila sudah tersimpan, kembalikan nomor lama.
+        try {
+          const duplicate = await prisma.ppdbRegistration.findUnique({
             where: { userId },
           });
-          if (dup) {
+          if (duplicate) {
             const emailSent = await sendPpdbConfirmationEmail({
-              to: dup.email,
-              fullName: dup.fullName,
-              registrationNo: dup.registrationNo,
-              majorFirst: dup.majorFirst,
-              majorSecond: dup.majorSecond,
+              to: duplicate.email,
+              fullName: duplicate.fullName,
+              registrationNo: duplicate.registrationNo,
+              majorFirst: duplicate.majorFirst,
+              majorSecond: duplicate.majorSecond,
+              majorFirstLabel: labelJurusan(duplicate.majorFirst),
+              majorSecondLabel: labelJurusan(duplicate.majorSecond),
             });
             return NextResponse.json(
               {
-                registrationNo: dup.registrationNo,
-                status: dup.status,
+                registrationNo: duplicate.registrationNo,
+                status: duplicate.status,
                 alreadyRegistered: true,
                 emailDelivered: emailSent,
               },
-              { status: 200 }
+              { status: 200 },
             );
           }
+        } catch (lookupError) {
+          console.error("[ppdb] Gagal mengecek pendaftaran ganda:", lookupError);
         }
       }
 
-      if (!isUniqueViolation || attempt === 4) {
+      if (!isUniqueViolation || attempt === 9) {
         console.error("Gagal menyimpan pendaftaran PPDB:", error);
         return NextResponse.json(
           { message: "Terjadi kesalahan. Coba lagi beberapa saat." },
@@ -241,7 +255,7 @@ export async function POST(request: Request) {
         );
       }
       // Tabrakan registrationNo → ambil ulang nomor berikutnya yang masih bebas.
-      registrationNo = await nextRegistrationNo(registrationNo);
+      registrationNo = await nextRegistrationNo(registrationNo, registrationYear);
     }
   }
 
@@ -253,6 +267,8 @@ export async function POST(request: Request) {
     fullName: draft.fullName,
     majorFirst: draft.majorFirst,
     majorSecond: draft.majorSecond,
+    majorFirstLabel: labelJurusan(draft.majorFirst),
+    majorSecondLabel: labelJurusan(draft.majorSecond),
   });
   const adminMessage = buildAdminWaMessage({
     registrationNo,
@@ -261,6 +277,8 @@ export async function POST(request: Request) {
     majorFirst: draft.majorFirst,
     majorSecond: draft.majorSecond,
     parentName: draft.parentName,
+    majorFirstLabel: labelJurusan(draft.majorFirst),
+    majorSecondLabel: labelJurusan(draft.majorSecond),
   });
 
   const [toStudent, toAdmin, emailSent] = await Promise.all([
@@ -272,6 +290,8 @@ export async function POST(request: Request) {
       registrationNo,
       majorFirst: draft.majorFirst,
       majorSecond: draft.majorSecond,
+      majorFirstLabel: labelJurusan(draft.majorFirst),
+      majorSecondLabel: labelJurusan(draft.majorSecond),
     }),
   ]);
 

@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
-import { guruKaryawan } from "@/lib/guru-karyawan";
+import { guruKaryawan, type GuruKaryawan } from "@/lib/guru-karyawan";
 
 /**
  * Grid foto guru & karyawan di /guru-karyawan.
+ *
+ * Daftar orang dikirim halaman server (Admin Panel > Konten Situs > Guru &
+ * Karyawan) dengan fallback ke daftar default di src/lib/guru-karyawan.ts.
  *
  * Memakai sistem effect yang sama dengan section homepage:
  * - reveal masuk viewport (useAnimeFlowReveal) — stagger kecil karena
@@ -14,7 +17,11 @@ import { guruKaryawan } from "@/lib/guru-karyawan";
  * - tilt 3D + glare mengikuti kursor (useTiltHover + glass/glare),
  *   mati otomatis di touch device & prefers-reduced-motion.
  */
-export function GuruKaryawanGrid() {
+export function GuruKaryawanGrid({
+  items = guruKaryawan,
+}: {
+  items?: GuruKaryawan[];
+}) {
   const ref = useAnimeFlowReveal<HTMLElement>({
     direction: "center",
     distance: 60,
@@ -26,7 +33,7 @@ export function GuruKaryawanGrid() {
   return (
     <section ref={ref}>
       <div className="tilt-scene grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {guruKaryawan.map((p) => (
+        {items.map((p) => (
           <figure
             key={p.src}
             data-scrub-item

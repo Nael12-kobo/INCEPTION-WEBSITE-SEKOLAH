@@ -28,18 +28,27 @@ Tailwind CSS.
   menampilkan foto, kategori, tanggal, dan link ke artikel asli. Jika sumber
   tidak tersedia, homepage menampilkan tautan ke situs berita tanpa membuat
   artikel pengganti.
+- **Berita buatan admin** — Admin Panel → Berita bisa menulis berita sendiri
+  (judul, kategori, tanggal, ringkasan, isi artikel, gambar, tautan) yang
+  digabung dengan berita web di homepage, diurutkan dari yang terbaru, dan
+  punya halaman detail `/berita/[slug]`. Berita yang belum dipublikasikan
+  berstatus draf.
 - **Galeri fasilitas** (13 foto dokumentasi) dan halaman **Guru & Karyawan**
   (50 foto tenaga pendidik).
 - **Halaman jurusan** PPLG, TJKT, DKV, TKRO; halaman **PPDB**; kebijakan
   privasi & syarat layanan.
+- **Program keahlian** — empat jurusan bawaan (PPLG, TJKT, DKV, TKRO) dapat
+  diedit dari Admin Panel → Program Keahlian; jurusan baru juga dapat
+  ditambahkan di sana. Perubahan tampil di homepage, daftar `/jurusan`, PPDB,
+  dan halaman detail tanpa mengubah URL atau dekorasi hero bawaan.
 
 ### Portal & administrasi
 
 - **Autentikasi**: login Google, GitHub, atau email + kata sandi (bcrypt) —
   Auth.js / NextAuth v5 + Prisma Adapter, dengan peran `USER`/`ADMIN`.
 - **Portal siswa**: dashboard, akademik, profil, pengaturan.
-- **Panel admin** (`/admin`): overview, pengguna, peran, PPDB, log audit,
-  dan pengaturan situs.
+- **Panel admin** (`/admin`): overview, pengguna, peran, PPDB, program
+  keahlian, berita, log audit, dan pengaturan situs.
 
 ### AI & integrasi
 
@@ -134,13 +143,14 @@ Salin `.env.example` ke `.env`. Lengkap ada di template — ringkasannya:
 | Rute                                   | Untuk        | Isi                                     |
 | -------------------------------------- | ------------ | --------------------------------------- |
 | `/`                                    | Publik       | Landing page (profil, jurusan, berita)   |
-| `/jurusan/[kode]`                      | Publik       | Detail PPLG, TJKT, DKV, TKRO            |
+| `/jurusan/[kode]`                      | Publik       | Detail PPLG, TJKT, DKV, TKRO + jurusan tambahan |
+| `/berita/[slug]`                       | Publik       | Detail berita buatan admin       |
 | `/guru-karyawan`                       | Publik       | Galeri foto guru & karyawan               |
 | `/ppdb`                                | Publik       | Pendaftaran siswa baru                  |
 | `/chat`                                | Publik       | Chatbot AI + karakter 3D                 |
 | `/auth/*`                              | Publik       | Login, daftar, lupa/reset kata sandi     |
 | `/dashboard`, `/academic`, `/profile`, `/settings` | Siswa | Portal akademik pribadi           |
-| `/admin/*`                             | Admin        | Users, roles, PPDB, audit, settings      |
+| `/admin/*`                             | Admin        | Users, roles, PPDB, jurusan, berita, audit, settings |
 
 Navbar situs hanya tampil di route publik; route portal memakai header
 sendiri (lihat `src/components/SiteChrome.tsx`).
@@ -158,6 +168,8 @@ Catatan:
 
 - **Berita** ditarik dari WordPress sekolah dan di-cache 1 jam; kalau sumber
   tidak bisa diakses, homepage menampilkan empty state dengan tautan ke blog.
+  Berita buatan admin (tabel `beritas`) tetap tampil karena datang dari
+  database, bukan dari cache fetch tersebut.
 - Foto guru ada di `public/guru-karyawan/` dan terdaftar di
   `src/lib/guru-karyawan.ts` (tambah foto = tambah entri di sana).
 - Skema database diatur lewat `prisma/schema.prisma` (tidak ada folder
