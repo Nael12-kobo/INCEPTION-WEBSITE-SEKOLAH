@@ -1,7 +1,7 @@
 ---
 topic: jurusan
 keywords: jurusan, program keahlian, kompetensi keahlian, dkv, pplg, tjkt, tkr, tkro, otomotif, desain, jaringan, software, gim, game, rpl, tkj, multimedia
-updated: 2026-10-06
+updated: 2026-10-25
 source:
   - src/lib/ppdb.ts
   - src/components/Jurusan.tsx
@@ -57,6 +57,10 @@ Saat user bingung memilih, gunakan alur ini: **tanyakan minat dulu → cocokkan 
 - Jika minat user ambigu atau dua bidang cocok → tawarkan **2 jurusan terdekat saja** dan bandingkan singkat (bukan keempatnya sekaligus).
 - User boleh memilih 2 jurusan berbeda di PPDB (pilihan 1 prioritas, pilihan 2 cadangan) — sarankan kombinasi minat 1 + minat 2.
 - Arahkan ke halaman `/jurusan` untuk detail tiap jurusan, atau `/ppdb` bila sudah ingin mendaftar.
+
+## Jurusan tambahan (dikelola admin)
+
+Selain 4 jurusan di atas, sekolah bisa menambah jurusan baru lewat Admin Panel → Program Keahlian (tersimpan di database, tampil di `/jurusan` dan homepage). Daftar paling lengkap selalu ada di halaman `/jurusan`. Kalau user menanyakan jurusan yang tidak tercantum di file ini, arahkan ke `/jurusan` — jangan mengarang nama, fokus, maupun prospek jurusan yang tidak ada datanya.
 
 ## Jangan jawab / jangan karang
 
