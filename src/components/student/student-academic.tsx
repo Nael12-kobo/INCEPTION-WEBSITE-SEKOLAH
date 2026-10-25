@@ -6,6 +6,8 @@ import {
   DAY_OPTIONS,
   formatDueAt,
   formatDateOnly,
+  formatScheduleRange,
+  compareScheduleStarts,
   scorePredicate,
   type AcademicDomain,
   type AttendanceStatus,
@@ -61,7 +63,7 @@ async function scheduleSection(
     day,
     items: visible
       .filter((r) => r.day === day)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      .sort((a, b) => compareScheduleStarts(a.startTime, b.startTime)),
   })).filter((g) => g.items.length > 0);
 
   if (groups.length === 0) return EMPTY;
@@ -87,7 +89,7 @@ async function scheduleSection(
                 {group.items.map((item) => (
                   <tr key={item.id} className="border-t border-slate-100">
                     <td className="w-36 px-4 py-2.5 text-xs font-semibold tabular-nums text-slate-500">
-                      {item.startTime}–{item.endTime}
+                      {formatScheduleRange(item.startTime, item.endTime)}
                     </td>
                     <td className="px-4 py-2.5 text-sm font-semibold text-slate-800">
                       {item.subject}

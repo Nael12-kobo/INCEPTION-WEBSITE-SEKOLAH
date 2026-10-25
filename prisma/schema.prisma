@@ -279,16 +279,16 @@ model PpdbDocumentReview {
 
 // ===== Data akademik siswa (Bagian C) =====================================
 // Diisi admin lewat Admin Panel > Akademik, dibaca portal siswa /student/*.
-// Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "YYYY-MM-DDTHH:mm")
-// agar bebas masalah zona waktu dan cocok langsung dengan input form.
+// Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "JP 1" atau
+// "YYYY-MM-DDTHH:mm") agar bebas masalah zona waktu dan mendukung jadwal JP.
 
 /// Jadwal pelajaran/piket per jurusan. major null hanya tersisa untuk data lama
 /// yang belum ditetapkan; jadwal tersebut tidak ditampilkan ke portal siswa.
 model AcademicSchedule {
   id        String   @id @default(cuid())
   day       String // "Senin" .. "Sabtu"
-  startTime String // "07:30"
-  endTime   String // "09:00"
+  startTime String // "07:30" atau "JP 1"
+  endTime   String // "09:00" atau "JP 4"
   subject   String
   teacher   String?
   major     String? // Pilihan jurusan; null = data lama belum ditetapkan

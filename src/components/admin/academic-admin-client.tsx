@@ -23,6 +23,7 @@ import {
   GRADE_KINDS,
   formatDueAt,
   formatDateOnly,
+  formatScheduleRange,
   scorePredicate,
   type AcademicDomain,
   type AttendanceStatus,
@@ -113,8 +114,20 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
         required: true,
         options: DAY_OPTIONS.map((d) => ({ value: d, label: d })),
       },
-      { key: "startTime", label: "Jam mulai", type: "time", required: true },
-      { key: "endTime", label: "Jam selesai", type: "time", required: true },
+      {
+        key: "startTime",
+        label: "Mulai (jam / JP)",
+        type: "text",
+        required: true,
+        placeholder: "mis. 07:30 atau JP 1",
+      },
+      {
+        key: "endTime",
+        label: "Selesai (jam / JP)",
+        type: "text",
+        required: true,
+        placeholder: "mis. 08:20 atau JP 4",
+      },
       {
         key: "subject",
         label: "Mata pelajaran",
@@ -148,7 +161,8 @@ const DOMAIN_CONFIG: Record<AcademicDomain, DomainConfig> = {
       {
         key: "jam",
         label: "Jam",
-        render: (r) => `${r.startTime}–${r.endTime}`,
+        render: (r) =>
+          formatScheduleRange(String(r.startTime), String(r.endTime)),
       },
       { key: "subject", label: "Mata Pelajaran", render: (r) => dash(r.subject) },
       { key: "teacher", label: "Guru", render: (r) => dash(r.teacher) },
@@ -694,7 +708,7 @@ export function AcademicAdminClient({
               </DialogTitle>
               <DialogDescription>
                 {domain === "schedule"
-                  ? "Pilih satu jurusan. Jadwal hanya akan tampil kepada siswa jurusan tersebut, bukan semua jurusan."
+                  ? "Isi jam HH:mm atau JP 1–10, lalu pilih satu jurusan. Jadwal hanya tampil kepada jurusan tersebut."
                   : "Data langsung tampil di portal siswa setelah disimpan."}
               </DialogDescription>
             </DialogHeader>

@@ -62,6 +62,36 @@ export const DAY_OPTIONS = [
   "Sabtu",
 ] as const;
 
+const JP_SLOT_RE = /^JP\s*(10|[1-9])$/i;
+
+/** Parse nilai waktu yang memakai format periode, mis. "JP 3". */
+export function parseJpSlot(value: string): number | null {
+  const match = value.trim().match(JP_SLOT_RE);
+  return match ? Number(match[1]) : null;
+}
+
+/** Tampilkan jam biasa atau rentang JP dengan ringkas. */
+export function formatScheduleRange(start: string, end: string): string {
+  const startJp = parseJpSlot(start);
+  const endJp = parseJpSlot(end);
+  if (startJp !== null && endJp !== null) {
+    return startJp === endJp
+      ? `JP ${startJp}`
+      : `JP ${startJp}–${endJp}`;
+  }
+  return `${start}–${end}`;
+}
+
+/** Urutkan jadwal berdasarkan angka JP atau jam HH:mm, bukan teks mentah. */
+export function compareScheduleStarts(a: string, b: string): number {
+  const aJp = parseJpSlot(a);
+  const bJp = parseJpSlot(b);
+  if (aJp !== null && bJp !== null) return aJp - bJp;
+  if (aJp !== null) return -1;
+  if (bJp !== null) return 1;
+  return a.localeCompare(b);
+}
+
 export const ATTENDANCE_STATUSES = ["HADIR", "IZIN", "SAKIT", "ALFA"] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
