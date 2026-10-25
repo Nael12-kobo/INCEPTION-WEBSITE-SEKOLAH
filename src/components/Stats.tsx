@@ -1,20 +1,32 @@
 "use client";
 
-import { Award, Building2, GraduationCap, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useAnimeCounter } from "@/hooks/useAnimeReveal";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
+import {
+  IKON_STATISTIK,
+  SITE_CONTENT_DEFAULTS,
+  type StatistikKonten,
+} from "@/lib/site-content";
 
-const stats = [
-  { icon: Users, value: 911, suffix: "+", label: "Siswa Aktif" },
-  { icon: GraduationCap, value: 67, suffix: "", label: "Guru & Tendik" },
-  { icon: Building2, value: 12, suffix: "+", label: "Mitra Industri" },
-  { icon: Award, value: 4530, suffix: "+", label: "Alumni" },
-];
-
-export function Stats() {
+/**
+ * Kartu statistik beranda — angka & label dari Admin Panel > Konten Situs
+ * (`site_contents.statistik`).
+ */
+export function Stats({
+  konten = SITE_CONTENT_DEFAULTS.statistik,
+}: {
+  konten?: StatistikKonten;
+}) {
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "right", distance: 160 });
   useTiltHover(ref, { maxTilt: 10, scale: 1.04 });
+  const stats = konten.items.map((s) => ({
+    ...s,
+    // Lookup langsung dari record statis — komponen ikon tidak boleh
+    // "dibuat" saat render (lint react-hooks/static-components).
+    icon: IKON_STATISTIK[s.ikon] ?? Users,
+  }));
   return (
     <section id="statistik" ref={ref} className="relative bg-black/40">
       <div className="tilt-scene mx-auto max-w-6xl px-4 py-14 sm:px-6">
@@ -33,7 +45,7 @@ export function Stats() {
                 <s.icon className="h-6 w-6 text-sky-600" />
               </span>
               <dd className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                <StatValue value={s.value} suffix={s.suffix} />
+                <StatValue value={s.nilai} suffix={s.suffix} />
               </dd>
               <dt className="mt-1 text-sm font-medium text-slate-500">{s.label}</dt>
             </div>

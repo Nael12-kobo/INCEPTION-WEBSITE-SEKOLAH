@@ -1,5 +1,5 @@
 import { getResend } from "@/lib/resend";
-import { JurusanLabel, type JurusanValue } from "@/lib/ppdb";
+import { JurusanLabel } from "@/lib/ppdb";
 
 const SENDER =
   process.env.RESEND_FROM ??
@@ -22,13 +22,15 @@ export async function sendPpdbConfirmationEmail(input: {
   to: string;
   fullName: string;
   registrationNo: string;
-  majorFirst: JurusanValue;
-  majorSecond: JurusanValue;
+  majorFirst: string;
+  majorSecond: string;
+  majorFirstLabel?: string;
+  majorSecondLabel?: string;
 }): Promise<boolean> {
   const name = escapeHtml(input.fullName);
   const registrationNo = escapeHtml(input.registrationNo);
-  const majorFirst = escapeHtml(JurusanLabel(input.majorFirst));
-  const majorSecond = escapeHtml(JurusanLabel(input.majorSecond));
+  const majorFirst = escapeHtml(input.majorFirstLabel ?? JurusanLabel(input.majorFirst));
+  const majorSecond = escapeHtml(input.majorSecondLabel ?? JurusanLabel(input.majorSecond));
 
   try {
     const { error } = await getResend().emails.send({

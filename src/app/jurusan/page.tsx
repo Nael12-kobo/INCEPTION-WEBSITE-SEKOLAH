@@ -1,84 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Code2, Wifi, Palette, Wrench } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { getJurusanAktif } from "@/lib/jurusan-server";
+import { getIkonJurusan, getWarnaJurusan } from "@/lib/jurusan";
 
 export const metadata: Metadata = {
   title: "Program Keahlian — SMK Telekomunikasi Tunas Harapan",
   description:
-    "Jelajahi program PPLG, TJKT, DKV, dan TKRO di SMK Telekomunikasi Tunas Harapan.",
+    "Jelajahi seluruh program keahlian di SMK Telekomunikasi Tunas Harapan.",
 };
 
-const jurusan = [
-  {
-    nama: "PPLG",
-    deskripsi: "Pemrograman Perangkat Lunak & Gim",
-    icon: "💻",
-    color: "red",
-    href: "/jurusan/PPLG",
-    lucide: <Code2 className="size-5" />,
-    detail:
-      "Belajar pemrograman web, mobile, gim, UI/UX, dan cloud computing. Siap jadi developer profesional.",
-  },
-  {
-    nama: "TJKT",
-    deskripsi: "Teknologi Jaringan Komputer & Telekomunikasi",
-    icon: "🌐",
-    color: "gray",
-    href: "/jurusan/TJKT",
-    lucide: <Wifi className="size-5" />,
-    detail:
-      "Kuasai jaringan komputer, cybersecurity, telekomunikasi, dan cloud computing. Jadi ahli infrastruktur IT.",
-  },
-  {
-    nama: "DKV",
-    deskripsi: "Desain Komunikasi Visual",
-    icon: "🎨",
-    color: "blue",
-    href: "/jurusan/DKV",
-    lucide: <Palette className="size-5" />,
-    detail:
-      "Asah kreativitas di desain grafis, UI/UX, motion graphics, fotografi, dan branding.",
-  },
-  {
-    nama: "TKRO",
-    deskripsi: "Teknik Kendaraan Ringan Otomotif",
-    icon: "🔧",
-    color: "orange",
-    href: "/jurusan/TKRO",
-    lucide: <Wrench className="size-5" />,
-    detail:
-      "Jadi teknisi otomotif profesional. Kuasai mesin, kelistrikan, diagnostik, dan teknologi EV.",
-  },
-];
+// Konten bisa ditambah/diubah admin → render per request, jangan di-cache
+// hasil build (revalidatePath di API admin juga sudah membersihkan cache).
+export const revalidate = 0;
 
-const colorClasses: Record<string, { bg: string; text: string; border: string; hover: string }> = {
-  red: {
-    bg: "bg-red-100 dark:bg-red-900/50",
-    text: "text-red-600 dark:text-red-400",
-    border: "hover:border-red-300 dark:hover:border-red-600",
-    hover: "group-hover:bg-red-600",
-  },
-  gray: {
-    bg: "bg-gray-100 dark:bg-gray-700",
-    text: "text-gray-600 dark:text-gray-300",
-    border: "hover:border-gray-300 dark:hover:border-gray-500",
-    hover: "group-hover:bg-gray-600",
-  },
-  blue: {
-    bg: "bg-blue-100 dark:bg-blue-900/50",
-    text: "text-blue-600 dark:text-blue-400",
-    border: "hover:border-blue-300 dark:hover:border-blue-600",
-    hover: "group-hover:bg-blue-600",
-  },
-  orange: {
-    bg: "bg-orange-100 dark:bg-orange-900/50",
-    text: "text-orange-600 dark:text-orange-400",
-    border: "hover:border-orange-300 dark:hover:border-orange-600",
-    hover: "group-hover:bg-orange-600",
-  },
-};
+export default async function JurusanPage() {
+  // Bawaan (PPLG, TJKT, DKV, TKRO) digabung jurusan tambahan dari database.
+  const jurusan = await getJurusanAktif();
 
-export default function JurusanPage() {
   return (
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950">
       {/* Hero */}
@@ -88,8 +27,9 @@ export default function JurusanPage() {
             Program Keahlian
           </h1>
           <p className="text-lg text-blue-100 max-w-2xl mx-auto">
-            SMK Telekomunikasi Tunas Harapan menyediakan 4 program keahlian
-            unggulan yang siap mencetak lulusan profesional dan berkompetensi.
+            SMK Telekomunikasi Tunas Harapan menyediakan {jurusan.length}{" "}
+            program keahlian unggulan yang siap mencetak lulusan profesional
+            dan berkompetensi.
           </p>
         </div>
       </section>
@@ -99,31 +39,32 @@ export default function JurusanPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {jurusan.map((j) => {
-              const colors = colorClasses[j.color];
+              const warna = getWarnaJurusan(j.warna);
+              const Icon = getIkonJurusan(j.ikon);
               return (
                 <Link
-                  key={j.nama}
-                  href={j.href}
-                  className={`group bg-card dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all border dark:border-gray-700 ${colors.border}`}
+                  key={j.kode}
+                  href={`/jurusan/${j.kode}`}
+                  className={`group bg-card dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all border dark:border-gray-700 ${warna.border}`}
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className={`w-14 h-14 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center flex-shrink-0 transition-colors ${colors.hover} group-hover:text-white`}
+                      className={`w-14 h-14 rounded-xl ${warna.bg} ${warna.teks} flex items-center justify-center flex-shrink-0 transition-colors ${warna.hover} group-hover:text-white`}
                     >
-                      <span className="text-3xl">{j.icon}</span>
+                      <Icon className="size-7" aria-hidden />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                          {j.nama}
+                          {j.singkatan} — {j.nama}
                         </h3>
                         <ChevronRight className="size-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
                       </div>
                       <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                        {j.deskripsi}
+                        {j.tagline ?? j.singkatan}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        {j.detail}
+                        {j.deskripsi}
                       </p>
                     </div>
                   </div>

@@ -7,11 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { AuthLogo } from "@/components/auth/logo";
 import { InstagramIcon } from "@/components/ui/instagram-icon";
 import { PpdbHero } from "@/components/ppdb/ppdb-hero";
-import {
-  JURUSAN_OPTIONS,
-  PPDB_PHASE,
-  PPDB_YEAR,
-} from "@/lib/ppdb";
+import { PPDB_PHASE, PPDB_YEAR } from "@/lib/ppdb";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 import { SUPPORT_CHANNEL, SUPPORT_IG_URL } from "@/lib/support";
 
 export const metadata: Metadata = {
@@ -35,7 +32,10 @@ const STEPS = [
 ] as const;
 
 export default async function PpdbPage() {
-  const session = await auth();
+  const [session, jurusanOptions] = await Promise.all([
+    auth(),
+    getPpdbJurusanOptions(),
+  ]);
   // Halaman ini kini murni informasi — formulir diisi dari dashboard.
   // Tombol CTA menyesuaikan: sudah login → dashboard, belum → halaman masuk.
   const isLoggedIn = Boolean(session?.user?.email);
@@ -82,14 +82,14 @@ export default async function PpdbPage() {
           <div className="text-center">
             <Badge variant="secondary">Kompetensi Keahlian</Badge>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900">
-              Empat jurusan yang bisa dipilih
+              {jurusanOptions.length} program keahlian yang bisa dipilih
             </h2>
             <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
               Setiap pendaftar memilih dua jurusan: satu prioritas dan satu cadangan.
             </p>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {JURUSAN_OPTIONS.map((j, i) => (
+            {jurusanOptions.map((j, i) => (
               <div
                 key={j.value}
                 className="flex gap-4 rounded-2xl border border-sky-100 bg-card p-5 transition-shadow hover:shadow-lg hover:shadow-sky-100"

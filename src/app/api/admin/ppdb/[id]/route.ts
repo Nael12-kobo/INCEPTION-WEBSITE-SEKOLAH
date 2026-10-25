@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, canManagePpdb } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { AUDIT_ACTIONS, logAudit } from "@/lib/audit";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 
 const VALID_STATUSES = [
   "PENDING",
@@ -10,9 +11,7 @@ const VALID_STATUSES = [
   "REGISTERED",
   "REJECTED",
 ] as const;
-const VALID_MAJORS = ["DKV", "PPLG", "TJKT", "TKR"] as const;
 type PpdbStatus = (typeof VALID_STATUSES)[number];
-type PpdbJurusan = (typeof VALID_MAJORS)[number];
 
 interface PpdbPatchInput {
   status?: unknown;
@@ -72,30 +71,26 @@ export async function PATCH(
       data.status = body.status as PpdbStatus;
     }
 
-    if (body.majorFirst !== undefined) {
-      if (
-        typeof body.majorFirst !== "string" ||
-        !(VALID_MAJORS as readonly string[]).includes(body.majorFirst)
-      ) {
-        return NextResponse.json(
-          { error: "Invalid majorFirst. Use: " + VALID_MAJORS.join(", ") },
-          { status: 400 }
-        );
+    if (body.majorFirst !== undefined || body.majorSecond !== undefined) {
+      const options = await getPpdbJurusanOptions();
+      const allowed = new Set(options.map((item) => item.value));
+      if (body.majorFirst !== undefined) {
+        if (typeof body.majorFirst !== "string" || !allowed.has(body.majorFirst)) {
+          return NextResponse.json({ error: "Pilihan jurusan pertama tidak valid." }, { status: 400 });
+        }
+        data.majorFirst = body.majorFirst;
       }
-      data.majorFirst = body.majorFirst as PpdbJurusan;
-    }
-
-    if (body.majorSecond !== undefined) {
-      if (
-        typeof body.majorSecond !== "string" ||
-        !(VALID_MAJORS as readonly string[]).includes(body.majorSecond)
-      ) {
-        return NextResponse.json(
-          { error: "Invalid majorSecond. Use: " + VALID_MAJORS.join(", ") },
-          { status: 400 }
-        );
+      if (body.majorSecond !== undefined) {
+        if (typeof body.majorSecond !== "string" || !allowed.has(body.majorSecond)) {
+          return NextResponse.json({ error: "Pilihan jurusan kedua tidak valid." }, { status: 400 });
+        }
+        data.majorSecond = body.majorSecond;
       }
-      data.majorSecond = body.majorSecond as PpdbJurusan;
+      const first = (data.majorFirst ?? existing.majorFirst) as string;
+      const second = (data.majorSecond ?? existing.majorSecond) as string;
+      if (first === second) {
+        return NextResponse.json({ error: "Pilihan jurusan pertama dan kedua harus berbeda." }, { status: 400 });
+      }
     }
 
     if (body.fullName !== undefined) {

@@ -9,8 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
-const TITLE_TOP = "SMK Telekomunikasi ";
-const TITLE_BOTTOM = "Tunas Harapan";
+import { SITE_CONTENT_DEFAULTS, type HeroKonten } from "@/lib/site-content";
+
+/** Posisi kartu statistik melayang (mengikuti urutan, diputar tiap 4). */
+const POSISI_KARTU = [
+  "-left-10 top-6 sm:left-15",
+  "-right-3 bottom-16 sm:right-12",
+  "left-4 bottom-4 sm:left-15",
+  "right-4 top-4 sm:right-12",
+];
 
 /**
  * Huruf per-karakter untuk animasi `data-hero-letter`.
@@ -52,7 +59,15 @@ function AnimatedTitle({ text, prefix }: { text: string; prefix: string }) {
   );
 }
 
-export function Hero() {
+/**
+ * Hero beranda. Teks & CTA datang dari Admin Panel > Konten Situs
+ * (`site_contents.hero`); nilai default ada di src/lib/site-content.ts.
+ */
+export function Hero({
+  konten = SITE_CONTENT_DEFAULTS.hero,
+}: {
+  konten?: HeroKonten;
+}) {
   const rootRef = useRef<HTMLElement | null>(null);
   const contentRef = useAnimeFlowReveal<HTMLDivElement>({
     direction: "alternate",
@@ -153,18 +168,18 @@ export function Hero() {
         <div data-scrub-item data-scrub-dir="left">
           <Badge data-hero-fade variant="outline" className="glass-chip mb-5">
             <Signal className="h-3.5 w-3.5 text-sky-600" />
-            PPDB Tahun Ajaran 2026/2027 Telah Dibuka
+            {konten.badge}
           </Badge>
 
           <h1 className="text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            <span className="block" aria-label="SMK Telekomunikasi">
-              <AnimatedTitle text={TITLE_TOP} prefix="top" />
+            <span className="block" aria-label={konten.judulAtas.trim()}>
+              <AnimatedTitle text={konten.judulAtas} prefix="top" />
             </span>
             <span
               className="block bg-gradient-to-r from-sky-600 via-sky-500 to-cyan-500 bg-clip-text dark:to-blue-500"
-              aria-label="Tunas Harapan"
+              aria-label={konten.judulBawah}
             >
-              <AnimatedTitle text={TITLE_BOTTOM} prefix="bottom" />
+              <AnimatedTitle text={konten.judulBawah} prefix="bottom" />
             </span>
           </h1>
 
@@ -172,9 +187,7 @@ export function Hero() {
             data-hero-fade
             className="mt-5 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg"
           >
-            Sekolah vokasi modern di bidang telekomunikasi, jaringan komputer,
-            dan teknologi digital — mencetak lulusan siap kerja, siap kuliah,
-            dan siap berwirausaha.
+            {konten.deskripsi}
           </p>
 
           <div
@@ -183,8 +196,8 @@ export function Hero() {
           >
             <span data-magnetic className="inline-flex">
               <Button size="lg" asChild className="shadow-lg shadow-sky-300/50">
-                <Link href="#ppdb" className="dark:text-white">
-                  Daftar PPDB
+                <Link href={konten.cta1.href} className="dark:text-white">
+                  {konten.cta1.label}
                   <ArrowRight />
                 </Link>
               </Button>
@@ -196,29 +209,25 @@ export function Hero() {
                 asChild
                 className="glass-chip"
               >
-                <Link href="#jurusan">
+                <Link href={konten.cta2.href}>
                   <PlayCircle />
-                  Jelajahi Jurusan
+                  {konten.cta2.label}
                 </Link>
               </Button>
             </span>
           </div>
 
           <div data-hero-fade className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
-            {[
-              ["A", "Akreditasi Sekolah"],
-              ["12+", "Mitra Industri"],
-              ["100%", "Praktik & Magang"],
-            ].map(([v, l]) => (
+            {konten.chips.map((chip) => (
               <div
-                key={l}
+                key={`${chip.nilai}-${chip.label}`}
                 data-magnetic
                 className="glass-chip glass-hover flex items-center gap-2.5 rounded-2xl px-3 py-2"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-extrabold text-white shadow-md shadow-sky-300/50 dark:to-blue-500">
-                  {v === "100%" ? <Award className="h-4 w-4" /> : v}
+                  {chip.nilai === "100%" ? <Award className="h-4 w-4" /> : chip.nilai}
                 </span>
-                <span className="text-sm font-medium text-slate-600">{l}</span>
+                <span className="text-sm font-medium text-slate-600">{chip.label}</span>
               </div>
             ))}
           </div>
@@ -287,24 +296,17 @@ export function Hero() {
               loading="eager"
               className="absolute left-1/2 top-1/2 z-20 block h-auto w-[300px] max-w-[75%] -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none object-contain drop-shadow"
             />
-            <div
-              data-magnetic
-              className="glass-strong absolute -left-10 top-6 rounded-2xl px-4 py-3 sm:left-15"
-              style={{ translate: "0 0 64px" }}
-            >
-              <p className="text-2xl font-extrabold text-sky-700">911+</p>
-              <p className="text-xs font-medium text-slate-500">Siswa aktif</p>
-            </div>
-            <div
-              data-magnetic
-              className="glass-strong absolute -right-3 bottom-16 rounded-2xl px-4 py-3 sm:right-12"
-              style={{ translate: "0 0 64px" }}
-            >
-              <p className="text-2xl font-extrabold text-sky-700">96%</p>
-              <p className="text-xs font-medium text-slate-500">
-                Lulusan terserap
-              </p>
-            </div>
+            {konten.kartu.map((kartu, i) => (
+              <div
+                key={`${kartu.nilai}-${kartu.label}`}
+                data-magnetic
+                className={`glass-strong absolute rounded-2xl px-4 py-3 ${POSISI_KARTU[i % POSISI_KARTU.length]}`}
+                style={{ translate: "0 0 64px" }}
+              >
+                <p className="text-2xl font-extrabold text-sky-700">{kartu.nilai}</p>
+                <p className="text-xs font-medium text-slate-500">{kartu.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

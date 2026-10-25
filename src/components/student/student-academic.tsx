@@ -6,11 +6,14 @@ import {
   DAY_OPTIONS,
   formatDueAt,
   formatDateOnly,
+  formatScheduleRange,
+  compareScheduleStarts,
   scorePredicate,
   type AcademicDomain,
   type AttendanceStatus,
 } from "@/lib/academic";
 import { JurusanLabel, type JurusanValue } from "@/lib/ppdb";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 
 /**
  * Isi konten halaman /student/* sesuai domain akademik (Bagian C).
@@ -46,14 +49,21 @@ async function scheduleSection(
   studentMajor: string | null
 ): Promise<AcademicSectionResult> {
   const rows = await prisma.academicSchedule.findMany();
-  const visible = rows.filter(
-    (r) => !r.major || !studentMajor || r.major === studentMajor
-  );
+  // Jadwal tanpa jurusan (data lama yang sebelumnya berlaku global) tidak
+  // ditampilkan ke semua siswa. Admin perlu menetapkan jurusannya dahulu.
+  const visible = studentMajor
+    ? rows.filter((r) => r.major === studentMajor)
+    : [];
+  const jurusanOptions = await getPpdbJurusanOptions();
+  const labelJurusan = (value: string) => {
+    const option = jurusanOptions.find((item) => item.value === value);
+    return option ? `${option.nama} (${option.kode})` : JurusanLabel(value);
+  };
   const groups = DAY_OPTIONS.map((day) => ({
     day,
     items: visible
       .filter((r) => r.day === day)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      .sort((a, b) => compareScheduleStarts(a.startTime, b.startTime)),
   })).filter((g) => g.items.length > 0);
 
   if (groups.length === 0) return EMPTY;
@@ -79,13 +89,13 @@ async function scheduleSection(
                 {group.items.map((item) => (
                   <tr key={item.id} className="border-t border-slate-100">
                     <td className="w-36 px-4 py-2.5 text-xs font-semibold tabular-nums text-slate-500">
-                      {item.startTime}–{item.endTime}
+                      {formatScheduleRange(item.startTime, item.endTime)}
                     </td>
                     <td className="px-4 py-2.5 text-sm font-semibold text-slate-800">
                       {item.subject}
                       {item.major ? (
                         <span className="ml-2 text-xs font-medium text-slate-400">
-                          {JurusanLabel(item.major as JurusanValue)}
+                          {labelJurusan(item.major)}
                         </span>
                       ) : null}
                     </td>

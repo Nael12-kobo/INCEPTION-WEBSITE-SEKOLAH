@@ -1,36 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ClipboardList, FileCheck2, PhoneCall } from "lucide-react";
+import { ArrowRight, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
-import { SUPPORT_IG_URL } from "@/lib/support";
+import {
+  IKON_LANGKAH_PPDB,
+  SITE_CONTENT_DEFAULTS,
+  type PpdbCtaKonten,
+} from "@/lib/site-content";
 
-const steps = [
-  {
-    icon: ClipboardList,
-    title: "Isi formulir",
-    desc: "Online atau langsung ke sekretariat PPDB.",
-  },
-  {
-    icon: FileCheck2,
-    title: "Verifikasi berkas",
-    desc: "Rapor, KK, akta, dan pas foto.",
-  },
-  {
-    icon: PhoneCall,
-    title: "Wawancara & daftar ulang",
-    desc: "Tes minat bakat + konfirmasi.",
-  },
-];
-
-export function CtaPpdb() {
+/**
+ * Banner ajakan PPDB di beranda — teks, tombol, dan langkah diatur dari
+ * Admin Panel > Konten Situs (`site_contents.ppdb-cta`).
+ */
+export function CtaPpdb({
+  konten = SITE_CONTENT_DEFAULTS["ppdb-cta"],
+}: {
+  konten?: PpdbCtaKonten;
+}) {
   const ref = useAnimeFlowReveal<HTMLElement>({
     direction: "center",
     distance: 0,
   });
   useTiltHover(ref, { maxTilt: 5, scale: 1.015 });
+  // Ikon langkah mengikuti urutan (bisa < atau > 3) — default dipakai bila
+  // jumlah langkah melebihi daftar ikon.
+  const steps = konten.langkah.map((s, i) => ({
+    ...s,
+    icon: IKON_LANGKAH_PPDB[i] ?? ClipboardList,
+  }));
   return (
     <section id="ppdb" ref={ref} className="bg-transparent">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
@@ -49,15 +49,13 @@ export function CtaPpdb() {
           </div>
           <div className="relative">
             <p className="text-sm font-semibold uppercase tracking-widest text-sky-100 dark:text-white/80">
-              {/* PPDB 2026/2027 — Gelombang 1 */}
-              PPDB 2026/2027
+              {konten.eyebrow}
             </p>
             <h2 className="mx-auto mt-3 max-w-2xl text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Amankan kursimu di SMK Telekomunikasi Tunas Harapan
+              {konten.judul}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-sky-50 dark:text-white/80">
-              Kuota terbatas 3 kelas per jurusan. Pendaftar gelombang pertama
-              berkesempatan mendapat beasiswa dan gratis biaya pendaftaran.
+              {konten.deskripsi}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <span data-magnetic className="inline-flex">
@@ -67,8 +65,8 @@ export function CtaPpdb() {
                   asChild
                   className="bg-white/95 hover:bg-white/95 text-sky-800 shadow-lg shadow-sky-900/20"
                 >
-                  <Link href="/ppdb" className="dark:text-cyan-800">
-                    Isi Formulir PPDB
+                  <Link href={konten.cta1.href} className="dark:text-cyan-800">
+                    {konten.cta1.label}
                     <ArrowRight />
                   </Link>
                 </Button>
@@ -80,8 +78,8 @@ export function CtaPpdb() {
                   asChild
                   className="border-white/50 bg-card/15 text-white backdrop-blur hover:bg-card/25 hover:text-white"
                 >
-                  <a href={SUPPORT_IG_URL} target="_blank" rel="noopener noreferrer">
-                    Hubungi Panitia
+                  <a href={konten.cta2.href} target="_blank" rel="noopener noreferrer">
+                    {konten.cta2.label}
                   </a>
                 </Button>
               </span>
@@ -89,7 +87,7 @@ export function CtaPpdb() {
             <div className="mx-auto mt-10 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
               {steps.map((s, i) => (
                 <div
-                  key={s.title}
+                  key={`${s.judul}-${i}`}
                   data-magnetic
                   className="rounded-2xl border border-white/30 bg-card/15 p-4 backdrop-blur-xl transition-colors hover:bg-card/25"
                 >

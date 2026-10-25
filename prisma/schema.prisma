@@ -184,13 +184,6 @@ model ChatMissLog {
 // Pendaftaran PPDB 2026/2027. Satu akun (User) boleh mendaftar satu kali;
 // nomor pendaftaran dibuat server dan dipakai sebagai rujukan di WhatsApp.
 
-enum PpdbJurusan {
-  DKV
-  PPLG
-  TJKT
-  TKR
-}
-
 enum PpdbStatus {
   PENDING
   CONTACTED
@@ -217,8 +210,8 @@ model PpdbRegistration {
   previousSchool String
   address       String
   phone         String
-  majorFirst    PpdbJurusan
-  majorSecond   PpdbJurusan
+  majorFirst    String
+  majorSecond   String
   parentName    String
   parentPhone   String
   notes         String?
@@ -286,18 +279,19 @@ model PpdbDocumentReview {
 
 // ===== Data akademik siswa (Bagian C) =====================================
 // Diisi admin lewat Admin Panel > Akademik, dibaca portal siswa /student/*.
-// Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "YYYY-MM-DDTHH:mm")
-// agar bebas masalah zona waktu dan cocok langsung dengan input form.
+// Tanggal & jam memakai string ("YYYY-MM-DD", "HH:mm", "JP 1" atau
+// "YYYY-MM-DDTHH:mm") agar bebas masalah zona waktu dan mendukung jadwal JP.
 
-/// Jadwal pelajaran/piket — berlaku per jurusan atau semua (major null).
+/// Jadwal pelajaran/piket per jurusan. major null hanya tersisa untuk data lama
+/// yang belum ditetapkan; jadwal tersebut tidak ditampilkan ke portal siswa.
 model AcademicSchedule {
   id        String   @id @default(cuid())
   day       String // "Senin" .. "Sabtu"
-  startTime String // "07:30"
-  endTime   String // "09:00"
+  startTime String // "07:30" atau "JP 1"
+  endTime   String // "09:00" atau "JP 4"
   subject   String
   teacher   String?
-  major     String? // JurusanValue; null = semua jurusan
+  major     String? // Pilihan jurusan; null = data lama belum ditetapkan
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -350,6 +344,115 @@ model AcademicTask {
 
   @@index([dueAt])
   @@map("academic_tasks")
+}
+
+// ===== Konten situs publik (Bagian D) =====================================
+// Diisi admin lewat Admin Panel > Program Keahlian / Berita, dibaca halaman
+// publik /jurusan, homepage, dan /berita/[slug].
+
+/// Program keahlian.
+///
+/// Empat jurusan bawaan (PPLG, TJKT, DKV, TKRO) disimpan di sini dengan
+/// flag `bawaan = true` supaya bisa diedit dari Admin Panel. Halaman detail
+/// mereka tetap memakai route statis (`src/app/jurusan/<KODE>/page.tsx`) agar
+/// dekorasi hero khusus tetap dipakai, tetapi kontennya dibaca dari baris DB
+/// (fallback ke konstanta bila belum tersedia). Jurusan BARU memakai kode
+/// huruf kecil dan dirender `src/app/jurusan/[kode]/page.tsx`.
+model Jurusan {
+  id        String   @id @default(cuid())
+  /// Slug URL (huruf kecil/angka/dash), mis. "ul" — unik, case-sensitive.
+  kode      String   @unique
+  /// Nama lengkap program keahlian.
+  nama      String
+  /// Singkatan/ kode kelas, mis. "UL".
+  singkatan String
+  /// Subjudul hero halaman detail (opsional).
+  tagline   String?
+  /// Ringkasan singkat untuk kartu homepage & daftar /jurusan.
+  deskripsi String
+  /// Narasi "Tentang <jurusan>" — paragraf dipisahkan baris kosong.
+  tentang   String   @default("")
+  /// Chip keterampilan di kartu homepage, mis. ["Web", "Database"].
+  skills    String[] @default([])
+  /// Daftar poin keunggulan jurusan.
+  keunggulan String[] @default([])
+  /// Materi yang dipelajari: [{ "judul": string, "deskripsi": string }].
+  kompetensi Json     @default("[]")
+  /// Prospek karir: [{ "pekerjaan": string, "gaji": string }].
+  karir     Json     @default("[]")
+  /// Kunci ikon lucide — daftarnya di IKON_JURUSAN (src/lib/jurusan.ts).
+  ikon      String   @default("GraduationCap")
+  /// Kunci tema warna — daftarnya di WARNA_JURUSAN (src/lib/jurusan.ts).
+  warna     String   @default("sky")
+  /// URL gambar hero halaman detail (opsional; gambar eksternal ditampilkan
+  /// tanpa optimizer Next supaya bebas domain). Boleh juga path lokal
+  /// yang diawali "/" (mis. "/jurusan/PPLG.png") untuk jurusan bawaan.
+  gambar    String?
+  /// Paragraf intro tambahan di hero halaman detail (opsional).
+  heroTeks  String?
+  /// Subjudul seksi "Kompetensi" & "Prospek Karir" di halaman detail
+  /// (opsional; kosong = memakai teks generik template).
+  introKompetensi String @default("")
+  introKarir      String @default("")
+  /// Judul & teks tombol CTA di bagian bawah halaman detail (opsional).
+  ctaJudul        String @default("")
+  ctaTeks         String @default("")
+  /// true = salah satu dari 4 jurusan bawaan (PPLG/TJKT/DKV/TKRO) dengan
+  /// route khusus. Diset oleh inisialisasi server, bukan form admin.
+  bawaan    Boolean  @default(false)
+  /// Urutan tampil (makin kecil makin awal); bawaan memakai 10, 20, 30, 40.
+  urutan    Int      @default(100)
+  /// false = disembunyikan dari situs tanpa perlu menghapus data.
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([aktif, urutan])
+  @@map("jurusans")
+}
+
+/// Konten halaman publik (CMS ringan) — satu baris per bagian halaman.
+/// Kolom `content` berbentuk Json; skemanya didefinisikan & divalidasi di
+/// `src/lib/site-content.ts` (hero, statistik, profil, fasilitas, ppdb-cta,
+/// guru). Selama baris belum ada / belum divalidasi, situs memakai nilai
+/// default dari kode sehingga halaman tidak pernah kosong.
+model SiteContent {
+  key       String   @id
+  content   Json
+  /// Id user admin terakhir yang menyimpan (untuk jejak audit).
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+  @@map("site_contents")
+}
+
+/// Berita buatan admin (tambahan di samping berita otomatis dari WordPress).
+/// Berita web tetap ditarik `src/lib/blog.ts` dan tidak disimpan di DB.
+model Berita {
+  id        String   @id @default(cuid())
+  /// Slug URL unik untuk halaman detail /berita/[slug].
+  slug      String   @unique
+  judul     String
+  /// Ringkasan untuk kartu berita (±180 karakter).
+  ringkasan String
+  /// Isi artikel — paragraf dipisahkan baris kosong. Boleh kosong.
+  konten    String?
+  kategori  String   @default("Berita")
+  /// Tanggal tampil sekaligus kunci urutan (terbaru di atas).
+  tanggal   DateTime @default(now())
+  /// URL gambar sampul (opsional).
+  gambar    String?
+  /// Tautan keluar, mis. ke pengumuman resmi. Kosong = kartu mengarah ke
+  /// /berita/[slug].
+  url       String?
+  /// URL artikel sumber (mis. WordPress). Jika diisi, artikel lokal ini
+  /// menjadi salinan yang dapat disunting dan menggantikan kartu sumbernya.
+  sourceUrl String?  @unique
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, tanggal])
+  @@map("beritas")
 }
 
 /// Kartu ujian per siswa.

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Code2, Network, Camera, Engine } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -13,48 +13,15 @@ import {
 } from "@/components/ui/card";
 import { useAnimeFlowReveal } from "@/hooks/useAnimeFlowReveal";
 import { useTiltHover } from "@/hooks/useTiltHover";
+import { getIkonJurusan, JURUSAN_BAWAAN, type JurusanItem } from "@/lib/jurusan";
 
-const jurusan = [
-  {
-    icon: Code2,
-    nama: "Pengembangan Perangkat Lunak Dan Gim",
-    singkatan: "PPLG",
-    desc: "Pengembangan web, aplikasi mobile, basis data, dan integrasi layanan digital modern.",
-    skills: ["Web & Mobile", "Database", "UI/UX"],
-    link: "/jurusan/PPLG",
-  },
-  {
-    icon: Network,
-    nama: "Teknik Jaringan Komputer Dan Telekomunikasi",
-    singkatan: "TJKT",
-    desc: "Instalasi jaringan LAN/WAN, administrasi server, keamanan siber, dan cloud computing.",
-    skills: ["Cisco & Mikrotik", "Linux Server", "Cyber Security"],
-    link: "/jurusan/TJKT",
-  },
-  {
-    icon: Camera,
-    nama: "Desain Komunikasi Visual",
-    singkatan: "DKV",
-    desc: "Teori warna, tipografi, penggunaan perangkat lunak desain, ilustrasi digital, fotografi, dan videografi.",
-    skills: ["Fotografi", "Videografi", "Broadcasting", "Illustrasi Digital"],
-    link: "/jurusan/DKV",
-  },
-  {
-    icon: Engine,
-    nama: "Teknik Kendaraan Ringan Otomotif",
-    singkatan: "TKRO",
-    desc: "Perawatan dan perbaikan kendaraan bermotor, sistem elektrik, dan mekanik.",
-    skills: ["Perawatan", "Perbaikan", "Sistem Elektrik"],
-    link: "/jurusan/TKRO",
-  },
-];
-
-export function Jurusan() {
+export function Jurusan({ items = JURUSAN_BAWAAN }: { items?: JurusanItem[] }) {
   const ref = useAnimeFlowReveal<HTMLElement>({
     direction: "right",
     distance: 170,
   });
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
+
   return (
     <section
       id="jurusan"
@@ -67,7 +34,7 @@ export function Jurusan() {
             Program Keahlian
           </Badge>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Empat Program Keahlian Unggulan
+            {items.length} Program Keahlian Unggulan
           </h2>
           <p className="mt-3 text-slate-600">
             Kurikulum berbasis industri dengan sertifikasi kompetensi dan kelas
@@ -76,53 +43,56 @@ export function Jurusan() {
         </div>
 
         <div className="tilt-scene mt-10 grid gap-5 md:grid-cols-2">
-          {jurusan.map((j) => (
-            <Card
-              key={j.singkatan}
-              data-scrub-item
-              data-tilt
-              className="glass glass-hover glass-glare group flex flex-col"
-            >
-              <CardHeader>
-                <span
-                  data-magnetic
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-300/50 dark:to-blue-500"
-                >
-                  <j.icon className="h-6 w-6" />
-                </span>
-                <Badge variant="secondary" className="glass-chip mt-4 w-fit">
-                  {j.singkatan}
-                </Badge>
-                <CardTitle className="mt-2 text-xl">{j.nama}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <CardDescription className="text-sm leading-relaxed">
-                  {j.desc}
-                </CardDescription>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {j.skills.map((s) => (
-                    <Badge
-                      key={s}
-                      variant="outline"
-                      className="glass-chip font-normal"
-                    >
-                      {s}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Link
-                  data-magnetic
-                  href={j.link}
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
-                >
-                  Pelajari lebih lanjut
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+          {items.map((j) => {
+            const Icon = getIkonJurusan(j.ikon);
+            return (
+              <Card
+                key={j.kode}
+                data-scrub-item
+                data-tilt
+                className="glass glass-hover glass-glare group flex flex-col"
+              >
+                <CardHeader>
+                  <span
+                    data-magnetic
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-300/50 dark:to-blue-500"
+                  >
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <Badge variant="secondary" className="glass-chip mt-4 w-fit">
+                    {j.singkatan}
+                  </Badge>
+                  <CardTitle className="mt-2 text-xl">{j.nama}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <CardDescription className="text-sm leading-relaxed">
+                    {j.deskripsi}
+                  </CardDescription>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {j.skills.map((s) => (
+                      <Badge
+                        key={s}
+                        variant="outline"
+                        className="glass-chip font-normal"
+                      >
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Link
+                    data-magnetic
+                    href={`/jurusan/${j.kode}`}
+                    className="inline-flex items-center gap-1 rounded-full px-3 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-100/70 hover:text-sky-900 sm:py-1.5"
+                  >
+                    Pelajari lebih lanjut
+                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>

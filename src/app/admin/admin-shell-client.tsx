@@ -22,6 +22,9 @@ import {
   LogIn,
   UserCheck,
   MessageSquare,
+  BookOpen,
+  Newspaper,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { AuthLogo } from "@/components/auth/logo";
@@ -87,6 +90,27 @@ const navItems: NavItem[] = [
     icon: GraduationCap,
     section: "manajemen",
     breadcrumbLabel: "Akademik",
+  },
+  {
+    href: "/admin/jurusan",
+    label: "Program Keahlian",
+    icon: BookOpen,
+    section: "manajemen",
+    breadcrumbLabel: "Program Keahlian",
+  },
+  {
+    href: "/admin/berita",
+    label: "Berita",
+    icon: Newspaper,
+    section: "manajemen",
+    breadcrumbLabel: "Berita",
+  },
+  {
+    href: "/admin/konten-situs",
+    label: "Konten Situs",
+    icon: FileText,
+    section: "manajemen",
+    breadcrumbLabel: "Konten Situs",
   },
   {
     href: "/admin/chat",
@@ -168,6 +192,12 @@ const ACTIVITY_META: Record<string, { icon: LucideIcon; tone: string }> = {
   ACADEMIC_CREATED: { icon: GraduationCap, tone: "bg-teal-50 text-teal-600" },
   ACADEMIC_UPDATED: { icon: GraduationCap, tone: "bg-sky-50 text-sky-600" },
   ACADEMIC_DELETED: { icon: GraduationCap, tone: "bg-rose-50 text-rose-600" },
+  JURUSAN_CREATED: { icon: BookOpen, tone: "bg-teal-50 text-teal-600" },
+  JURUSAN_UPDATED: { icon: BookOpen, tone: "bg-sky-50 text-sky-600" },
+  JURUSAN_DELETED: { icon: BookOpen, tone: "bg-rose-50 text-rose-600" },
+  BERITA_CREATED: { icon: Newspaper, tone: "bg-teal-50 text-teal-600" },
+  BERITA_UPDATED: { icon: Newspaper, tone: "bg-sky-50 text-sky-600" },
+  BERITA_DELETED: { icon: Newspaper, tone: "bg-rose-50 text-rose-600" },
 };
 
 function timeAgoLabel(iso: string): string {

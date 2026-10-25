@@ -28,6 +28,7 @@ import {
   PHONE_HINT,
   type PpdbDraft,
   type PpdbValues,
+  type PpdbJurusanOption,
   validatePpdbDraft,
 } from "@/lib/ppdb";
 import {
@@ -82,6 +83,7 @@ export function PpdbForm({
   variant = "page",
   defaultHasPhoto = false,
   defaultPhotoVersion = null,
+  jurusanOptions = JURUSAN_OPTIONS,
 }: {
   defaultEmail: string;
   /**
@@ -96,6 +98,8 @@ export function PpdbForm({
   defaultHasPhoto?: boolean;
   /** Versi foto tersimpan (ISO) agar pratinjau selalu segar. */
   defaultPhotoVersion?: string | null;
+  /** Jurusan aktif dari database, termasuk yang ditambahkan admin. */
+  jurusanOptions?: readonly PpdbJurusanOption[];
 }) {
   const [step, setStep] = React.useState(0);
   const [values, setValues] = React.useState<PpdbValues>({
@@ -128,7 +132,7 @@ export function PpdbForm({
   /** Validasi hanya field langkah aktif supaya pesan error tidak membanjiri layar. */
   const validateStep = React.useCallback(
     (index: number, source: PpdbDraft) => {
-      const result = validatePpdbDraft(source);
+      const result = validatePpdbDraft(source, jurusanOptions);
       if (result.ok) return {} as Record<string, string>;
       const fields = STEP_FIELDS[STEPS[index].key];
       const scoped: Record<string, string> = {};
@@ -137,7 +141,7 @@ export function PpdbForm({
       }
       return scoped;
     },
-    []
+    [jurusanOptions]
   );
 
   const goNext = () => {
@@ -418,7 +422,7 @@ export function PpdbForm({
                 label="Pilihan jurusan 1"
                 required
                 hint="Urutan prioritas, jurusan yang paling Anda minati."
-                options={JURUSAN_OPTIONS.map((j) => ({ value: j.value, label: `${j.nama} (${j.kode})` }))}
+                options={jurusanOptions.map((j) => ({ value: j.value, label: j.nama + " (" + j.kode + ")" }))}
                 placeholder="Pilih jurusan pertama"
                 value={values.majorFirst}
                 onChange={(e) => set("majorFirst", e.target.value as PpdbValues["majorFirst"])}
@@ -429,7 +433,7 @@ export function PpdbForm({
                 label="Pilihan jurusan 2"
                 required
                 hint="Cadangan bila kuota jurusan pertama penuh."
-                options={JURUSAN_OPTIONS
+                options={jurusanOptions
                   .filter((j) => j.value !== values.majorFirst)
                   .map((j) => ({ value: j.value, label: `${j.nama} (${j.kode})` }))}
                 placeholder="Pilih jurusan kedua"
@@ -438,7 +442,7 @@ export function PpdbForm({
                 error={errors.majorSecond}
               />
               <ul className="grid gap-2.5 sm:grid-cols-2">
-                {JURUSAN_OPTIONS.map((j) => (
+                {jurusanOptions.map((j) => (
                   <li
                     key={j.value}
                     className="rounded-2xl border border-sky-100 bg-sky-50/50 p-3.5"

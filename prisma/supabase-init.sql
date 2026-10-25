@@ -77,10 +77,7 @@ ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId"
 -- ============================================================
 
 -- CreateEnum
-CREATE TYPE "PpdbJurusan" AS ENUM ('DKV', 'PPLG', 'TJKT', 'TKR');
-
--- CreateEnum
-CREATE TYPE "PpdbStatus" AS ENUM ('PENDING', 'CONTACTED', 'REGISTERED', 'REJECTED');
+CREATE TYPE "PpdbStatus" AS ENUM ('PENDING', 'CONTACTED', 'APPROVED', 'REGISTERED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "ppdb_registrations" (
@@ -95,8 +92,8 @@ CREATE TABLE "ppdb_registrations" (
     "previousSchool" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
-    "majorFirst" "PpdbJurusan" NOT NULL,
-    "majorSecond" "PpdbJurusan" NOT NULL,
+    "majorFirst" TEXT NOT NULL,
+    "majorSecond" TEXT NOT NULL,
     "parentName" TEXT NOT NULL,
     "parentPhone" TEXT NOT NULL,
     "notes" TEXT,
@@ -150,3 +147,83 @@ CREATE INDEX "chat_conversations_userId_updatedAt_idx" ON "chat_conversations"("
 ALTER TABLE "chat_conversations" ADD CONSTRAINT "chat_conversations_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "chat_conversations" ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Konten situs publik yang dikelola Admin Panel
+--   jurusans : program keahlian (4 bawaan diinisialisasi dari server,
+--              jurusan tambahan dikelola lewat Admin Panel)
+--   beritas  : berita buatan admin (berita web tetap ditarik dari
+--              WordPress, tidak disimpan di database)
+-- ============================================================
+
+-- CreateTable
+CREATE TABLE "jurusans" (
+    "id" TEXT NOT NULL,
+    "kode" TEXT NOT NULL,
+    "nama" TEXT NOT NULL,
+    "singkatan" TEXT NOT NULL,
+    "tagline" TEXT,
+    "deskripsi" TEXT NOT NULL,
+    "tentang" TEXT NOT NULL DEFAULT '',
+    "skills" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "keunggulan" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "kompetensi" JSONB NOT NULL DEFAULT '[]',
+    "karir" JSONB NOT NULL DEFAULT '[]',
+    "ikon" TEXT NOT NULL DEFAULT 'GraduationCap',
+    "warna" TEXT NOT NULL DEFAULT 'sky',
+    "gambar" TEXT,
+    "heroTeks" TEXT,
+    "introKompetensi" TEXT NOT NULL DEFAULT '',
+    "introKarir" TEXT NOT NULL DEFAULT '',
+    "ctaJudul" TEXT NOT NULL DEFAULT '',
+    "ctaTeks" TEXT NOT NULL DEFAULT '',
+    "bawaan" BOOLEAN NOT NULL DEFAULT false,
+    "urutan" INTEGER NOT NULL DEFAULT 100,
+    "aktif" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "jurusans_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "beritas" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "judul" TEXT NOT NULL,
+    "ringkasan" TEXT NOT NULL,
+    "konten" TEXT,
+    "kategori" TEXT NOT NULL DEFAULT 'Berita',
+    "tanggal" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "gambar" TEXT,
+    "url" TEXT,
+    "sourceUrl" TEXT,
+    "published" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "beritas_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "jurusans_kode_key" ON "jurusans"("kode");
+CREATE INDEX "jurusans_aktif_urutan_idx" ON "jurusans"("aktif", "urutan");
+CREATE UNIQUE INDEX "beritas_slug_key" ON "beritas"("slug");
+CREATE UNIQUE INDEX "beritas_sourceUrl_key" ON "beritas"("sourceUrl");
+CREATE INDEX "beritas_published_tanggal_idx" ON "beritas"("published", "tanggal");
+
+-- CreateTable: konten tiap bagian halaman publik yang bisa diedit admin.
+CREATE TABLE "site_contents" (
+    "key" TEXT NOT NULL,
+    "content" JSONB NOT NULL,
+    "updatedBy" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "site_contents_pkey" PRIMARY KEY ("key")
+);
+
+-- Kunci akses via Supabase Data API (Prisma tetap bisa akses penuh).
+-- Tidak ada policy publik; pembacaan/penulisan tetap lewat server + requireAdmin.
+ALTER TABLE "jurusans" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "beritas" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "site_contents" ENABLE ROW LEVEL SECURITY;

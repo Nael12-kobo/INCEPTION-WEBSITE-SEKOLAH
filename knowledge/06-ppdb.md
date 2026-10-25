@@ -94,7 +94,7 @@ note: semua seragam masih berbentuk kain
 - Status yang ditampilkan situs: tahun pelajaran **2026/2027**, **Gelombang 1**, dan **bebas zonasi**. Sumber resmi yang diperiksa tidak mencantumkan tanggal buka/tutup pendaftaran atau tanggal tes yang pasti; jangan mengarang jadwal PPDB 2027.
 - Sekolah menampilkan empat kompetensi keahlian:
   - **PPLG/RPL — Pengembangan Perangkat Lunak dan Gim:** web, aplikasi mobile, basis data, UI/UX, pemrograman gim, dan cloud computing.
-  - **TJKT/TKJ — Teknik Jaringan Komputer dan Telekomunikasi:** jaringan LAN/WAN, administrasi server, keamanan siber, fiber optik, Cisco/Mikrotik, dan Linux Server.
+  - **TJKT/TKJ — Teknik Jaringan Komputer dan Telekomunikasiz:** jaringan LAN/WAN, administrasi server, keamanan siber, fiber optik, Cisco/Mikrotik, dan Linux Server.
   - **DKV/MM — Desain Komunikasi Visual:** desain grafis, ilustrasi digital, fotografi, videografi, motion graphics, branding, dan broadcasting.
   - **TKRO (kode PPDB TO/TKR) — Teknik Kendaraan Ringan Otomotif:** perawatan/perbaikan kendaraan, kelistrikan, mesin, diagnostik, dan teknologi EV.
 - **Bea pendidikan Bina Lingkungan:** ditujukan khusus bagi calon siswa dari Kota Salatiga, Kecamatan Tengaran, Kecamatan Suruh, dan Kecamatan Getasan. Besaran dan kriteria rinci belum tercantum; minta penjelasan sekretariat SPMB.

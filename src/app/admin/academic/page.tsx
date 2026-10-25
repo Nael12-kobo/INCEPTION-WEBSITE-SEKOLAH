@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/role-utils";
 import { prisma } from "@/lib/prisma";
 import { ACADEMIC_DOMAINS } from "@/lib/academic";
 import { listAcademic } from "@/lib/academic-server";
+import { getPpdbJurusanOptions } from "@/lib/ppdb-jurusan-server";
 import {
   AcademicAdminClient,
   type AcademicRow,
@@ -21,11 +22,14 @@ export default async function AdminAcademicPage() {
     redirect("/auth/login?callbackUrl=/admin/academic");
   }
 
-  const students = await prisma.user.findMany({
-    where: { ppdbRegistration: { status: "REGISTERED" } },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: "asc" },
-  });
+  const [students, jurusanOptions] = await Promise.all([
+    prisma.user.findMany({
+      where: { ppdbRegistration: { status: "REGISTERED" } },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
+    }),
+    getPpdbJurusanOptions(),
+  ]);
 
   const initialRows = {} as AcademicRows;
   for (const domain of ACADEMIC_DOMAINS) {
@@ -50,7 +54,11 @@ export default async function AdminAcademicPage() {
         </div>
       </div>
 
-      <AcademicAdminClient initialRows={initialRows} students={studentOptions} />
+      <AcademicAdminClient
+        initialRows={initialRows}
+        students={studentOptions}
+        jurusanOptions={jurusanOptions}
+      />
     </div>
   );
 }

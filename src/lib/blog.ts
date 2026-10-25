@@ -16,15 +16,23 @@
  */
 
 export type Berita = {
-  id: number;
+  /** String — ID WordPress dipakai sebagai string supaya seragam dengan ID
+      berita buatan admin (cuid). */
+  id: string;
   judul: string;
   ringkasan: string;
+  /** URL tujuan kartu: artikel WordPress, rute internal `/berita/[slug]`,
+      atau tautan keluar yang diisi admin. */
   url: string;
   /** Sudah diformat "17 Sep 2026" saat fetch, biar tidak beda hasil
       formatting antara Node (SSR) dan browser (hydration). */
   tanggal: string;
   kategori: string;
   gambar: string | null;
+  /** "web" = hasil tarikan WordPress; "manual" = buatan admin (tabel `beritas`). */
+  sumber: "web" | "manual";
+  /** Tanggal ISO mentah — kunci pengurutan saat berita digabung. */
+  iso: string;
 };
 
 export const BLOG_URL = "https://www.tunasharapan.info/official/blog/";
@@ -120,7 +128,7 @@ function pickCategory(post: WpPost): string {
   return first?.name ?? "Berita";
 }
 
-function formatDate(iso: string): string {
+export function formatTanggal(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("id-ID", {
@@ -150,13 +158,15 @@ export async function ambilBerita(limit = 9): Promise<Berita[]> {
     if (!Array.isArray(posts)) return [];
 
     return posts.map((post) => ({
-      id: post.id,
+      id: String(post.id),
       judul: stripHtml(post.title?.rendered ?? "").slice(0, 160),
       ringkasan: truncate(stripHtml(post.excerpt?.rendered ?? ""), 180),
       url: post.link,
-      tanggal: formatDate(post.date),
+      tanggal: formatTanggal(post.date),
       kategori: pickCategory(post),
       gambar: pickImage(post),
+      sumber: "web" as const,
+      iso: post.date,
     }));
   } catch (err) {
     // Jangan bikin homepage error gara-gara situs sekolah lagi down.
