@@ -7,6 +7,7 @@ import {
   type DashboardActivityItem,
 } from "@/components/dashboard/dashboard-shell";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { StudentDashboardOverview } from "@/components/dashboard/student-dashboard-overview";
 import { AccountSection } from "@/components/dashboard/account-section";
 import { ProgramsSection } from "@/components/dashboard/programs-section";
 import { SessionProvider } from "next-auth/react";
@@ -19,7 +20,7 @@ import type { DonutSegment } from "@/components/ui/donut-chart";
 
 export const metadata = {
   title: "Dashboard — SMK Telekomunikasi Tunas Harapan",
-  description: "Portal internal siswa: agenda, pengumuman, dan profil akun.",
+  description: "Dashboard personal untuk informasi akademik dan akun siswa.",
 };
 
 const WIB_TZ = "Asia/Jakarta";
@@ -280,6 +281,13 @@ export default async function DashboardPage() {
   }));
 
   const isStudent = isStudentStatus(ppdb?.status);
+  const isRegisteredStudentView = isStudent && !isAdminUser && ppdb !== null;
+  const majorOption = ppdb
+    ? jurusanOptions.find((option) => option.value === ppdb.majorFirst)
+    : null;
+  const majorLabel = majorOption
+    ? `${majorOption.nama} (${majorOption.kode})`
+    : ppdb?.majorFirst ?? "Jurusan belum ditentukan";
 
   return (
     <SessionProvider session={session}>
@@ -288,6 +296,17 @@ export default async function DashboardPage() {
         activities={activities}
         isStudent={isStudent}
       >
+        {isRegisteredStudentView && ppdb ? (
+          <StudentDashboardOverview
+            userId={userId}
+            userName={dashboardUser.name}
+            major={ppdb.majorFirst}
+            majorLabel={majorLabel}
+            todayLabel={nowInWib}
+            hour={hour}
+            semester={portalKonten.semester}
+          />
+        ) : (
         <DashboardOverview
           userName={dashboardUser.name}
           todayLabel={nowInWib}
@@ -350,10 +369,13 @@ export default async function DashboardPage() {
           jurusanOptions={jurusanOptions}
           portalKonten={portalKonten}
         />
+        )}
         {/* Kartu "Akun Saya" hanya untuk non-admin — dashboard admin fokus
             pada pengelolaan (kartu siswa seperti PPDB & akun disembunyikan). */}
-        {!isAdminUser ? <AccountSection user={dashboardUser} /> : null}
-        <ProgramsSection />
+        {!isAdminUser && !isRegisteredStudentView ? (
+          <AccountSection user={dashboardUser} />
+        ) : null}
+        {!isRegisteredStudentView ? <ProgramsSection /> : null}
       </DashboardShell>
     </SessionProvider>
   );
