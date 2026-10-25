@@ -4,14 +4,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 
-export interface FasilitasVideo {
-  /** Path video scrub, mis. "/animated/facility/perpustakaan.webm" */
+export interface FasilitasSlide {
   src: string;
+  alt: string;
+}
+
+export interface FasilitasCardItem {
+  /** Path video scrub, mis. "/animated/facility/perpustakaan.webm" */
+  src?: string;
   /** Poster JPG fallback, mis. "/images/fasilitas/perpustakaan.jpg" */
   poster: string;
   label: string;
   alt: string;
   description: string;
+  /** Foto-foto yang ditampilkan di modal galeri. */
+  slides?: FasilitasSlide[];
   /** Detik timeline untuk cursor di tepi kiri card. */
   xmin: number;
   /** Detik timeline untuk cursor di tengah card (posisi netral). */
@@ -21,7 +28,7 @@ export interface FasilitasVideo {
 }
 
 interface FasilitasVideoCardProps {
-  item: FasilitasVideo;
+  item: FasilitasCardItem;
   onOpen: () => void;
 }
 
@@ -124,8 +131,8 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
   const activatedRef = useRef<boolean>(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   // Gagal load hanya berlaku untuk src yang sedang aktif; ganti src otomatis reset.
-  const videoFailed = failedSrc === src;
-  const useVideo = isDesktop && !videoFailed;
+  const videoFailed = src !== undefined && failedSrc === src;
+  const useVideo = Boolean(src) && isDesktop && !videoFailed;
 
   /** Nilai efektif yang sudah di-clamp ke durasi aktual (bila metadata siap). */
   const resolveBounds = useCallback(() => {
@@ -414,7 +421,7 @@ export function FasilitasVideoCard({ item, onOpen }: FasilitasVideoCardProps) {
         aria-label={`Perbesar: ${label}`}
         title="Klik untuk memperbesar"
       />
-      {useVideo ? (
+      {useVideo && src ? (
         <video
           ref={videoRef}
           key={src}

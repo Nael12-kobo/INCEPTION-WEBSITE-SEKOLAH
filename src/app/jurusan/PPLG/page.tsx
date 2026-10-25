@@ -102,7 +102,7 @@ export default function PPLGPage() {
   return (
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#3f0b16] via-[#991b1b] to-[#dc2626] text-white">
+      <section className="relative overflow-hidden dark:bg-gradient-to-br dark:from-[#3f0b16] dark:via-[#991b1b] dark:to-[#dc2626] bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white">
         <PPLGHeroDecorations />
         <PPLGHeroDecorationsMobile />
 
@@ -121,7 +121,7 @@ export default function PPLGPage() {
                 <Code2 className="size-4" />
                 Program Keahlian
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+              <h1 className="text-6xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-shadow-lg">
                 PPLG
               </h1>
               <p className="text-xl md:text-2xl text-red-100 mb-4 font-medium">
@@ -142,7 +142,7 @@ export default function PPLGPage() {
                 height={1254}
                 priority
                 sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 224px"
-                className="w-56 h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                className="hidden lg:block w-100 h-100  lg:w-125 lg:h-125 object-contain"
                 draggable={false}
               />
             </div>

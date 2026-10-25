@@ -93,15 +93,19 @@ export function CtaPpdb() {
                   data-magnetic
                   className="rounded-2xl border border-white/30 bg-card/15 p-4 backdrop-blur-xl transition-colors hover:bg-card/25"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-card/25 text-white">
-                    <s.icon className="h-4 w-4" />
-                  </span>
-                  <p className="mt-3 text-sm font-bold text-white">
-                    {i + 1}. {s.title}
-                  </p>
-                  <p className="mt-1 text-xs text-sky-50 dark:text-white/80">
-                    {s.desc}
-                  </p>
+                  <div className="flex items-start gap-3 sm:block">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card/25 text-white">
+                      <s.icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white sm:mt-3">
+                        {i + 1}. {s.title}
+                      </p>
+                      <p className="mt-1 text-xs text-sky-50 dark:text-white/80">
+                        {s.desc}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

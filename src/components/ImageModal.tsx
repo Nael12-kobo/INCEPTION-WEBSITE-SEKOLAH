@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { TouchEvent } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,8 @@ interface ImageModalProps {
   alt: string;
   title?: string;
   description?: string;
+  /** Foto-foto tambahan untuk galeri yang dapat digeser. */
+  slides?: { src: string; alt: string }[];
   /** Jika diisi, panel kiri memutar video (mis. WebM fasilitas) bukan gambar. */
   videoSrc?: string;
   /** Poster video / fallback gambar. */
@@ -26,10 +29,40 @@ export function ImageModal({
   alt,
   title,
   description,
+  slides,
   videoSrc,
   poster,
 }: ImageModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const imageSlides = slides?.length ? slides : [{ src, alt }];
+  const slideCount = imageSlides.length;
+  const currentSlide = imageSlides[Math.min(activeSlide, slideCount - 1)];
+  const canSlide = !videoSrc && slideCount > 1;
+
+  const showPrevious = useCallback(() => {
+    setActiveSlide((index) => (index - 1 + slideCount) % slideCount);
+  }, [slideCount]);
+
+  const showNext = useCallback(() => {
+    setActiveSlide((index) => (index + 1) % slideCount);
+  }, [slideCount]);
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (canSlide) touchStartXRef.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const startX = touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (!canSlide || startX === null) return;
+
+    const distance = event.changedTouches[0]?.clientX - startX;
+    if (distance === undefined || Math.abs(distance) < 45) return;
+    if (distance < 0) showNext();
+    else showPrevious();
+  };
 
   // Efek berjalan hanya ketika modal dibuka (isOpen = true)
   useEffect(() => {
@@ -57,6 +90,16 @@ export function ImageModal({
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
+        return;
+      }
+      if (canSlide && e.key === "ArrowLeft") {
+        e.preventDefault();
+        showPrevious();
+        return;
+      }
+      if (canSlide && e.key === "ArrowRight") {
+        e.preventDefault();
+        showNext();
         return;
       }
       if (e.key !== "Tab" || !dialog) return;
@@ -87,7 +130,7 @@ export function ImageModal({
       // Pulihkan fokus ke elemen yang membuka modal (#25).
       previouslyFocused?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, canSlide, showPrevious, showNext]);
 
   // Hindari render apa pun jika isOpen false
   if (!isOpen) return null;
@@ -127,7 +170,17 @@ export function ImageModal({
         </Button>
 
         {/* Area Media */}
-        <div className="relative flex-1 min-h-[40vh] md:min-h-[500px] w-full overflow-hidden bg-black/5 dark:bg-black/40 flex items-center justify-center">
+        <div
+          className="relative flex min-h-[40vh] w-full flex-1 touch-pan-y items-center justify-center overflow-hidden bg-black/5 dark:bg-black/40 md:min-h-[500px]"
+          role={canSlide ? "group" : undefined}
+          aria-roledescription={canSlide ? "carousel" : undefined}
+          aria-label={canSlide ? `${title || "Galeri"}, ${slideCount} foto` : undefined}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={() => {
+            touchStartXRef.current = null;
+          }}
+        >
           {videoSrc ? (
             <video
               key={videoSrc}
@@ -150,14 +203,44 @@ export function ImageModal({
           ) : (
             // Menggunakan next/image alih-alih <img> biasa
             <Image
-              src={src}
-              alt={alt || "Gambar Modal"}
+              src={currentSlide.src}
+              alt={currentSlide.alt || "Gambar Modal"}
               fill
               sizes="(max-width: 768px) 100vw, 70vw"
               className="object-contain"
               // Tanpa `priority`/`quality={100}` (#36): overlay on-demand tidak
               // perlu eager fetch, quality default (75) ~separuh byte quality 100.
             />
+          )}
+          {canSlide && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute left-3 top-1/2 z-20 h-11 w-11 -translate-y-1/2 rounded-full bg-background/80 text-foreground shadow-md backdrop-blur hover:bg-background"
+                aria-label="Foto sebelumnya"
+                onClick={showPrevious}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-3 top-1/2 z-20 h-11 w-11 -translate-y-1/2 rounded-full bg-background/80 text-foreground shadow-md backdrop-blur hover:bg-background"
+                aria-label="Foto berikutnya"
+                onClick={showNext}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+              <span
+                aria-live="polite"
+                className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-sm font-medium text-white"
+              >
+                {activeSlide + 1} / {slideCount}
+              </span>
+            </>
           )}
         </div>
 

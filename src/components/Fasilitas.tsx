@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { ImageModal } from "@/components/ImageModal";
 import {
   FasilitasVideoCard,
-  type FasilitasVideo,
+  type FasilitasCardItem,
 } from "@/components/FasilitasVideoCard";
 
 const tabs = [
@@ -75,26 +75,15 @@ const data: Record<TabId, { title: string; desc: string; items: string[] }> = {
 };
 
 /**
- * Dokumentasi video fasilitas (WebM, di-scrub mengikuti posisi X cursor).
- * - `src`: klip WebM di `/public/animated/facility/`.
+ * Dokumentasi kartu fasilitas.
+ * - `src`: klip WebM opsional di `/public/animated/facility/`.
  * - `poster`: JPG lama di `/public/images/fasilitas/` sebagai poster + fallback.
+ * - `slides`: kumpulan foto yang dibuka sebagai galeri geser di modal.
  * - `xmin` / `xmid` / `xmax`: patokan detik timeline untuk cursor
  *   di tepi kiri / tengah (netral) / tepi kanan card.
  *   Nilai di-clamp otomatis ke durasi aktual saat metadata siap.
  */
-const galeri: FasilitasVideo[] = [
-  {
-    src: "/animated/facility/perpustakaan.webm",
-    poster: "/images/fasilitas/perpustakaan.jpg",
-    label: "Perpustakaan",
-    alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
-    description:
-      "Perpustakaan yang menyediakan berbagai jurnal,  dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
-    // "Perpustakaan sekolah, merupakan pusat sumber belajar yang menyediakan koleksi buku, jurnal, dan berbagai bahan bacaan untuk menunjang kebutuhan akademik serta memperluas wawasan siswa. Dengan fasilitas membaca yang nyaman, tenang, dan tertata, perpustakaan ini mendukung siswa dalam belajar mandiri, mengerjakan tugas, melakukan riset, dan membangun kebiasaan membaca Koleksinya mencakup beragam bahan bacaan yang dapat dimanfaatkan untuk menunjang pembelajaran maupun memenuhi minat baca siswa. Suasana yang kondusif membantu siswa berkonsentrasi, sementara penataan ruang yang rapi membuat kegiatan membaca dan belajar terasa lebih menyenangkan. Perpustakaan juga menjadi ruang yang mendorong rasa ingin tahu, kreativitas, dan semangat untuk terus belajar Melalui layanan dan fasilitas yang tersedia, perpustakaan diharapkan dapat menjadi bagian penting dari lingkungan pendidikan: tempat siswa memperoleh informasi, mengembangkan kemampuan berpikir, serta menumbuhkan kecintaan terhadap ilmu pengetahuan dan literasi.",
-    xmin: 0,
-    xmid: 1.5,
-    xmax: 2.9,
-  },
+const galeri: FasilitasCardItem[] = [
   {
     src: "/animated/facility/tefa.webm",
     poster: "/images/fasilitas/tefa.jpg",
@@ -107,45 +96,68 @@ const galeri: FasilitasVideo[] = [
     xmax: 0,
   },
   {
-    src: "/animated/facility/gedung-tkj.webm",
+    src: "/animated/facility/tefa2.webm",
+    poster: "/images/fasilitas/tefa.jpg",
+    label: "Teaching Factory",
+    alt: "Teaching Factory (TEFA)",
+    description:
+      "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi.",
+    xmin: 2.9,
+    xmid: 1.5,
+    xmax: 0,
+  },
+  {
     poster: "/images/fasilitas/gedung-tkj.jpg",
-    label: "Gedung TKJ",
-    alt: "Gedung Teknik Komputer dan Jaringan",
+    label: "TKJ",
+    alt: "Fasilitas Teknik Komputer dan Jaringan",
     description:
-      "Gedung khusus untuk program keahlian Teknik Komputer dan Jaringan dengan peralatan modern.",
+      "Gedung dan laboratorium TKJ dengan perangkat jaringan untuk mendukung kegiatan praktik siswa.",
+    slides: [
+      {
+        src: "/images/fasilitas/gedung-tkj.jpg",
+        alt: "Gedung Teknik Komputer dan Jaringan",
+      },
+      {
+        src: "/images/fasilitas/tkj-lab.jpg",
+        alt: "Laboratorium Teknik Komputer dan Jaringan",
+      },
+    ],
     xmin: 0,
     xmid: 1.5,
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tkj-lab.webm",
-    poster: "/images/fasilitas/tkj-lab.jpg",
-    label: "Lab TKJ",
-    alt: "Laboratorium Teknik Komputer dan Jaringan",
-    description:
-      "Laboratorium TKJ dilengkapi dengan perangkat jaringan Cisco, Mikrotik, dan server untuk praktik konfigurasi jaringan.",
-    xmin: 0,
-    xmid: 1.5,
-    xmax: 2.9,
-  },
-  {
-    src: "/animated/facility/tkro-1.webm",
     poster: "/images/fasilitas/tkro-1.jpg",
-    label: "Bengkel TKRO 1",
-    alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
+    label: "TKRO",
+    alt: "Fasilitas Teknik Kendaraan Ringan Otomotif",
     description:
-      "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan.",
+      "Bengkel TKRO dengan fasilitas praktik untuk mendukung pembelajaran perbaikan kendaraan ringan.",
+    slides: [
+      {
+        src: "/images/fasilitas/tkro-1.jpg",
+        alt: "Bengkel TKRO 1",
+      },
+      {
+        src: "/images/fasilitas/tkro-2.jpg",
+        alt: "Bengkel TKRO 2",
+      },
+      {
+        src: "/images/fasilitas/tkro-4.jpg",
+        alt: "Fasilitas bengkel TKRO 4",
+      },
+    ],
     xmin: 0,
     xmid: 1.5,
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tkro-2.webm",
-    poster: "/images/fasilitas/tkro-2.jpg",
-    label: "Bengkel TKRO 2",
-    alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
+    src: "/animated/facility/perpustakaan.webm",
+    poster: "/images/fasilitas/perpustakaan.jpg",
+    label: "Perpustakaan",
+    alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
     description:
-      "Bengkel TKRO 2 sebagai pelengkap fasilitas praktik untuk menampung lebih banyak siswa.",
+      "Perpustakaan yang menyediakan berbagai jurnal,  dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
+    // "Perpustakaan sekolah, merupakan pusat sumber belajar yang menyediakan koleksi buku, jurnal, dan berbagai bahan bacaan untuk menunjang kebutuhan akademik serta memperluas wawasan siswa. Dengan fasilitas membaca yang nyaman, tenang, dan tertata, perpustakaan ini mendukung siswa dalam belajar mandiri, mengerjakan tugas, melakukan riset, dan membangun kebiasaan membaca Koleksinya mencakup beragam bahan bacaan yang dapat dimanfaatkan untuk menunjang pembelajaran maupun memenuhi minat baca siswa. Suasana yang kondusif membantu siswa berkonsentrasi, sementara penataan ruang yang rapi membuat kegiatan membaca dan belajar terasa lebih menyenangkan. Perpustakaan juga menjadi ruang yang mendorong rasa ingin tahu, kreativitas, dan semangat untuk terus belajar Melalui layanan dan fasilitas yang tersedia, perpustakaan diharapkan dapat menjadi bagian penting dari lingkungan pendidikan: tempat siswa memperoleh informasi, mengembangkan kemampuan berpikir, serta menumbuhkan kecintaan terhadap ilmu pengetahuan dan literasi.",
     xmin: 0,
     xmid: 1.5,
     xmax: 2.9,
@@ -176,45 +188,30 @@ const galeri: FasilitasVideo[] = [
     src: "/animated/facility/dak.webm",
     poster: "/images/fasilitas/dak.jpg",
     label: "DAK",
-    alt: "Ruang DAK sekolah",
+    alt: "Fasilitas DAK sekolah",
     description:
-      "Ruang DAK yang difungsikan sebagai ruang belajar pada jurusan DKV atau Multi Media di lengkapi dengan fasilitas multimedia yang lengkap.",
-    xmin: 0,
+      "Ruang belajar dan studio DAK yang dilengkapi fasilitas multimedia untuk mendukung kegiatan desain, produksi konten, dan rekaman.",
+    slides: [
+      {
+        src: "/images/fasilitas/dak.jpg",
+        alt: "Ruang DAK 1",
+      },
+      {
+        src: "/images/fasilitas/dak-2.jpg",
+        alt: "Ruang DAK 2",
+      },
+      {
+        src: "/images/fasilitas/dak-3.jpg",
+        alt: "Ruang DAK 3",
+      },
+      {
+        src: "/images/fasilitas/dak-studio.jpg",
+        alt: "Studio DAK",
+      },
+    ],
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
-  },
-  {
-    src: "/animated/facility/dak-2.webm",
-    poster: "/images/fasilitas/dak-2.jpg",
-    label: "DAK 2",
-    alt: "Ruang DAK sekolah",
-    description:
-      "Ruang DAK 2 sebagai ruang belajar tambahan dengan desain modern untuk mendukung pembelajaran berbasis teknologi.",
-    xmin: 0,
-    xmid: 1.5,
-    xmax: 2.9,
-  },
-  {
-    src: "/animated/facility/dak-3.webm",
-    poster: "/images/fasilitas/dak-3.jpg",
-    label: "DAK 3",
-    alt: "Ruang DAK sekolah",
-    description:
-      "Ruang DAK 3  sebagai ruang belajar tambahan yang dilengkapi dengan AC dan proyektor.",
-    xmin: 0,
-    xmid: 1.5,
-    xmax: 2.9,
-  },
-  {
-    src: "/animated/facility/dak-studio.webm",
-    poster: "/images/fasilitas/dak-studio.jpg",
-    label: "DAK Studio",
-    alt: "Studio DAK sekolah",
-    description:
-      "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah.",
-    xmin: 0,
-    xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
 ];
 
@@ -306,7 +303,7 @@ export function Fasilitas() {
         >
           {galeri.map((g) => (
             <FasilitasVideoCard
-              key={g.src}
+              key={g.src ?? g.label}
               item={g}
               onOpen={() => setSelectedImage(g)}
             />
@@ -315,12 +312,14 @@ export function Fasilitas() {
       </div>
 
       <ImageModal
+        key={selectedImage?.label ?? "closed"}
         isOpen={selectedImage !== null}
         onClose={() => setSelectedImage(null)}
         src={selectedImage?.poster || ""}
         alt={selectedImage?.alt || ""}
         title={selectedImage?.label}
         description={selectedImage?.description}
+        slides={selectedImage?.slides}
         // videoSrc={isDesktop ? selectedImage?.src : undefined}
         // poster={selectedImage?.poster}
       />

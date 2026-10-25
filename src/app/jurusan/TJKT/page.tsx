@@ -101,7 +101,7 @@ export default function TJKTPage() {
   return (
     <div className="flex flex-col w-full min-h-screen dark:bg-gray-950 select-none">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#111827] via-[#374151] to-[#6b7280] text-white">
+      <section className="relative overflow-hidden dark:bg-gradient-to-br dark:from-[#111827] dark:via-[#374151] dark:to-[#6b7280] bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 text-white">
         <TJKTHeroDecorations />
 
         <div className="relative max-w-6xl mx-auto px-6 py-5 sm:py-7 md:py-10">
@@ -119,7 +119,7 @@ export default function TJKTPage() {
                 <Wifi className="size-4" />
                 Program Keahlian
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+              <h1 className="text-6xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-shadow-lg">
                 TJKT
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 mb-4 font-medium">
@@ -142,7 +142,7 @@ export default function TJKTPage() {
                 height={1254}
                 priority
                 sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 224px"
-                className="w-56 h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                className="hidden lg:block w-100 h-100  lg:w-125 lg:h-125 object-contain"
                 draggable={false}
               />
             </div>
