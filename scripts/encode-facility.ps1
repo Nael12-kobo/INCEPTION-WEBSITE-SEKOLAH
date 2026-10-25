@@ -3,8 +3,9 @@
   Encode ulang WebM fasilitas agar mulus di-scrub: keyframe rapat (VP9).
 
 .DESCRIPTION
-  Untuk tiap "<nama>.webm" di public/animated/facility/ (12 fasilitas):
+  Secara default, untuk tiap "<nama>.webm" di public/animated/facility/ (12 fasilitas):
   baseline keyframe diukur -> encode ulang (bila belum rapat) -> verifikasi.
+  -InputFiles dapat dipakai untuk memilih sumber tertentu, termasuk MP4.
   - Keyframe paksa tiap -KeyframeEverySec detik (default 0,2 dtk) berbasis
     WAKTU (force_key_frames), jadi berlaku untuk fps berapa pun (30/60).
   - Downscale ke -Width px (default 960), buang audio/subtitle (-an -sn).
@@ -21,6 +22,9 @@
     # Encode ulang semua + timpa file asli bila verifikasi lolos
     .\scripts\encode-facility.ps1 -Force -Replace
 
+    # Encode MP4 terpilih ke WebM, lalu hapus sumber MP4 setelah verifikasi lolos
+    .\scripts\encode-facility.ps1 -InputFiles Yayasan.mp4,Tefa2.mp4,Masjid.mp4,DAK.mp4 -Replace
+
   Disarankan commit git dulu sebelum -Replace agar mudah rollback.
 #>
 [CmdletBinding()]
@@ -30,6 +34,7 @@ param(
   [int]$Width = 960,
   [int]$Crf = 30,
   [string]$MaxBitrate = "1500k",
+  [string[]]$InputFiles = @(),
   [switch]$Force,
   [switch]$Replace
 )
@@ -47,6 +52,27 @@ $basenames = @(
   "tkro-1", "tkro-2", "uks", "uks-2",
   "dak", "dak-2", "dak-3", "dak-studio"
 )
+
+$inputs = @()
+if ($InputFiles.Count -gt 0) {
+  foreach ($file in $InputFiles) {
+    $path = if ([System.IO.Path]::IsPathRooted($file)) { $file } else { Join-Path $Dir $file }
+    $inputs += [PSCustomObject]@{
+      Path      = $path
+      Base      = [System.IO.Path]::GetFileNameWithoutExtension($path)
+      Extension = [System.IO.Path]::GetExtension($path)
+    }
+  }
+}
+else {
+  foreach ($base in $basenames) {
+    $inputs += [PSCustomObject]@{
+      Path      = Join-Path $Dir "$base.webm"
+      Base      = $base
+      Extension = ".webm"
+    }
+  }
+}
 
 function Get-Fps {
   param([string]$Path)
@@ -73,9 +99,10 @@ function Get-Duration {
 
 function Get-KeyframeCount {
   param([string]$Path)
-  $lines = & $ffprobe -v error -select_streams v:0 -skip_frame nokey `
-    -show_entries frame=pkt_pts_time -of csv=p=0 $Path | Measure-Object -Line
-  return $lines.Lines
+  $keyframes = @(& $ffprobe -v error -select_streams v:0 `
+    -show_entries frame=key_frame -of csv=p=0 $Path |
+    Where-Object { "$($_)".Trim() -eq "1" })
+  return $keyframes.Count
 }
 
 function Get-StreamKinds {
@@ -86,11 +113,14 @@ function Get-StreamKinds {
 
 $results = @()
 
-foreach ($base in $basenames) {
-  $in = Join-Path $Dir "$base.webm"
+foreach ($input in $inputs) {
+  $in = $input.Path
+  $base = $input.Base
+  $extension = $input.Extension
   $out = Join-Path $Dir "$base.fixed.webm"
+  $replacement = if ($extension -ieq ".mp4") { Join-Path $Dir "$base.webm" } else { $in }
   $row = [PSCustomObject]@{
-    File          = "$base.webm"
+    File          = [System.IO.Path]::GetFileName($in)
     Status        = ""
     Keyframes     = ""
     ExpectedMin   = ""
@@ -104,6 +134,12 @@ foreach ($base in $basenames) {
     continue
   }
 
+  if ($Replace -and $extension -ieq ".mp4" -and (Test-Path -LiteralPath $replacement)) {
+    $row.Status = "GAGAL (target $base.webm sudah ada)"
+    $results += $row
+    continue
+  }
+
   $duration = Get-Duration $in
   $expected = 0
   if ($duration -gt 0) { $expected = [math]::Floor($duration / $KeyframeEverySec) }
@@ -111,7 +147,7 @@ foreach ($base in $basenames) {
   $before = Get-KeyframeCount $in
   $row.Keyframes = "$before"
 
-  $alreadyOk = ($expected -gt 0 -and $before -ge [math]::Floor($expected * 0.7)) -and `
+  $alreadyOk = ($extension -ieq ".webm") -and ($expected -gt 0 -and $before -ge [math]::Floor($expected * 0.7)) -and `
     ((@(Get-StreamKinds $in) -join ",") -eq "video")
   if ($alreadyOk -and -not $Force) {
     $row.Status = "OK (sudah rapat + tanpa audio)"
@@ -146,8 +182,20 @@ foreach ($base in $basenames) {
 
   if ($passCount -and $passStreams) {
     if ($Replace) {
-      Move-Item -LiteralPath $out -Destination $in -Force
-      $row.Status = "OK, ditimpa (keyframe $after)"
+      if ($extension -ieq ".mp4") {
+        Move-Item -LiteralPath $out -Destination $replacement
+        try {
+          Remove-Item -LiteralPath $in -Force
+          $row.Status = "OK, menggantikan MP4 (keyframe $after)"
+        }
+        catch {
+          $row.Status = "OK $base.webm; GAGAL hapus sumber MP4"
+        }
+      }
+      else {
+        Move-Item -LiteralPath $out -Destination $replacement -Force
+        $row.Status = "OK, ditimpa (keyframe $after)"
+      }
     }
     else {
       $row.Status = "OK -> $base.fixed.webm (tambah -Replace utk timpa)"
