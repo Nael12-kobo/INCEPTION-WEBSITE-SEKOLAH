@@ -127,9 +127,9 @@ export function ExploreMapPage({
   const mapTransform = `translate3d(calc(-50% + ${displayPan.x}px), calc(-50% + ${displayPan.y}px), 0) scale(${zoom})`;
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-slate-950 text-white">
+    <main className="fixed inset-0 overflow-hidden bg-background text-foreground">
       {!mapAvailable ? (
-        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-white/75">
+        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
           Peta lokasi belum tersedia.
         </div>
       ) : (
@@ -184,7 +184,7 @@ export function ExploreMapPage({
               onPointerUp={(event) => event.stopPropagation()}
               className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
             >
-              <span className="flex items-center gap-1.5 rounded-full border border-white/80 bg-sky-700 px-2.5 py-1.5 text-xs font-semibold text-white shadow-lg transition hover:scale-105 hover:bg-sky-600 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
+              <span className="flex items-center gap-1.5 rounded-full border border-white/80 bg-blue-500 px-2.5 py-1.5 text-xs font-semibold text-white shadow-lg transition hover:scale-105 hover:bg-sky-600 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
                 <MapPin className="size-4 shrink-0" aria-hidden />
                 {location.label}
               </span>
@@ -196,18 +196,18 @@ export function ExploreMapPage({
             onPointerDown={(event) => event.stopPropagation()}
             onPointerMove={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
-            className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-xl border border-white/20 bg-slate-950/75 px-3 py-2.5 text-sm font-semibold text-white shadow-xl backdrop-blur transition hover:bg-slate-900/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 sm:left-6 sm:top-6"
+            className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-xl border border-border/80 bg-card/90 px-3 py-2.5 text-sm font-semibold text-foreground shadow-xl backdrop-blur transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:left-6 sm:top-6"
           >
             <ArrowLeft className="size-4" aria-hidden />
             Beranda
           </Link>
 
-          <div className="absolute right-4 top-4 z-20 flex flex-col overflow-hidden rounded-xl border border-white/20 bg-slate-950/75 shadow-xl backdrop-blur sm:right-6 sm:top-6">
+          <div className="absolute right-4 top-4 z-20 flex flex-col overflow-hidden rounded-xl border border-border/80 bg-card/90 shadow-xl backdrop-blur sm:right-6 sm:top-6">
             <button
               type="button"
               onClick={() => changeZoom(ZOOM_STEP)}
               aria-label="Perbesar peta"
-              className="flex size-11 items-center justify-center border-b border-white/15 text-white transition hover:bg-white/15 focus-visible:bg-white/15 focus-visible:outline-none"
+              className="flex size-11 items-center justify-center border-b border-border text-foreground transition hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
             >
               <Plus className="size-5" aria-hidden />
             </button>
@@ -215,7 +215,7 @@ export function ExploreMapPage({
               type="button"
               onClick={() => changeZoom(-ZOOM_STEP)}
               aria-label="Perkecil peta"
-              className="flex size-11 items-center justify-center border-b border-white/15 text-white transition hover:bg-white/15 focus-visible:bg-white/15 focus-visible:outline-none"
+              className="flex size-11 items-center justify-center border-b border-border text-foreground transition hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
             >
               <Minus className="size-5" aria-hidden />
             </button>
@@ -223,7 +223,7 @@ export function ExploreMapPage({
               type="button"
               onClick={resetView}
               aria-label="Reset posisi dan zoom peta"
-              className="flex size-11 items-center justify-center text-white transition hover:bg-white/15 focus-visible:bg-white/15 focus-visible:outline-none"
+              className="flex size-11 items-center justify-center text-foreground transition hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
             >
               <LocateFixed className="size-5" aria-hidden />
             </button>
