@@ -7,6 +7,7 @@ import { Fasilitas } from "@/components/Fasilitas";
 import { Berita } from "@/components/Berita";
 import { CtaPpdb } from "@/components/CtaPpdb";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
+import { HomeEntranceVideo } from "@/components/HomeEntranceVideo";
 import { gabungBerita } from "@/lib/berita-server";
 import { getJurusanAktif } from "@/lib/jurusan-server";
 import { getSemuaSiteContent } from "@/lib/site-content-server";
@@ -31,6 +32,21 @@ export default async function Home() {
 
   return (
     <div className="relative flex min-h-dvh flex-col  font-sans text-slate-900">
+      <link
+        rel="preload"
+        as="video"
+        href="/animated/INTROTTHMOBILE.webm"
+        type="video/webm"
+        media="(max-width: 767px)"
+      />
+      <link
+        rel="preload"
+        as="video"
+        href="/animated/INTROTTH.webm"
+        type="video/webm"
+        media="(min-width: 768px)"
+      />
+      <HomeEntranceVideo />
       <HomeBackdrop />
       <main className="relative flex-1">
         <Hero konten={konten.hero} />
