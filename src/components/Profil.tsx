@@ -108,7 +108,7 @@ export function Profil({
           data-scrub-dir="right"
           className="flex h-full items-start justify-center"
         >
-          <article className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-xl shadow-slate-900/10">
+          <article className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 dark:text-black shadow-xl shadow-slate-900/10">
             <header className="flex items-center gap-3 px-4 py-3">
               <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-400 p-0.5">
                 <span className="flex h-full w-full items-center justify-center rounded-full bg-white p-1">
@@ -132,7 +132,7 @@ export function Profil({
             <div className="relative aspect-[9/14] overflow-hidden bg-slate-100">
               <video
                 className="h-full w-full object-cover"
-                src="/animated/TiktokRemastered.mp4"
+                src="/animated/TiktokRemastered-optimized.mp4"
                 autoPlay
                 muted
                 loop
