@@ -26,6 +26,7 @@ export function useTiltHover(
     const root = rootRef.current;
     if (!root) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(max-width: 767px)").matches) return;
     if (window.matchMedia("(hover: none)").matches) return;
 
     const cleanups: Array<() => void> = [];

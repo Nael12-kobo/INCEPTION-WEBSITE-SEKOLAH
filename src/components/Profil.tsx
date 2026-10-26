@@ -21,7 +21,7 @@ export function Profil({
   const ref = useAnimeFlowReveal<HTMLElement>({ direction: "alternate", distance: 170 });
   useTiltHover(ref, { maxTilt: 7, scale: 1.02 });
   return (
-    <section id="profil" ref={ref} className="relative overflow-hidden bg-blue-300/15">
+    <section id="profil" ref={ref} className="relative overflow-hidden bg-blue-300/15 dark:bg-black/25">
       <div
         aria-hidden
         className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-violet-300/50 blur-3xl dark:hidden"
