@@ -134,8 +134,8 @@ foreach ($input in $inputs) {
     continue
   }
 
-  if ($Replace -and $extension -ieq ".mp4" -and (Test-Path -LiteralPath $replacement)) {
-    $row.Status = "GAGAL (target $base.webm sudah ada)"
+  if ($Replace -and $extension -ieq ".mp4" -and (Test-Path -LiteralPath $replacement) -and -not $Force) {
+    $row.Status = "GAGAL (target $base.webm sudah ada; tambah -Force untuk menimpa)"
     $results += $row
     continue
   }
@@ -183,7 +183,8 @@ foreach ($input in $inputs) {
   if ($passCount -and $passStreams) {
     if ($Replace) {
       if ($extension -ieq ".mp4") {
-        Move-Item -LiteralPath $out -Destination $replacement
+        # Hanya timpa target lama setelah output baru lolos verifikasi.
+        Move-Item -LiteralPath $out -Destination $replacement -Force
         try {
           Remove-Item -LiteralPath $in -Force
           $row.Status = "OK, menggantikan MP4 (keyframe $after)"

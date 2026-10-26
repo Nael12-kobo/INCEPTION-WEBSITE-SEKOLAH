@@ -106,6 +106,8 @@ export type FasilitasItem = {
   label: string;
   alt: string;
   deskripsi: string;
+  /** Foto tambahan yang ditampilkan sebagai slide saat card diketuk. */
+  slides?: Array<{ src: string; alt: string }>;
   /** Patokan detik timeline untuk cursor kiri/tengah/kanan. */
   xmin: number;
   xmid: number;
@@ -356,7 +358,7 @@ const TABS_BAWAAN: FasilitasTab[] = [
 
 const GALERI_BAWAAN: FasilitasItem[] = [
   {
-    src: "/animated/facility/perpustakaan.webm",
+    src: "/animated/facility/Perpustakaan.webm",
     poster: "/images/fasilitas/perpustakaan.jpg",
     label: "Perpustakaan",
     alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
@@ -367,9 +369,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tefa.webm",
+    src: "/animated/facility/Tefa1.webm",
     poster: "/images/fasilitas/tefa.jpg",
-    label: "Teaching Factory",
+    label: "Teaching Factory 1",
     alt: "Teaching Factory (TEFA)",
     deskripsi:
       "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi.",
@@ -378,7 +380,29 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 0,
   },
   {
-    src: "/animated/facility/gedung-tkj.webm",
+    src: "/animated/facility/Tefa2.webm",
+    poster: "/images/fasilitas/tefa.jpg",
+    label: "Teaching Factory 2",
+    alt: "Teaching Factory (TEFA) lantai 2",
+    deskripsi:
+      "Teaching Factory sebagai tempat praktik kerja nyata yang mensimulasikan lingkungan industri telekomunikasi.",
+    xmin: 2.9,
+    xmid: 1.5,
+    xmax: 0,
+  },
+  {
+    src: "/animated/facility/AsramaPutra.webm",
+    poster: "/images/fasilitas/asrama-putra.jpg",
+    label: "Asrama Putra",
+    alt: "Asrama Putra SMK Telekomunikasi Tunas Harapan",
+    deskripsi:
+      "Asrama Putra sebagai fasilitas hunian siswa yang mendukung kegiatan belajar dan pembinaan karakter.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
+  },
+  {
+    src: "",
     poster: "/images/fasilitas/gedung-tkj.jpg",
     label: "Gedung TKJ",
     alt: "Gedung Teknik Komputer dan Jaringan",
@@ -389,7 +413,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tkj-lab.webm",
+    src: "",
     poster: "/images/fasilitas/tkj-lab.jpg",
     label: "Lab TKJ",
     alt: "Laboratorium Teknik Komputer dan Jaringan",
@@ -400,7 +424,18 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tkro-1.webm",
+    src: "/animated/facility/Bengkel.webm",
+    poster: "/images/fasilitas/bengkel.jpg",
+    label: "Bengkel TKRO",
+    alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
+    deskripsi:
+      "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
+  },
+  {
+    src: "",
     poster: "/images/fasilitas/tkro-1.jpg",
     label: "Bengkel TKRO 1",
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
@@ -411,7 +446,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/tkro-2.webm",
+    src: "",
     poster: "/images/fasilitas/tkro-2.jpg",
     label: "Bengkel TKRO 2",
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
@@ -422,7 +457,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/uks.webm",
+    src: "/animated/facility/UKS.webm",
     poster: "/images/fasilitas/uks.jpg",
     label: "UKS",
     alt: "Unit Kesehatan Sekolah",
@@ -455,7 +490,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/dak-2.webm",
+    src: "",
     poster: "/images/fasilitas/dak-2.jpg",
     label: "DAK 2",
     alt: "Ruang DAK sekolah",
@@ -466,7 +501,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/dak-3.webm",
+    src: "",
     poster: "/images/fasilitas/dak-3.jpg",
     label: "DAK 3",
     alt: "Ruang DAK sekolah",
@@ -476,12 +511,45 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     xmax: 2.9,
   },
   {
-    src: "/animated/facility/dak-studio.webm",
+    src: "",
     poster: "/images/fasilitas/dak-studio.jpg",
     label: "DAK Studio",
     alt: "Studio DAK sekolah",
     deskripsi:
       "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
+  },
+  {
+    src: "/animated/facility/Masjid.webm",
+    poster: "/images/fasilitas/masjid.jpg",
+    label: "Masjid",
+    alt: "Masjid sekolah",
+    deskripsi:
+      "Masjid sekolah sebagai fasilitas ibadah dan pembinaan kegiatan keagamaan siswa.",
+    xmin: 0,
+    xmid: 1.5,
+    xmax: 2.9,
+  },
+  {
+    src: "/animated/facility/RPS.webm",
+    poster: "/images/fasilitas/rps.jpg",
+    label: "RPS",
+    alt: "Ruang Praktik Siswa",
+    deskripsi:
+      "Ruang Praktik Siswa untuk mendukung pembelajaran vokasi dan kegiatan praktik berbasis industri.",
+    xmin: 2.9,
+    xmid: 1.5,
+    xmax: 0,
+  },
+  {
+    src: "/animated/facility/Yayasan.webm",
+    poster: "/images/fasilitas/yayasan.jpg",
+    label: "Yayasan",
+    alt: "Gedung Yayasan Tunas Harapan",
+    deskripsi:
+      "Gedung Yayasan Tunas Harapan yang mendukung pengelolaan dan pengembangan lingkungan sekolah.",
     xmin: 0,
     xmid: 1.5,
     xmax: 2.9,
@@ -845,6 +913,7 @@ function normalizeFasilitas(raw: unknown): FasilitasKonten {
           label: str(g.label, base?.label ?? "", 80),
           alt: str(g.alt, base?.alt ?? "", 160),
           deskripsi: str(g.deskripsi, base?.deskripsi ?? "", 600),
+          slides: base?.slides,
           xmin: detik(g.xmin, base?.xmin ?? 0),
           xmid: detik(g.xmid, base?.xmid ?? 1.5),
           xmax: detik(g.xmax, base?.xmax ?? 2.9),

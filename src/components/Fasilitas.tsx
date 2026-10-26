@@ -19,6 +19,69 @@ import {
   type FasilitasKonten,
 } from "@/lib/site-content";
 
+function isGroupedFacility(label: string): boolean {
+  return (
+    /^DAK(?: 2| 3| Studio)?$/i.test(label) ||
+    /^(?:Bengkel )?TKRO/i.test(label) ||
+    /TKJ/i.test(label) ||
+    /^RPS$/i.test(label)
+  );
+}
+
+function groupFacilityGallery(items: FasilitasCardItem[]): FasilitasCardItem[] {
+  const grouped = new Map<string, FasilitasCardItem[]>();
+  const result: FasilitasCardItem[] = [];
+
+  for (const item of items) {
+    let groupKey: string | null = null;
+    if (/^DAK(?: 2| 3| Studio)?$/i.test(item.label)) groupKey = "dak";
+    else if (/^(?:Bengkel )?TKRO/i.test(item.label)) groupKey = "tkro";
+    else if (/TKJ/i.test(item.label) || /^RPS$/i.test(item.label)) {
+      groupKey = "tkj";
+    }
+
+    if (!groupKey) {
+      result.push(item);
+      continue;
+    }
+
+    const group = grouped.get(groupKey);
+    if (group) group.push(item);
+    else grouped.set(groupKey, [item]);
+  }
+
+  const groupedItems = new Map<string, FasilitasCardItem>();
+  for (const [key, group] of grouped) {
+    const first = group.find((item) => item.src) ?? group[0];
+    if (!first) continue;
+
+    const slides = group.flatMap((item) =>
+      item.slides?.length
+        ? item.slides
+        : [{ src: item.poster, alt: item.alt }],
+    );
+    const uniqueSlides = slides.filter(
+      (slide, index, all) =>
+        all.findIndex((candidate) => candidate.src === slide.src) === index,
+    );
+
+    groupedItems.set(key, {
+      ...first,
+      label: key === "dak" ? "DAK" : key === "tkro" ? "Bengkel TKRO" : "TKJ",
+      slides: uniqueSlides.length > 1 ? uniqueSlides : undefined,
+    });
+  }
+
+  const groupedOrder = ["dak", "tkro", "tkj"];
+  return [
+    ...result.filter((item) => !isGroupedFacility(item.label)),
+    ...groupedOrder.flatMap((key) => {
+      const item = groupedItems.get(key);
+      return item ? [item] : [];
+    }),
+  ];
+}
+
 export function Fasilitas({
   konten = SITE_CONTENT_DEFAULTS.fasilitas,
 }: {
@@ -31,16 +94,19 @@ export function Fasilitas({
   useTiltHover(ref, { maxTilt: 6, scale: 1.02 });
   const [active, setActive] = useState<string>(konten.tabs[0]?.id ?? "lab");
   const content = konten.tabs.find((t) => t.id === active) ?? konten.tabs[0];
-  const galeri: FasilitasCardItem[] = konten.galeri.map((item) => ({
-    src: item.src,
-    poster: item.poster,
-    label: item.label,
-    alt: item.alt,
-    description: item.deskripsi,
-    xmin: item.xmin,
-    xmid: item.xmid,
-    xmax: item.xmax,
-  }));
+  const galeri = groupFacilityGallery(
+    konten.galeri.map((item) => ({
+      src: item.src || undefined,
+      poster: item.poster,
+      label: item.label,
+      alt: item.alt,
+      description: item.deskripsi,
+      slides: item.slides,
+      xmin: item.xmin,
+      xmid: item.xmid,
+      xmax: item.xmax,
+    })),
+  );
   const [selectedImage, setSelectedImage] =
     useState<FasilitasCardItem | null>(null);
 
@@ -125,7 +191,7 @@ export function Fasilitas({
         >
           {galeri.map((g) => (
             <FasilitasVideoCard
-              key={g.src ?? g.label}
+              key={g.src || g.label}
               item={g}
               onOpen={() => setSelectedImage(g)}
             />
