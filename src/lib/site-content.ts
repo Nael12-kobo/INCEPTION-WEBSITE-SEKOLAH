@@ -364,13 +364,13 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Perpustakaan SMK Telekomunikasi Tunas Harapan",
     deskripsi:
       "Perpustakaan yang menyediakan berbagai jurnal,  dan fasilitas baca yang nyaman untuk mendukung kegiatan belajar siswa.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/Tefa1.webm",
-    poster: "/images/fasilitas/tefa.jpg",
+    poster: "/images/fasilitas/Tefa1.jpeg",
     label: "Teaching Factory 1",
     alt: "Teaching Factory (TEFA)",
     deskripsi:
@@ -381,7 +381,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
   },
   {
     src: "/animated/facility/Tefa2.webm",
-    poster: "/images/fasilitas/tefa.jpg",
+    poster: "/images/fasilitas/Tefa2.jpg",
     label: "Teaching Factory 2",
     alt: "Teaching Factory (TEFA) lantai 2",
     deskripsi:
@@ -397,9 +397,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Asrama Putra SMK Telekomunikasi Tunas Harapan",
     deskripsi:
       "Asrama Putra sebagai fasilitas hunian siswa yang mendukung kegiatan belajar dan pembinaan karakter.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -408,9 +408,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Gedung Teknik Komputer dan Jaringan",
     deskripsi:
       "Gedung khusus untuk program keahlian Teknik Komputer dan Jaringan dengan peralatan modern.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -419,9 +419,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Laboratorium Teknik Komputer dan Jaringan",
     deskripsi:
       "Laboratorium TKJ dilengkapi dengan perangkat jaringan Cisco, Mikrotik, dan server untuk praktik konfigurasi jaringan.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/Bengkel.webm",
@@ -430,9 +430,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
     deskripsi:
       "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -441,9 +441,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
     deskripsi:
       "Bengkel TKRO dengan peralatan standar industri untuk praktik perbaikan kendaraan ringan.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -452,9 +452,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Bengkel Teknik Kendaraan Ringan Otomotif",
     deskripsi:
       "Bengkel TKRO 2 sebagai pelengkap fasilitas praktik untuk menampung lebih banyak siswa.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/UKS.webm",
@@ -463,9 +463,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Unit Kesehatan Sekolah",
     deskripsi:
       "Unit Kesehatan Sekolah yang siap melayani siswa untuk pertolongan pertama dan pemeriksaan kesehatan dasar.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/humas.webm",
@@ -474,7 +474,7 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Unit Humas Sekolah",
     deskripsi:
       "Unit Humas Sekolah yang bertugas dalam komunikasi dan promosi kegiatan sekolah.",
-    xmin: 1.4,
+    xmin: 2.9,
     xmid: 0.9,
     xmax: 0,
   },
@@ -485,9 +485,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Ruang DAK sekolah",
     deskripsi:
       "Ruang DAK yang difungsikan sebagai ruang belajar pada jurusan DKV atau Multi Media di lengkapi dengan fasilitas multimedia yang lengkap.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -506,9 +506,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     label: "DAK 3",
     alt: "Ruang DAK sekolah",
     deskripsi: "Ruang DAK 3  sebagai ruang belajar tambahan yang dilengkapi dengan AC dan proyektor.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "",
@@ -517,9 +517,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Studio DAK sekolah",
     deskripsi:
       "Studio DAK yang difungsikan sebagai ruang produksi multimedia dan studio rekaman untuk kegiatan sekolah.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/Masjid.webm",
@@ -528,9 +528,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Masjid sekolah",
     deskripsi:
       "Masjid sekolah sebagai fasilitas ibadah dan pembinaan kegiatan keagamaan siswa.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
   {
     src: "/animated/facility/RPS.webm",
@@ -550,9 +550,9 @@ const GALERI_BAWAAN: FasilitasItem[] = [
     alt: "Gedung Yayasan Tunas Harapan",
     deskripsi:
       "Gedung Yayasan Tunas Harapan yang mendukung pengelolaan dan pengembangan lingkungan sekolah.",
-    xmin: 0,
+    xmin: 2.9,
     xmid: 1.5,
-    xmax: 2.9,
+    xmax: 0,
   },
 ];
 

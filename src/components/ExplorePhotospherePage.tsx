@@ -33,8 +33,8 @@ export function ExplorePhotospherePage({
 
   return (
     <main className="flex min-h-dvh flex-col bg-slate-950/20 text-white">
-      <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950 px-4 py-4 sm:px-8">
-        <Button asChild variant="secondary" className="gap-2">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white dark:bg-slate-950 px-4 py-4 sm:px-8">
+        <Button asChild variant="secondary" className="gap-2 bg-blue-400 text-white hover:bg-blue-400/90">
           <Link href="/explore">
             <ArrowLeft className="h-4 w-4" />
             Kembali ke Explore
@@ -60,7 +60,7 @@ export function ExplorePhotospherePage({
       {location.panoramas.length > 1 && (
         <nav
           aria-label={`Pilihan photosphere ${location.label}`}
-          className="flex shrink-0 items-center justify-center gap-3 border-t border-white/10 bg-slate-950 px-4 py-4"
+          className="flex shrink-0 items-center justify-center gap-3 border-t border-white/10 bg-white text-black dark:text-white dark:bg-slate-950 px-4 py-4"
         >
           {location.panoramas.map((panorama, index) => (
             <button
@@ -70,7 +70,7 @@ export function ExplorePhotospherePage({
               onClick={() => setActiveIndex(index)}
               className={`group flex items-center gap-3 rounded-xl border p-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${activeIndex === index ? "border-sky-400 bg-sky-400/10" : "border-white/15 hover:border-white/40"}`}
             >
-              <span className="relative h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-800 sm:h-14 sm:w-24">
+              <span className="relative h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-900 sm:h-14 sm:w-24">
                 <Image
                   src={panorama.src}
                   alt=""
@@ -79,7 +79,7 @@ export function ExplorePhotospherePage({
                   className="object-cover"
                 />
               </span>
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-black/90 dark:text-white/90">
                 {panorama.label}
               </span>
             </button>

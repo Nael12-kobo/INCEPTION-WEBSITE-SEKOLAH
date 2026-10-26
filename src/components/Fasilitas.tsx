@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi } from "lucide-react";
+import Link from "next/link";
+import { Boxes, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,6 +83,14 @@ function groupFacilityGallery(items: FasilitasCardItem[]): FasilitasCardItem[] {
   ];
 }
 
+const EXPLORE_SLUG_BY_FACILITY: Record<string, string> = {
+  "Teaching Factory 2": "tefa-2",
+  "Asrama Putra": "asrama-putra",
+  "Bengkel TKRO": "bengkel-otomotif",
+  DAK: "dak",
+  Masjid: "masjid",
+};
+
 export function Fasilitas({
   konten = SITE_CONTENT_DEFAULTS.fasilitas,
 }: {
@@ -122,6 +131,12 @@ export function Fasilitas({
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             {konten.judul}
           </h2>
+          <Button asChild className="mt-5 rounded-full shadow-lg shadow-sky-300/40">
+            <Link href="/explore">
+              <Boxes aria-hidden />
+              Jelajahi Lewat 3D
+            </Link>
+          </Button>
         </div>
 
         <div
@@ -208,6 +223,13 @@ export function Fasilitas({
         title={selectedImage?.label}
         description={selectedImage?.description}
         slides={selectedImage?.slides}
+        exploreHref={
+          selectedImage
+            ? EXPLORE_SLUG_BY_FACILITY[selectedImage.label]
+              ? `/explore/${EXPLORE_SLUG_BY_FACILITY[selectedImage.label]}`
+              : undefined
+            : undefined
+        }
         // videoSrc={isDesktop ? selectedImage?.src : undefined}
         // poster={selectedImage?.poster}
       />

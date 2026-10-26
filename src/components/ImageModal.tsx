@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TouchEvent } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,8 @@ interface ImageModalProps {
   videoSrc?: string;
   /** Poster video / fallback gambar. */
   poster?: string;
+  /** Link ke photosphere fasilitas jika tersedia. */
+  exploreHref?: string;
 }
 
 export function ImageModal({
@@ -32,6 +35,7 @@ export function ImageModal({
   slides,
   videoSrc,
   poster,
+  exploreHref,
 }: ImageModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -184,7 +188,7 @@ export function ImageModal({
           {videoSrc ? (
             <video
               key={videoSrc}
-              className="h-full w-full object-contain"
+              className="h-full w-full rounded-2xl object-contain"
               controls
               autoPlay
               loop
@@ -207,7 +211,7 @@ export function ImageModal({
               alt={currentSlide.alt || "Gambar Modal"}
               fill
               sizes="(max-width: 768px) 100vw, 70vw"
-              className="object-contain"
+              className="rounded-2xl object-contain"
               // Tanpa `priority`/`quality={100}` (#36): overlay on-demand tidak
               // perlu eager fetch, quality default (75) ~separuh byte quality 100.
             />
@@ -261,10 +265,19 @@ export function ImageModal({
                   {description}
                 </p>
               )}
-              <div className="mt-8">
+              <div className="mt-8 flex flex-wrap gap-2">
+                {exploreHref && (
+                  <Button asChild className="font-medium transition-transform active:scale-95">
+                    <Link href={exploreHref}>
+                      <ExternalLink aria-hidden />
+                      Explore
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   onClick={onClose}
-                  className="w-full sm:w-auto font-medium transition-transform active:scale-95"
+                  variant={exploreHref ? "outline" : "default"}
+                  className="font-medium transition-transform active:scale-95"
                 >
                   Tutup
                 </Button>
