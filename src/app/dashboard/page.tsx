@@ -113,8 +113,6 @@ export default async function DashboardPage() {
     ppdb7DaysRaw,
     ppdbByMajorRaw,
     recentActivityRaw,
-    ppdbDocumentsRaw,
-    ppdbReviewRowsRaw,
   ] = await Promise.all([
     prisma.account.findMany({
       where: { userId },
@@ -178,25 +176,6 @@ export default async function DashboardPage() {
         select: { id: true, action: true, detail: true, createdAt: true },
       })
       : Promise.resolve([]),
-    // Berkas kelengkapan PPDB milik pengguna ini — checklist di kartu PPDB
-    // (siswa yang sudah mengisi formulir).
-    prisma.ppdbDocument.findMany({
-      where: { userId },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        kind: true,
-        fileName: true,
-        mime: true,
-        size: true,
-        createdAt: true,
-      },
-    }),
-    // Penilaian admin per item berkas (Sesuai / Perlu perbaikan + catatan).
-    prisma.ppdbDocumentReview.findMany({
-      where: { userId },
-      select: { kind: true, status: true, note: true },
-    }),
   ]);
 
   const providerLabels: Record<string, string> = {
@@ -347,26 +326,13 @@ export default async function DashboardPage() {
                 phone: ppdb.phone,
                 parentName: ppdb.parentName,
                 parentPhone: ppdb.parentPhone,
-              }
-              : null
+           }
+           : null
           }
-          userEmail={dashboardUser.email}
-          hasPhoto={Boolean(user.photoUpdatedAt)}
-          photoVersion={user.photoUpdatedAt?.toISOString() ?? null}
-          documents={ppdbDocumentsRaw.map((d) => ({
-            id: d.id,
-            kind: d.kind,
-            fileName: d.fileName,
-            mime: d.mime,
-            size: d.size,
-            createdAt: d.createdAt.toISOString(),
-          }))}
-          reviews={ppdbReviewRowsRaw.map((r) => ({
-            kind: r.kind,
-            status: r.status,
-            note: r.note,
-          }))}
-          jurusanOptions={jurusanOptions}
+           userEmail={dashboardUser.email}
+           hasPhoto={Boolean(user.photoUpdatedAt)}
+           photoVersion={user.photoUpdatedAt?.toISOString() ?? null}
+           jurusanOptions={jurusanOptions}
           portalKonten={portalKonten}
         />
         )}
