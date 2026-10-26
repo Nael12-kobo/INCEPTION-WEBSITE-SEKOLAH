@@ -32,7 +32,7 @@ export function ExplorePhotospherePage({
   const activePanorama = location.panoramas[activeIndex];
 
   return (
-    <main className="flex min-h-dvh flex-col bg-slate-950 text-white">
+    <main className="flex min-h-dvh flex-col bg-slate-950/20 text-white">
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950 px-4 py-4 sm:px-8">
         <Button asChild variant="secondary" className="gap-2">
           <Link href="/explore">

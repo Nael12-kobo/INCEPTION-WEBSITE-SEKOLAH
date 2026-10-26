@@ -59,7 +59,7 @@ function BeritaImageEksternal({ src, alt }: { src: string; alt: string }) {
 
 function BeritaPlaceholder() {
   return (
-    <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-sky-100 via-card to-indigo-100">
+    <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-sky-100 via-card to-indigo-100 dark:to-indigo-950/10">
       <Newspaper className="h-8 w-8 text-sky-300" aria-hidden />
     </div>
   );
@@ -75,7 +75,7 @@ export function Berita({ posts = [] }: { posts?: BeritaItem[] }) {
   useTiltHover(ref, { maxTilt: 9, scale: 1.03 });
 
   return (
-    <section id="berita" ref={ref} className="overflow-hidden bg-transparent">
+    <section id="berita" ref={ref} className="overflow-hidden bg-blue-300/15 dark:bg-black/25">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-xl">

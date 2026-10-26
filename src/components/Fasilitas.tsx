@@ -113,7 +113,7 @@ export function Fasilitas({
   if (!content) return null;
 
   return (
-    <section id="fasilitas" ref={ref} className="bg-transparent">
+    <section id="fasilitas" ref={ref} className="bg-blue-300/15 dark:bg-black/25">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="mx-auto max-w-2xl text-center">
           <Badge variant="secondary" className="glass-chip border-white/60">

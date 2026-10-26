@@ -32,7 +32,7 @@ export function CtaPpdb({
     icon: IKON_LANGKAH_PPDB[i] ?? ClipboardList,
   }));
   return (
-    <section id="ppdb" ref={ref} className="bg-transparent">
+    <section id="ppdb" ref={ref} className="bg-blue-300/15 dark:bg-black/25">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div
           data-scrub-item

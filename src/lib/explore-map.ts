@@ -60,8 +60,8 @@ export const EXPLORE_LOCATIONS: ExploreLocation[] = [
   {
     slug: "asrama-putra",
     label: "Asrama Putra",
-    x: 51,
-    y: 48,
+    x: 50,
+    y: 49,
     panoramas: [
       panorama(
         "asrama-putra-1",
