@@ -61,9 +61,9 @@ Menggumpulkan Foto Copy Kartu Keluarga
 ## Biaya Pendaftaran
 
 Biaya Pendidikan Spesial (Early Registration) :
-PP : Rp. 3.500.000,- (dapat diangsur)
-SPP : Rp. 250.000,- 
-
+PP : Rp. 3.500.000 (dapat diangsur)
+SPP : Rp. 250.000/bulan
+Asrama (Bagi yang berasrama) : Rp. 950.000/bulan
 ## Materi wawancara 
 Biodata Calon Siswa
 Bakat dan Minat
@@ -79,10 +79,10 @@ Tes Penyakit Keturunan (Asma, Tremor, Jantung, dll)
 Ukur Tinggi dan Berat Badan
 
 ## Seragam yang di dapat
-- Seragam OSIS "Putih Abu-Abu"
-- Seragam jurusan "merah=PPLG, Abu-abu=TKJ, Orange=TKR, Biru=DKV"
-- seragam Tonti
-- Seragam batik
+- Seragam OSIS
+- Seragam jurusan (PPLG = Merah, TJKT = Abu-abu, DKV = Biru, TKRO = Orange)
+- seragam Tonti (Pleton Inti)
+- Seragam Batik
 - Seragam Pramuka
 - Seragam Olahraga
 - Aksesoris topi, dasi, kaos kaki, sepatu

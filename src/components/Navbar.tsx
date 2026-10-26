@@ -27,6 +27,7 @@ const profilLinks = [
   { href: "/sejarah", title: "Sejarah", desc: "Perjalanan sekolah sejak 2001." },
   { href: "/#statistik", title: "Data & Statistik", desc: "Jumlah siswa, guru, dan prestasi." },
   { href: "/#fasilitas", title: "Fasilitas", desc: "Lab, perpustakaan, dan sarana praktik." },
+  { href: "/explore", title: "Explore", desc: "Map sekolah dan photosphere fasilitas." },
 ];
 
 const programLinks = [
@@ -45,6 +46,7 @@ const mobileLinks = [
   { href: "/jurusan/TJKT", label: "TJKT - Jaringan Komputer" },
   { href: "/jurusan/DKV", label: "DKV - Desain Komunikasi Visual" },
   { href: "/jurusan/TKRO", label: "TKRO - Kendaraan Ringan Otomotif" },
+  { href: "/explore", label: "Explore" },
   { href: "/#berita", label: "Berita" },
   { href: "/guru-karyawan", label: "Guru & Karyawan" },
   { href: "/#profil", label: "Tentang" },
@@ -55,7 +57,7 @@ const mobileLinks = [
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-blue-100/80 dark:border-card bg-card/80 backdrop-blur-md">
+    <header className="sticky py-2 top-0 z-40 w-full border-b border-blue-100/80 dark:border-0 dark:bg-black/50 bg-card/80 backdrop-blur-md">
       {/* gap-1 (bukan gap-4): saat 1024px muatan nav hampir penuh — gap cuma
           berpengaruh kalau sempit, saat lega justify-between tetap memisahkan
           grup dengan jarak yang sama. Dibutuhkan untuk muat button "Guru". */}
@@ -68,7 +70,7 @@ export function Navbar() {
             <span className="block text-sm font-bold tracking-tight text-slate-900">
               SMK Telekomunikasi
             </span>
-            <span className="block text-xs font-medium text-cyan-500 dark:text-white/80">Tunas Harapan</span>
+            <span className="block text-xs font-medium text-blue-400 dark:text-white/80">Tunas Harapan</span>
           </span>
         </Link>
 

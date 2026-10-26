@@ -28,7 +28,7 @@ export function Stats({
     icon: IKON_STATISTIK[s.ikon] ?? Users,
   }));
   return (
-    <section id="statistik" ref={ref} className="relative bg-black/40">
+    <section id="statistik" ref={ref} className="relative bg-blue-300/25 dark:bg-black/40">
       <div className="tilt-scene mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (

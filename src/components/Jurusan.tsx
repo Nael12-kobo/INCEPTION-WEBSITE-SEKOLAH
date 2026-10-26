@@ -26,7 +26,7 @@ export function Jurusan({ items = JURUSAN_BAWAAN }: { items?: JurusanItem[] }) {
     <section
       id="jurusan"
       ref={ref}
-      className="relative overflow-hidden bg-transparent"
+      className="relative overflow-hidden bg-black/5 dark:bg-black/25"
     >
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div data-scrub-item className="mx-auto max-w-2xl text-center">

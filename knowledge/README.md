@@ -16,6 +16,7 @@ AI hanya boleh menjawab dari file-file ini. Jika tidak ada di sini → katakan t
 | `07-kontak.md`         | Kontak          |
 | `08-berita.md`         | Berita          |
 | `09-sejarah.md`        | Sejarah sekolah |
+| `10-ekstrakurikuler.md` | Ekstrakurikuler |
 
 ## Cara update
 
@@ -30,4 +31,4 @@ AI hanya boleh menjawab dari file-file ini. Jika tidak ada di sini → katakan t
 - Nomor pendaftaran, biaya exact, tanggal tes/penutupan: **jangan karang**.
 - Alamat/telp kanonis hanya dari `07-kontak.md`.
 - Jurusan otomotif selalu tulis **TKRO** (`TKR` hanya alias lama di database).
-- Prestasi/kegiatan di luar `08-berita.md` = tidak terdata.
+- Prestasi/berita kegiatan di luar `08-berita.md` = tidak terdata; daftar ekskul resmi hanya dari `10-ekstrakurikuler.md`.

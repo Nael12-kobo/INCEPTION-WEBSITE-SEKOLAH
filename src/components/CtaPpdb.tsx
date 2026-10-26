@@ -97,10 +97,10 @@ export function CtaPpdb({
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-white sm:mt-3">
-                        {i + 1}. {s.title}
+                        {i + 1}. {s.judul}
                       </p>
                       <p className="mt-1 text-xs text-sky-50 dark:text-white/80">
-                        {s.desc}
+                        {s.deskripsi}
                       </p>
                     </div>
                   </div>

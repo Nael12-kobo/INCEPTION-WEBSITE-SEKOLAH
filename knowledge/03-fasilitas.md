@@ -1,14 +1,15 @@
 ---
 topic: fasilitas
-keywords: fasilitas, lab, laboratorium, wifi, internet, e-learning, perpustakaan, ekskul, ekstrakurikuler, robotik, esport, pramuka, paskibra, futsal, basket, rohis, kantin, musholla, aula, bkk, uks, bk, konseling
-updated: 2026-10-06
+keywords: fasilitas, lab, laboratorium, wifi, internet, e-learning, perpustakaan, ekskul, ekstrakurikuler, kantin, musholla, aula, bkk, uks, bk, konseling
+updated: 2026-10-25
 source:
   - src/components/Fasilitas.tsx
+  - knowledge/10-ekstrakurikuler.md
 ---
 
 # Fasilitas
 
-Total **24 fasilitas** dalam 4 kategori (sumber: `src/components/Fasilitas.tsx`).
+Total **27 fasilitas** dalam 4 kategori (sumber: `src/components/Fasilitas.tsx`).
 
 ## 1. Lab & Praktik — "Laboratorium praktik industri"
 
@@ -30,12 +31,7 @@ Total **24 fasilitas** dalam 4 kategori (sumber: `src/components/Fasilitas.tsx`)
 
 ## 3. Ekstrakurikuler
 
-- Robotik & IoT club
-- E-sport & game development
-- Pramuka & Paskibra
-- Futsal & basket
-- Rohis & paduan suara
-- Jurnalistik & fotografi
+Daftar ekstrakurikuler yang tersedia tercantum di `knowledge/10-ekstrakurikuler.md`.
 
 ## 4. Penunjang Akademik
 

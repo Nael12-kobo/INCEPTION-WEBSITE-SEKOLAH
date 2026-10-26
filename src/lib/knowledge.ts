@@ -49,6 +49,15 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
     ],
   },
   {
+    file: "10-ekstrakurikuler.md",
+    topic: "ekstrakurikuler",
+    keywords: [
+      "ekskul", "ekstrakurikuler", "band", "futsal", "basket",
+      "english", "english club", "osis", "pmr", "bantara", "gambar",
+      "japan", "japan club",
+    ],
+  },
+  {
     file: "03-fasilitas.md",
     topic: "fasilitas",
     keywords: [
@@ -90,7 +99,7 @@ const TOPIC_KEYWORDS: { file: string; topic: string; keywords: string[] }[] = [
   {
     file: "05-kegiatan.md",
     topic: "kegiatan",
-    keywords: ["kegiatan", "acara", "event", "agenda", "osis", "pramuka", "ekskul", "ekstrakurikuler", "magang", "mou", "robotik", "futsal"],
+    keywords: ["kegiatan", "acara", "event", "agenda", "osis", "ekskul", "ekstrakurikuler", "magang", "mou", "futsal"],
   },
 ];
 

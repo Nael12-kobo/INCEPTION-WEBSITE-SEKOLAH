@@ -14,8 +14,8 @@ source:
 ## Fakta resmi (kanonis = versi halaman PPDB)
 
 - Alamat: **Jl. Umbul Senjoyo I No. 3, Desa Bener, Kec. Tengaran, Kabupaten Semarang, Jawa Tengah**.
-- Telepon: **(0298) 313040** (`tel:+62298313040`).
-- Email: **info@smktunasharapan.sch.id**.
+- Telepon: **(0298) 311391**
+- Email: **info@tunasharapan.info**.
 - Halaman terkait: `/ppdb` (formulir), footer situs (info umum).
 - Instagram (kanal bantuan resmi): [https://www.instagram.com/smk_tth/](https://www.instagram.com/smk_tth/)
 

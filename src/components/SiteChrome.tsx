@@ -45,6 +45,7 @@ const SITE_PREFIXES = [
 
 function isSitePath(pathname: string): boolean {
   if (pathname === "/") return true;
+  if (pathname === "/explore" || pathname.startsWith("/explore/")) return false;
   return SITE_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );

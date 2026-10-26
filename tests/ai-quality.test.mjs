@@ -29,6 +29,19 @@ test("fee synonyms retrieve PPDB knowledge", () => {
 });
 test("location synonyms retrieve official contacts", () => assert.ok(pickRelevantTopics("Di mana alamat sekolah dan nomor WA?").files.includes("07-kontak.md")));
 test("career synonyms retrieve majors", () => assert.ok(pickRelevantTopics("Saya tertarik coding dan membuat aplikasi").files.includes("02-jurusan.md")));
+test("extracurricular names retrieve the dedicated knowledge and current list", () => {
+  const activities = ["Band", "Futsal", "Basket", "English Club", "OSIS", "PMR", "Bantara", "Gambar", "Japan Club"];
+  for (const activity of activities) {
+    assert.ok(
+      pickRelevantTopics(activity).files.includes("10-ekstrakurikuler.md"),
+      `${activity} should retrieve extracurricular knowledge`,
+    );
+  }
+
+  const result = getKnowledgeContext("Apa saja ekstrakurikuler yang tersedia?");
+  assert.ok(result.files.includes("10-ekstrakurikuler.md"));
+  for (const activity of activities) assert.ok(result.context.includes(activity));
+});
 test("source list only includes documents actually placed in context", () => {
   const result = getKnowledgeContext("info ppdb", { maxFiles: 3, maxCharsPerFile: 10500, maxTotalChars: 14000, includeFiles: ["06-ppdb.md", "08-berita.md", "07-kontak.md"] });
   assert.ok(result.context.includes("2026/2027"));
