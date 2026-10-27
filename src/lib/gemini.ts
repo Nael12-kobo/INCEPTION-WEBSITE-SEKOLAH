@@ -101,9 +101,10 @@ function resolveModels(): {
 function geminiConfig(maxOutputTokens = 1600) {
   return {
     temperature: 0.7,
-    // Flash-Lite defaults to minimal reasoning. Use high so Nana verifies
-    // context and facts before responding; this is real model reasoning, not a fake delay.
-    thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH },
+    // Flash-Lite defaults to minimal reasoning. LOW cukup karena knowledge
+    // konteks (.md) sudah di-inject ke prompt — model tinggal menyajikan fakta,
+    // bukan menalar dari nol. Respons lebih cepat tanpa mengorbankan akurasi.
+    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
     // Thinking also consumes the output budget, so leave room for a full answer.
     maxOutputTokens,
     httpOptions: { timeout: 90_000 },
